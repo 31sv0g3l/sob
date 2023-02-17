@@ -1,0 +1,66 @@
+<table width="100%">
+<tr>
+<td align="left">
+<a href="transformations">Previous</a>
+</td>
+<td align="center">
+<a href="main">home</a>
+</td>
+<td align="right">
+<a href="main">Next</a>
+</td>
+</tr>
+</table>
+
+<center>
+<h1>Workflow Suggestions</h1>
+</center>
+<br>
+Whether generating a normal document or signatures, it is generally a good idea to run SOB and your PDF viewer next
+to each other on the screen, as such:
+<br>
+<br>
+<center>
+<img src="/images/binderator_preview.png">
+</center>
+<br>
+When a transformation is changed, to see the next iteration of a document, you must click on GENERATE, and possibly
+on the PDF view as well.  The Evince viewer in Linux is an exception to this rule - it detects file changes and
+automatically reloads / re-displays the document.  Apple Preview requires clicking once on the document to trigger
+a refresh.  Depending on the operating system, Adobe Acrobat Reader may require a manual file reload.  Don't quote
+me on this - these behaviours may or may not be configurable depending on the viewer.
+<br>
+<br>
+When generating signatures, it is vital to ensure that all the pages of the main document (i.e. as produced with
+the GENERATE button) are centered uniformly using the same set of margins.  This way, when a spine and/or edge offset
+is introduced, or when a source page in inserted and odd pages become even and vice versa, you don't have to
+worry whether pages on the left of the spine will be offset differently from those on the right.  You can simply
+adjust both offsets at your leisure and know that the outcome will be symmetric.
+<br>
+<br>
+As such, it is always best when producing signatures to:<br>
+<ol>
+<li></li> Set up the source documents and pages.
+<li></li> Add margins and page numbers.
+<li></li> Add all transformations necessary, to conform all source pages from all source documents to the margins
+you have configured, generating and reloading the document in the viewer as required.
+<li></li> Optionally Toggle of the margins and page numbers (before signature generation).
+<li></li> Set a spine offset (0.05 is often a good start) and an edge offset (0 is good to start with), and
+click on Generate Signatures.
+<li></li> View the generated signatures, perhaps print one out on A3 sized paper, fold it and judge the suitability
+of the spine and edge offsets on real paper.
+<li></li> Iterate as needed.
+<br>
+<br>
+<h1>Bookbinding</h1>
+A word on bookbinding.  This is a vast topic, and there are many great places to find resources.  A good start is
+YouTube, with videos by DAS (probably the best) and others providing great tutorials.  You will need a substantial
+array of tools, many of which you can craft yourself or collect from yard sales and hardware stores, but it is best
+to watch a few videos to see what is required.
+<br>
+<br>
+I hope this app is useful and welcome any suggestions for improvements, especially bug fixes.  I'm sure there are
+other similar apps out there, but I couldn't find one the way I wanted it so I cooked this one up as is.  Incidentally,
+there was a "Binderator"... but the design was limiting and so now there is only his Son.
+<br>
+<br>

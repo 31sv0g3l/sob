@@ -1,0 +1,47 @@
+<table width="100%">
+<tr>
+<td align="left">
+<a href="workflow">Previous</a>
+</td>
+<td align="center">
+<a href="main">home</a>
+</td>
+<td align="right">
+<a href="project">Next</a>
+</td>
+</tr>
+</table>
+
+<center>
+<h1>Son of Binderator</h1>
+</center>
+<br>
+<br>
+<h2>Introduction</h2>
+<em>Son of Binderator</em>, or <em>SOB</em> is a simple dialog application for the manipulation of PDF documents,
+scanned or generated.  It is primarily intended for use in the hobby of bookbinding, but can also be used to simply
+clean up a messy PDF to a format that is aesthetically pleasing and consistent.
+<br>
+<br>
+SOB does not display the documents that it operates on by itself; rather, it is expected that a high quality PDF reader
+such as Adobe's Acrobat Reader, Apple's Preview, or Linux's Evince, be used to view the output of SOB, typically running
+next to it on the same display.
+<br>
+<br>
+SOB has two possible output functions, document generation, and signature generation, the latter referring to the
+generation of folded book sections (signatures) that are stitched together on a frame and then bound in
+(typically hardback) covers.  If you wish to simply beautify a scanned PDF, for example, to make all the pages
+uniformly justified on all sides, crop off a few edges, adjust the scale on select pages etc, then simple document
+generation will suffice.
+<br>
+<br>
+These instructions are broken into three sections, loosely corresponding to the three main tabs of the application,
+plus some suggestions around workflow:
+<br>
+<br>
+<ol>
+<li><a href="project">Project Configuration</a></li> - General settings for an entire book project.
+<li><a href="sources">Source Files</a></li> - How to select an ordered list of source files and pages from them.
+<li><a href="transformations">Transformations</a></li> - How to transform the pages of a document.
+<li><a href="workflow">Workflow</a></li> - Suggestions for general use, both for document and signature generation.
+<ol>

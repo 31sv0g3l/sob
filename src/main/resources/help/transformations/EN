@@ -1,0 +1,124 @@
+<table width="100%">
+<tr>
+<td align="left">
+<a href="sources">Previous</a>
+</td>
+<td align="center">
+<a href="main">home</a>
+</td>
+<td align="right">
+<a href="workflow">Next</a>
+</td>
+</tr>
+</table>
+
+<center>
+<h1>Transformations</h1>
+</center>
+
+Transformations are the main purpose of this application - they allow you to rotate, stretch, translate
+(move sideways or up and down), and crop the pages, individually or many at a time, to change a poorly scanned
+PDF into a document suitable for printing and/or binding.
+<br>
+<br>
+The transformations tab allows you to edit the current <em>transformation set</em>, which is selectable by the drop-down
+menu at the top of the tabbed pane.  It also allows you to add new transformation sets (+ button),
+delete existing ones (X button), and move the currently selected transformation set up and down in the list (up arrow
+and down arrow buttons).
+<br>
+<br>
+Each transformation set is given a comma-separated list of applicable page ranges, which can overlap.  Unlike with
+source document page ranges, a transformation set page range may use references to specific source documents,
+for example:
+<br>
+<br>
+"doc1:101-199 odd, 12-20 even, 50-60"
+<br>
+<br>
+This means the associated transformation set applies to:<br>
+ <ul>
+ <li>odd-numbered pages between 101 and 199 from the source document with id "doc1"
+ <li>even pages from the target document between pages 12 and 20
+ <li>all target pages between 50 and 60
+ </ul>
+<br>
+<br>
+The order of the transformation sets in the list (in the drop-down menu) matters, since it dictates the order in which
+the transformation sets are applied, and results in a matrix of applicable transformation sets for each page in the
+target document.  Consider the following example, where three distinct transformation sets are in the drop-down
+list, in a specific order:
+<br>
+<br>
+<center>
+<img src="/images/page_transforms.png">
+</center>
+<br>
+<br>
+As the target document is generated, the application determines which transformation sets apply to each output page,
+before generating it.  In the above figure, for example, all three transformations apply to page 26, but only the first
+transformation set applies to page 35.
+<br>
+<br>
+Similarly, each transformation set comprises a (re-orderable, variable-length) list of <em>transformations</em>,
+also selectable from a drop-down menu (always at the bottom of the list, as it grows).  Each transformation has a
+numeric range and selected value, which can be entered using the leftmost entry (value), or by moving the slider.
+On either side of the transformation's slider, the endpoints of the slider range can be set.  Note, if either end of
+the slider range is changed such that the current value falls out of the new range, then the current value will be set
+to the nearest end of the range.
+<br>
+<br>
+The available transformations include:
+ <ul>
+ <li>ROTATION</li>rotates the image (around the centre of the page), counterclockwise, by the given number of degrees.
+ <li>SCALE</li> scales both width (X) and height (Y) of the page by the given factor.  1.0 is unchanged.
+ <li>SCALE X</li>scales only the page width
+ <li>SCALE Y</li>scales only the page height
+ <li>TRANSLATE X</li>moves the page image left or right by the given ratio of the page width.
+ <li>TRANSLATE Y</li>moves the page image down or up by the given ratio of the page width.
+ <li>CROP LEFT</li>crops the left edge of the page off by the given ratio of the page width.
+ <li>CROP RIGHT</li>crops the right edge of the page off by the given ratio of the page width.
+ <li>CROP BOTTOM</li>crops the bottom edge of the page off by the given ratio of the page width.
+ <li>CROP TOP</li>crops the top edge of the page off by the given ratio of the page width.
+ </ul>
+<br>
+<br>
+As with entire transformation sets, the order of the list of transforms matters.  Rotating before cropping a page,
+for example, will result in a crop region on the bottom of the page; cropping before rotating will result in a rotated
+cropped region.
+<br>
+<br>
+<h2>Example Transformation Set for One Page</h2>
+<br>
+<br>
+In the following example, let's say we have a single source document, an old text on
+applied physics, to which (in the sources tab) we give the document identifier "ap".
+Let's say we are taking only pages 100-150 from the text to include in our target document.
+<br>
+<br>
+After generating our target document with margins and page numbers, we notice that with page 140 of the applied
+physics text (page 41 of our target document), the content is 1) rotated counter-clockwise by several degrees 2) shrunk
+3) shifted upwards and 4) shifted to the right, as such:
+<br>
+<center>
+<img src="/images/page_pre_transform.png">
+</center>
+<br>
+<br>
+To remedy this, we then create a single transform set that applies only to this one page.  We first add a rotation
+of -4.8 degrees (4.8 degrees clockwise), then a scale factor of 1.29.  We then add horizontal translation of
+12% left (-0.12) and a vertical translation of 3.4% down (-0.034):
+<br>
+<br>
+<center>
+<img src="/images/applied_phys_transform.png">
+</center>
+<br>
+<br>
+After clicking on GENERATE, we can see that the page is transformed to the following form:
+<br>
+<br>
+<center>
+<img src="/images/page_after_transform.png">
+</center>
+<br>
+<br>

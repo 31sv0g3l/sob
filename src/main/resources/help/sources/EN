@@ -1,0 +1,71 @@
+<table width="100%">
+<tr>
+<td align="left">
+<a href="project">Previous</a>
+</td>
+<td align="center">
+<a href="main">home</a>
+</td>
+<td align="right">
+<a href="transformations">Next</a>
+</td>
+</tr>
+</table>
+
+<center>
+<h1>Source Files</h1>
+</center>
+
+<br>
+<br>
+The Sources tab is where the source PDF documents of a project are defined.  You can specify an arbitrary number
+of source files, but they must all be PDF format and be well-formed PDF documents that can be read by applications
+such as Acrobat or Apple Preview.  The sources tab looks like this:
+<br>
+<center>
+<img src="/images/applied_phys_source.png">
+</center>
+<br>
+At the top of the tab, a combo menu allows you to choose the current source document to configure:
+<br>
+<center>
+<img src="/images/source_selector.png">
+</center>
+As shown above, to the right of the combo menu are four buttons:<br>
+<ul>
+<li><b>New (+)</b></li> This will create a new source document, initially with the name "NEW"
+<li><b>Up (&#8593);</b></li> This will move the currently displayed source document "up" (earlier) in the list.
+That is, when the target document is generated, the current document will be read earlier.  The current document will
+remain displayed in the sources tab.
+<li><b>Down (&#8595;)</b></li> This will move the currently displayed source document "down" (later) in the list.
+When the target document is generated, the current document will be read later.  The current document will
+remain displayed in the sources tab.
+<li><b>Delete (X)</b></li> This will delete the currently displayed source document from the list, if any.  Note: The
+associated source document will not be touched.
+</ul>
+<br>
+<br>
+The other fields on the page, relevant to the currently selected source document are as follows:
+<br>
+<ul>
+<li><b>Name</b></li> This is a name for your own reference, describing the document, and can be empty.
+<li><b>Id</b></li> This is a <em>simple</em> identifier for the document, that allows you to refer to it in
+the page ranges of <a href="transformation">transformations</a>.  In general, 1-3 characters are all that is needed,
+for example "d1" to denote document 1, or "bt" to denote "biology text".
+<li><b>Path</b></li> This is the path to the actual PDF source document.  It can be edited by hand, or you can use the
+file chooser to the right of the text entry.  This field is of course mandatory.
+<li><b>Page Ranges</b></li>
+This is where the pages to be read from the source document are specified.  If left blank, all pages are assumed.
+The format is a comma-separated list, with pages starting at 1 and ending at the number of pages in the source
+document.  A range is specified with a dash between two numbers, such as 45-67.  Optionally, the word "even" or "odd"
+can be added after each range (before any comma) to indicate that only the even or odd pages should be read from the
+range.  Ranges can overlap.  Repetitions may also be specified using an asterisk and a multiplier after a range,
+for example, 12-15 * 6, meaning pages 12 to 15 repeated 6 times, i.e. 24 pages in total.
+<li><b>Blank Pages</b></li>
+This specifies the location and count of any number of inserted blank pages, as a comma separated list of
+page-number:count pairs.  (Count) blank pages are inserted after the specified page number.  Blank pages can be
+inserted at the beginning of the document by using a page number of zero, for example: 0:5 inserts five blank pages
+at the beginning.
+<li><b>Comments</b></li>
+This is a place to leave comments specific to the current source document only.
+</ul>

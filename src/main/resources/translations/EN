@@ -1,0 +1,155 @@
+about { About }
+aboutMenu { About Menu }
+aboutSOB { About Son of Binderator }
+app { App }
+applicationName { Son of Binderator }
+appMenu { Application Menu }
+bottomColon { Botton: }
+chosenFile { Chosen file }
+chosenFileAtPath { Chosen file at path }
+comments { Comments }
+copy { Copy }
+couldNotCreateFile { Could not create file at path }
+couldNotOverwrite { Could not overwrite existing file at path }
+cut { Cut }
+documentGenerationColon { Document Generation: }
+documentId { Id (short identifier for use in operation page ranges) }
+documentsBlankPages { Blank Pages - Example: 1:2, 35:1 (2 blank pages after 1, 1 after 35) }
+documentsPageRanges { Page Ranges - Example: 1, 3-12, 24-25 * 3 (repetition), 35-75 odd, 24-100 even }
+doesNotExist { does not exist }
+done { Done }
+edgeOffset { Edge Offset: }
+exit { Exit }
+file { File }
+fileMenu { File menu }
+generate { Generate }
+generated { Generated }
+generatedDocumentHas { Generated document has }
+generateSignatures { Generate Signatures }
+help { Help }
+helpMenu { Help Menu }
+home { Home }
+inlineHelp { Inline Help }
+initialScale { Initial Scale }
+interfaceOptions { Interface Options }
+interfaceRatioColon { Scale ratio }
+isNotReadable { is not readable }
+isNotWriteable { is not writeable }
+loadedSuccessfully { loaded successfully }
+marginColour { Margin Colour: }
+margins { Margins }
+marginRatiosColon { Margins: }
+marginLineThickness { Margin Line Thickness: }
+marginHorizontalDivisions { Margin Horizontal Divisions: }
+marginVerticalDivisions { Margin Vertical Divisions: }
+leftColon { Left: }
+minimiseLastColon { Minimise Last: }
+minimiseLastSignatureTooltip {
+Minimise the number of sheets used in the last signature
+to produce the least possible number of blank pages
+}
+spineOffset { Spine Offset: }
+ok { OK }
+options { Options }
+overlayOptions { Overlay Options }
+pageNumbers { Page Numbers }
+pageNumbersColour { Page Numbers Colour: }
+pageNumbersFillColour { Page Numbers Fill Colour: }
+pageNumbersLineThickness {Page Numbers Line Thickness: }
+pageSignatureSizeColon { Page/Signature Size: }
+path { Path }
+name { Name }
+new { NEW }
+New { New }
+newProject { New project }
+open { Open }
+openProject { Open project }
+outputPath { Output Path }
+pages { pages }
+paste { Paste }
+project { Project }
+rightColon { Right: }
+save { Save }
+saveProject { Save project }
+saveAs { Save as }
+saveProjectAs { Save project as }
+scaleInterface { Scale interface }
+signatures { signatures }
+signaturesColon { Signatures: }
+sheetsColon { Sheets: }
+showProgress { Show progress bars }
+signatureGenerationColon { Signature Generation: }
+signaturesOutputDirectory { Signatures Output Directory }
+sourceDocuments { Source Documents }
+sourceDocumentsComboTooltip { Select the current source document }
+successfullySaved { successfully saved }
+topColon { Top: }
+transformCropLeft { Crop Left }
+transformCropRight { Crop Right }
+transformCropBottom { Crop Bottom }
+transformCropTop { Crop Top }
+transformRotate { Counterclockwise Rotation in Degrees }
+transformScale { Scale }
+transformScaleX { Scale Horizontally }
+transformScaleY { Scale Vertically }
+transformTranslateX { Horizontal Translation }
+transformTranslateY { Vertical Translation }
+transforms { Transforms }
+transformSetPageRanges { Page Ranges - Example: 1, doc2:3-12, 35-75 odd, 24-100 even }
+unsavedChanges { Unsaved Changes }
+welcomeToSonOfBinderator { Welcome to Son of Binderator }
+youHaveUnsavedChangesEtc {
+You have unsaved changes.
+
+Would you like to save them?
+}
+windowTitle { SON OF BINDERATOR }
+
+# ****************************************************************************
+# "About" panel content:
+aboutContent {
+<html>
+<body style="margin: 0 0 0 0;">
+<center>
+<b>Son of Binderator #VERSION#</b>
+<br>
+<br>
+<em>by 31sv0g3l</em>
+</center>
+<br>
+A tool for the manipulation of PDF documents for the purposes of Bookbinding.
+<br>
+<br>
+License:
+<br>
+<br>
+Do whatever you want with this application or its source code;
+the author accepts no liability whatsoever for the use or misuse
+thereof - it's your kharma.  Have fun, be productive, and stay
+hydrated.
+<br>
+<br>
+All third party libraries used by
+this application (OpenPDF, BouncyCastle, Flatlaf and others)
+have their own licensing - look them up.
+<br>
+</body>
+</html>
+}
+# ****************************************************************************
+
+# ***********************************************************
+# Transform type enumeration translations to display strings:
+ROTATION_IN_DEGREES { Rotation in Degrees }
+SCALE { Scale }
+SCALE_X { Horizontal Scale }
+SCALE_Y { Vertical Scale }
+LEFT_CROP { Left Crop }
+RIGHT_CROP { Right Crop }
+BOTTOM_CROP { Bottom Crop }
+TOP_CROP { Top Crop }
+X_TRANSLATION { Horizontal Translation }
+Y_TRANSLATION { Vertical Translation }
+# ***********************************************************
+
+
