@@ -43,7 +43,7 @@ public class OptionsDialog extends JDialog {
     JPanel interfaceOptionsRow1 = new JPanel();
     interfaceOptionsRow1.setLayout(new BoxLayout(interfaceOptionsRow1, BoxLayout.X_AXIS));
     interfaceOptionsRow1.add(Box.createHorizontalGlue());
-    interfaceOptionsRow1.add(createOptionCheckBox(OPTION_SHOW_PROGRESS));
+    interfaceOptionsRow1.add(createOptionCheckBox(OPTION_SHOW_PROGRESS, true));
     interfaceOptionsRow1.add(Box.createHorizontalStrut(scale(10)));
     interfaceOptionsRow1.add(Box.createHorizontalGlue());
     interfaceOptionsPanel.add(interfaceOptionsRow1);
@@ -163,7 +163,7 @@ public class OptionsDialog extends JDialog {
   }
 
   private JCheckBox createOptionCheckBox
-  (String optionKey)
+  (String optionKey, boolean defaultValue)
   {
     // JCheckBox checkBox = new JCheckBox(translate(optionKey));
     JCheckBox checkBox = new JCheckBox();
@@ -192,7 +192,7 @@ public class OptionsDialog extends JDialog {
     checkBox.setText(translate(optionKey));
     try {
       String initValue = (String) InitFile.instance().get(optionKey);
-      checkBox.setSelected(initValue != null && initValue.equals("t"));
+      checkBox.setSelected(initValue != null ? initValue.equals("t") : defaultValue);
     } catch (Exception e) {
       handleException(e);
     }
