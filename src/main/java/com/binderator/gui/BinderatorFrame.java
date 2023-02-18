@@ -1595,10 +1595,38 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
     }
   }
 
+  @Override
+  public void printBookStatus
+  (String statusString)
+  {
+    setStatusMessage(statusString);
+  }
+
+  @Override
+  public void handleBookException
+  (Exception e)
+  {
+    errorDialog(e);
+  }
+
+  @Override
+  public void handleBookProgressLabel
+  (String progressLabel)
+  {
+    setStatusProgressLabel(progressLabel);
+  }
+
+  @Override
+  public void handleBookProgress
+  (float progress, float maxProgress)
+  {
+    setStatusProgress(progress, maxProgress);
+  }
+
   @SuppressWarnings({"all"})
   public static void doMain
-  (String[] args)
-  throws Exception
+    (String[] args)
+    throws Exception
   {
     String userDir = System.getProperty("user.dir");
     File userDirFile = new File(userDir);
@@ -1609,8 +1637,7 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
       initFile = new File(".binderator");
     }
     InitFile.initialise(initFile.getPath(), false);
-    Float scale = (Float) InitFile.instance().get(OptionsDialog.OPTION_SCALE_RATIO, 1.0f);
-    GUIUtils.setScaleFactor(scale);
+    GUIUtils.setStandardScale();
     try {
       UIManager.setLookAndFeel(new FlatLightLaf());
     } catch (Exception e) {
@@ -1619,15 +1646,15 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
     Translations.initialiseFromJar("/translations");
     Translations.setErrorHandler(
 
-        new Translations.ErrorHandler() {
+      new Translations.ErrorHandler() {
 
-          @Override
-          public void handleError
+        @Override
+        public void handleError
           (String message)
-          {
-            JOptionPane.showConfirmDialog(null, message);
-          }
+        {
+          JOptionPane.showConfirmDialog(null, message);
         }
+      }
 
     );
     BinderatorFrame frame = getInstance();
@@ -1657,7 +1684,7 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
   }
 
   public static void main
-  (String[] args)
+    (String[] args)
   {
     PrintStream errorOut = System.err;
     try {
@@ -1667,34 +1694,6 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
       t.printStackTrace(errorOut);
       System.exit(1);
     }
-  }
-
-  @Override
-  public void printBookStatus
-  (String statusString)
-  {
-    setStatusMessage(statusString);
-  }
-
-  @Override
-  public void handleBookException
-  (Exception e)
-  {
-    errorDialog(e);
-  }
-
-  @Override
-  public void handleBookProgressLabel
-  (String progressLabel)
-  {
-    setStatusProgressLabel(progressLabel);
-  }
-
-  @Override
-  public void handleBookProgress
-  (float progress, float maxProgress)
-  {
-    setStatusProgress(progress, maxProgress);
   }
 
 }

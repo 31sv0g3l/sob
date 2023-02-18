@@ -19,8 +19,6 @@ public class OptionsDialog extends JDialog {
   @Serial
   private static final long serialVersionUID = -6419775665367426353L;
   public static final String OPTION_SHOW_PROGRESS = "showProgress";
-  public static final String OPTION_SCALE_INTERFACE = "scaleInterface";
-  public static final String OPTION_SCALE_RATIO = "scaleRatio";
 
   public OptionsDialog
   (JFrame parent)
@@ -47,12 +45,6 @@ public class OptionsDialog extends JDialog {
     interfaceOptionsRow1.add(Box.createHorizontalGlue());
     interfaceOptionsRow1.add(createOptionCheckBox(OPTION_SHOW_PROGRESS));
     interfaceOptionsRow1.add(Box.createHorizontalStrut(scale(10)));
-    interfaceOptionsRow1.add(Box.createHorizontalGlue());
-    interfaceOptionsRow1.add(createOptionCheckBox(OPTION_SCALE_INTERFACE));
-    interfaceOptionsRow1.add(Box.createHorizontalStrut(scale(10)));
-    interfaceOptionsRow1.add(Box.createHorizontalGlue());
-    interfaceOptionsRow1.add(new JLabel(translate("interfaceRatioColon") + " "));
-    interfaceOptionsRow1.add(createOptionFloatField(OPTION_SCALE_RATIO, 4, 0.5f, 4.0f, 1.0f));
     interfaceOptionsRow1.add(Box.createHorizontalGlue());
     interfaceOptionsPanel.add(interfaceOptionsRow1);
     // Row 2

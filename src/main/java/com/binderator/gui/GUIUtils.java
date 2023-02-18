@@ -5,6 +5,16 @@ import com.binderator.util.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.awt.font.FontRenderContext;
+import java.awt.font.GlyphVector;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
+import java.awt.image.BufferedImageOp;
+import java.awt.image.ImageObserver;
+import java.awt.image.RenderedImage;
+import java.awt.image.renderable.RenderableImage;
+import java.text.AttributedCharacterIterator;
+import java.util.Map;
 
 
 @SuppressWarnings("unused")
@@ -36,7 +46,7 @@ public class GUIUtils {
   public static int scale
   (int value)
   {
-    return (int) scaleFactor *value;
+    return (int) scaleFactor * value;
   }
 
   public static ImageIcon scaleImageIcon
@@ -90,6 +100,14 @@ public class GUIUtils {
       String translatedTooltip = Translations.translate(tooltipKey);
     }
 
+  }
+
+  public static void setStandardScale
+  ()
+  {
+    float scale = (float)java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment()
+      .getDefaultScreenDevice().getDefaultConfiguration().getDefaultTransform().getScaleX();
+    setScaleFactor(2.0f / scale);
   }
 
 }
