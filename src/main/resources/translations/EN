@@ -4,7 +4,7 @@ aboutSOB { About Son of Binderator }
 app { App }
 applicationName { Son of Binderator }
 appMenu { Application Menu }
-bottomColon { Botton: }
+bottomColon { Bottom: }
 chosenFile { Chosen file }
 chosenFileAtPath { Chosen file at path }
 comments { Comments }
