@@ -156,11 +156,8 @@ public class InlineHelp extends JDialog implements HyperlinkListener {
           imageURLString = "jar:" + imageURLString;
         }
         Rectangle imageSize = getImageSize(imageURL);
-        System.err.print("Image: url: " + imageURL.getPath() + " width: " + imageSize.getWidth() + " height: " + imageSize.getHeight());
-        float imageScale = 1.0f;
-        int imageWidth = (int)(imageSize.getWidth()/imageScale);
-        int imageHeight = (int)(imageSize.getHeight()/imageScale);
-        System.err.println(" scaledWidth: " + imageWidth + " scaledHeight: " + imageHeight);
+        int imageWidth = scale((int)imageSize.getWidth());
+        int imageHeight = scale((int)imageSize.getHeight());
         if ((imageSize.getWidth() > 0) && (imageSize.getHeight() > 0)) {
           document.setOuterHTML(
             element,
@@ -211,7 +208,7 @@ public class InlineHelp extends JDialog implements HyperlinkListener {
       path = event.getDescription();
     }
     if (event.getEventType() == HyperlinkEvent.EventType.ENTERED) {
-      Output.errorOut("HELP PATH: " + path);
+      // Output.errorOut("HELP PATH: " + path);
     } else if (event.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
       try {
         loadPath(path);
