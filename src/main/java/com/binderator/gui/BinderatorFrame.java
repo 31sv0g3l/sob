@@ -1625,8 +1625,8 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
 
   @SuppressWarnings({"all"})
   public static void doMain
-    (String[] args)
-    throws Exception
+  (String[] args)
+  throws Exception
   {
     String userDir = System.getProperty("user.dir");
     File userDirFile = new File(userDir);
@@ -1643,7 +1643,6 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
     } catch (Exception e) {
       System.err.println( "Failed to initialize LaF: " + e.getMessage());
     }
-    Translations.initialiseFromJar("/translations");
     Translations.setErrorHandler(
 
       new Translations.ErrorHandler() {
@@ -1657,6 +1656,7 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
       }
 
     );
+    Translations.initialiseFromJar("/translations");
     BinderatorFrame frame = getInstance();
     frame.showProgressBars = InitFile.instance().get(OptionsDialog.OPTION_SHOW_PROGRESS, "t").toString().equals("t");
     File projectFile = null;

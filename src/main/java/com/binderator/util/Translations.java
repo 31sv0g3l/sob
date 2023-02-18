@@ -74,11 +74,16 @@ public class Translations {
     for (Language language : Language.values()) {
       File languageTranslationsPath = new File(translationsDirectory, language.name());
       String path = languageTranslationsPath.getAbsolutePath();
-      try (InputStream inputStream = Translations.class.getResourceAsStream(path)) {
-        if (inputStream != null) {
-          translationsMap.put(language, readTranslationsFromStream(path, inputStream));
-        }
-      } catch (Exception ignored) {}
+      // On mswindows, the path gets prepended with a drive id:
+      if (path.matches("[a-zA-Z]:.*")) {
+        path = path.substring(2);
+      }
+      // On mswindows, the path has broken backslash separators:
+      path = path.replaceAll("\\\\", "/");
+      InputStream inputStream = Translations.class.getResourceAsStream(path);
+      if (inputStream != null) {
+        translationsMap.put(language, readTranslationsFromStream(path, inputStream));
+      }
     }
   }
 

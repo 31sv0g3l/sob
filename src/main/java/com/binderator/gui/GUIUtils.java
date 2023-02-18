@@ -105,9 +105,14 @@ public class GUIUtils {
   public static void setStandardScale
   ()
   {
-    float scale = (float)java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment()
-      .getDefaultScreenDevice().getDefaultConfiguration().getDefaultTransform().getScaleX();
-    setScaleFactor(2.0f / scale);
+    String os = System.getProperty("os.name");
+    if (os.matches("Windows.*")) {
+      setScaleFactor(1.0f);
+    } else {
+      float scale = (float) java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment()
+          .getDefaultScreenDevice().getDefaultConfiguration().getDefaultTransform().getScaleX();
+      setScaleFactor(2.0f / scale);
+    }
   }
 
 }
