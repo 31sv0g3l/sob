@@ -725,7 +725,6 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
       progressRatio = Math.min(progressRatio, 1.0f);
       progressRatio = Math.max(progressRatio, 0.0f);
       int progressPercent = (int) (100.0 * progressRatio);
-      System.err.println("Progress %: " + progress + " / " + maxProgress + " * 100.0 = " + progressPercent);
       statusProgressBar.setValue(progressPercent);
     }
   }
