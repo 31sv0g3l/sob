@@ -10,7 +10,8 @@ The app currently requires an external PDF viewer to view changes as they are ma
 
 To install and run,
 <a href="https://www.oracle.com/au/java/technologies/downloads/">download and install Java 19</a>
-and then either download a runnable release jar and double
-click on that, or check out the source and build the maven package target to produce a runnable jar.
+and then either
+<a href="https://github.com/31sv0g3l/sob/releases">download a runnable release jar</a>
+and double click on that, or check out the source and build the maven package target to produce a runnable jar.
 
 All documentation is inline.
