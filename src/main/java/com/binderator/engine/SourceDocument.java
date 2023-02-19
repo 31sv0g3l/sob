@@ -15,7 +15,16 @@ public class SourceDocument implements Serializable, Comparable<SourceDocument> 
   @Serial
   private static final long serialVersionUID = -1029037522867925664L;
 
-  public record BlankPages(int afterPageNumber, int pageCount) implements Serializable {}
+  public record BlankPages(int afterPageNumber, int pageCount) implements Serializable {
+
+    @Override
+    public String toString
+    ()
+    {
+      return afterPageNumber + ":" + pageCount;
+    }
+
+  }
 
   private String stringId;
   private String name;

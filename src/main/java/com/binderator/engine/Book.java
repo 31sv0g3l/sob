@@ -914,53 +914,52 @@ public class Book implements Serializable {
           AffineTransform affineTransform = null;
           TransformedImage transformedImage =
             generatePageImage(writer, pageRef, pageSize.getRectangle(), totalPageNumber % 2 == 0);
-          if (transformedImage == null) {
-            throw new Exception("An error occurred processing page " + totalPageNumber);
-          }
-          // First we add the image with the total transform:
-          Image pageImage = transformedImage.image;
-          AffineTransform transform = null;
-          if (transformedImage.transform != null) {
-            transform = transformedImage.transform;
-            cb.transform(transform);
-          }
-          cb.addImage(transformedImage.image);
-          // Next we add the cropping rectangles, each with the transform corresponding to their position in the
-          // list of transforms:
-          cb.setColorFill(Color.WHITE);
-          cb.setColorStroke(Color.WHITE);
-          cb.setLineWidth(0);
-          for (CropOp cropOp : transformedImage.cropOps) {
-            if (transform != null) {
-              cb.transform(transform.createInverse());
-              transform = null;
-            }
-            if (cropOp.transform != null) {
-              transform = cropOp.transform;
+          if (transformedImage != null) {
+            // First we add the image with the total transform:
+            Image pageImage = transformedImage.image;
+            AffineTransform transform = null;
+            if (transformedImage.transform != null) {
+              transform = transformedImage.transform;
               cb.transform(transform);
             }
-            switch (cropOp.cropType) {
-              // Crop to a full page width / height outside the page in three directions:
-              case LEFT_CROP -> cb.rectangle(
-                -pageWidth, -pageHeight, pageWidth * (1.0f + cropOp.cropRatio), 3.0f * pageHeight
-              );
-              case RIGHT_CROP -> cb.rectangle(
-                pageWidth * (1.0f - cropOp.cropRatio), -pageHeight, pageWidth * (1.0f + cropOp.cropRatio),
-                3.0f * pageHeight
-              );
-              case BOTTOM_CROP -> cb.rectangle(
-                -pageWidth, -pageHeight, 3.0f * pageWidth, pageHeight * (1.0f + cropOp.cropRatio)
-              );
-              case TOP_CROP -> cb.rectangle(
-                -pageWidth, pageHeight * (1.0f - cropOp.cropRatio), 3.0f * pageWidth,
-                pageHeight * (1.0f + cropOp.cropRatio)
-              );
+            cb.addImage(transformedImage.image);
+            // Next we add the cropping rectangles, each with the transform corresponding to their position in the
+            // list of transforms:
+            cb.setColorFill(Color.WHITE);
+            cb.setColorStroke(Color.WHITE);
+            cb.setLineWidth(0);
+            for (CropOp cropOp : transformedImage.cropOps) {
+              if (transform != null) {
+                cb.transform(transform.createInverse());
+                transform = null;
+              }
+              if (cropOp.transform != null) {
+                transform = cropOp.transform;
+                cb.transform(transform);
+              }
+              switch (cropOp.cropType) {
+                // Crop to a full page width / height outside the page in three directions:
+                case LEFT_CROP -> cb.rectangle(
+                  -pageWidth, -pageHeight, pageWidth * (1.0f + cropOp.cropRatio), 3.0f * pageHeight
+                );
+                case RIGHT_CROP -> cb.rectangle(
+                  pageWidth * (1.0f - cropOp.cropRatio), -pageHeight, pageWidth * (1.0f + cropOp.cropRatio),
+                  3.0f * pageHeight
+                );
+                case BOTTOM_CROP -> cb.rectangle(
+                  -pageWidth, -pageHeight, 3.0f * pageWidth, pageHeight * (1.0f + cropOp.cropRatio)
+                );
+                case TOP_CROP -> cb.rectangle(
+                  -pageWidth, pageHeight * (1.0f - cropOp.cropRatio), 3.0f * pageWidth,
+                  pageHeight * (1.0f + cropOp.cropRatio)
+                );
+              }
+              cb.fillStroke();
             }
-            cb.fillStroke();
-          }
-          // Next we invert any existing transform from the above, and possibly draw the margins and page numbers:
-          if (transform != null) {
-            cb.transform(transform.createInverse());
+            // Next we invert any existing transform from the above, and possibly draw the margins and page numbers:
+            if (transform != null) {
+              cb.transform(transform.createInverse());
+            }
           }
           float leftMarginX = leftMarginRatio.getValue() * pageSize.getRectangle().getWidth();
           float rightMarginX = pageSize.getRectangle().getWidth() * (1.0f - rightMarginRatio.getValue());
