@@ -40,18 +40,17 @@ adjust both offsets at your leisure and know that the outcome will be symmetric.
 <br>
 As such, it is always best when producing signatures to:<br>
 <ol>
-<li></li> Set up the source documents and pages.
-<li></li> Add margins and page numbers.
-<li></li> Add all transformations necessary, to conform all source pages from all source documents to the margins
+<li> Set up the source documents and pages.
+<li> Add margins and page numbers.
+<li> Add all transformations necessary, to conform all source pages from all source documents to the margins
 you have configured, generating and reloading the document in the viewer as required.
-<li></li> Optionally Toggle of the margins and page numbers (before signature generation).
-<li></li> Set a spine offset (0.05 is often a good start) and an edge offset (0 is good to start with), and
+<li> Optionally Toggle off the margins and page numbers (before signature generation).
+<li> Set a spine offset (0.05 is often a good start) and an edge offset (0 is good to start with), and
 click on Generate Signatures.
-<li></li> View the generated signatures, perhaps print one out on A3 sized paper, fold it and judge the suitability
+<li> View the generated signatures, perhaps print one out on A3 sized paper, fold it and judge the suitability
 of the spine and edge offsets on real paper.
-<li></li> Iterate as needed.
-<br>
-<br>
+<li> Iterate as needed.
+</li>
 <h1>Bookbinding</h1>
 A word on bookbinding.  This is a vast topic, and there are many great places to find resources.  A good start is
 YouTube, with videos by DAS (probably the best) and others providing great tutorials.  You will need a substantial

@@ -1136,7 +1136,6 @@ public class Book implements Serializable {
             boolean even = signatureSheetPageIndex % 2 == 0;
             if (even) {
               document.newPage();
-              System.err.println("Signature index " + signatureIndex + " new page");
             }
             int totalPageNumber = sheetSourcePageNumbers[signatureSheetPageIndex];
             if (totalPageNumber > 0) {
