@@ -1,3 +1,5 @@
+<meta name="google-site-verification" content="sLixbRzRz0FD5QFev5FydlhliZZirqWy-iW2nCFFKiw" />
+
 # Son of Binderator
 
 ![Model](src/main/resources/help/images/binderator_preview.png)
@@ -15,3 +17,4 @@ and then either
 and double click on that, or check out the source and build the maven package target to produce a runnable jar.
 
 All documentation is inline.
+
