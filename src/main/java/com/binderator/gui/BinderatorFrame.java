@@ -133,7 +133,13 @@ public class BinderatorFrame extends JFrame
   private void execute
   (CommandQueue.Command command)
   {
-    CommandQueue.getInstance().execute(command);
+    execute(command, false);
+  }
+
+  private void execute
+  (CommandQueue.Command command, boolean synchronous)
+  {
+    CommandQueue.getInstance().execute(command, synchronous);
   }
 
   @SuppressWarnings("unused")
@@ -1314,17 +1320,20 @@ public class BinderatorFrame extends JFrame
   public void setBook
   (Book book)
   {
-    execute(() -> {
-      bookLock.lock();
-      this.book = book;
-      book.setStatusListener(this);
-      notifyViewerBookChange();
-      bookLock.unlock();
-      updateProjectControlsPanel();
-      updateSourceDocumentsTab();
-      updateTransformSetsTab();
-      haveUnsavedChanges = false;
-    });
+    execute(
+      () -> {
+        bookLock.lock();
+        this.book = book;
+        book.setStatusListener(this);
+        notifyViewerBookChange();
+        bookLock.unlock();
+        updateProjectControlsPanel();
+        updateSourceDocumentsTab();
+        updateTransformSetsTab();
+        haveUnsavedChanges = false;
+      },
+      true
+    );
   }
 
   Pattern floatPattern = Pattern.compile("-?\\d+(\\.\\d+)?([eE][+\\-]?\\d+)?");

@@ -7,8 +7,44 @@ public class CommandQueue extends Thread {
 
   public interface Command {
 
-    void invoke
+    public abstract void invoke
     ();
+
+  }
+
+  public class SynchronousCommandWrapper implements Command {
+
+    private Command command = null;
+
+    private Condition condition = null;
+
+    public SynchronousCommandWrapper
+    (Command command, Condition condition)
+    {
+      this.command = command;
+      this.condition = condition;
+    }
+
+    public void invoke
+    ()
+    {
+      command.invoke();
+      if (condition != null) {
+        lock.lock();
+        condition.signal();
+        lock.unlock();
+      }
+    }
+
+    public void await
+    ()
+    {
+      if (condition != null) {
+        try {
+          condition.await();
+        } catch (InterruptedException ignoredForNow) {}
+      }
+    }
 
   }
 
@@ -39,11 +75,23 @@ public class CommandQueue extends Thread {
   }
 
   public void execute
-  (Command command)
+    (Command command)
+  {
+  }
+
+  public void execute
+  (Command command, boolean synchronous)
   {
     lock.lock();
-    commands.addFirst(command);
-    condition.signal();
+    if (synchronous) {
+      SynchronousCommandWrapper synchWrapper = new SynchronousCommandWrapper(command, lock.newCondition());
+      commands.addFirst(synchWrapper);
+      condition.signal();
+      synchWrapper.await();
+    } else {
+      commands.addFirst(command);
+      condition.signal();
+    }
     lock.unlock();
   }
 
