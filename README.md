@@ -1,5 +1,5 @@
 <head>
-<meta name="google-site-verification" content="sLixbRzRz0FD5QFev5FydlhliZZirqWy-iW2nCFFKiw" />
+<meta name="google-site-verification" content="r1X3wZdzjHSNV6unRt1cMAUscim_M6F2zPkxbWxrmP8" />
 </head>
 
 # Son of Binderator
