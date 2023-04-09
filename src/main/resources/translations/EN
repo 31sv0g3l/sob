@@ -214,7 +214,7 @@ aboutContent {
 <em>by 31sv0g3l</em>
 </center>
 <br>
-A tool for the manipulation of PDF documents for the purposes of Bookbinding.
+A tool for the manipulation of PDF documents for the purposes of bookbinding.
 <br>
 <br>
 License:
@@ -222,13 +222,12 @@ License:
 <br>
 Do whatever you want with this application or its source code;
 the author accepts no liability whatsoever for the use or misuse
-thereof - it's your kharma.  Have fun, be productive, and stay
-hydrated.
+thereof - it's your kharma - enjoy!
 <br>
 <br>
 All third party libraries used by
-this application (OpenPDF, BouncyCastle, Flatlaf and others)
-have their own licensing - look them up.
+this application (OpenPDF, BouncyCastle, Flatlaf, ICEPDF and others)
+have their own licensing.
 <br>
 </body>
 </html>
