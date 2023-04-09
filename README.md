@@ -6,8 +6,6 @@ Son of Binderator (SOB) is a java-based tool to clean up PDFs (scanned or genera
 into a form suitable for printing, either as a simple document or in binding signatures (sections).
 Arbitrary page ranges can be transformed with rotation, cropping, x/y translation or scaling.
 
-The app currently requires an external PDF viewer to view changes as they are made.
-
 To install and run,
 <a href="https://www.oracle.com/au/java/technologies/downloads/">download and install Java 19</a>
 and then either
