@@ -1,3 +1,7 @@
+<head>
+<meta name="google-site-verification" content="sLixbRzRz0FD5QFev5FydlhliZZirqWy-iW2nCFFKiw" />
+</head>
+
 # Son of Binderator
 
 ![Model](src/main/resources/help/images/binderator_preview.png)
