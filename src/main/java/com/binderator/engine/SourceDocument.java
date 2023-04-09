@@ -41,6 +41,15 @@ public class SourceDocument implements Serializable, Comparable<SourceDocument> 
   }
 
   public SourceDocument
+  (SourceDocument sourceDocument)
+  {
+    stringId = sourceDocument.stringId;
+    name = sourceDocument.name;
+    comment = sourceDocument.comment;
+    path = sourceDocument.path;
+  }
+
+  public SourceDocument
   (String identifier, String name, String path)
   {
     this(identifier, name, path, null);

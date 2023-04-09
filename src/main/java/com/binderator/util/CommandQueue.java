@@ -21,6 +21,7 @@ public class CommandQueue extends Thread {
   public CommandQueue
   ()
   {
+    super();
     commands = new LinkedList<>();
     lock = new ReentrantLock();
     condition = lock.newCondition();

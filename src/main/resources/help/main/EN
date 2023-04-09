@@ -18,21 +18,21 @@
 <br>
 <br>
 <h2>Introduction</h2>
-<em>Son of Binderator</em>, or <em>SOB</em> is a simple dialog application for the manipulation of PDF documents,
-scanned or generated.  It is primarily intended for use in the hobby of bookbinding, but can also be used to simply
-clean up a messy PDF to a format that is aesthetically pleasing and consistent.
+<em>Son of Binderator</em> (SOB) is a tool for the manipulation of PDF documents, primarily for the purposes
+of bookbinding.
 <br>
 <br>
-SOB does not display the documents that it operates on by itself; rather, it is expected that a high quality PDF reader
-such as Adobe's Acrobat Reader, Apple's Preview, or Linux's Evince, be used to view the output of SOB, typically running
-next to it on the same display.
+SOB has two possible output functions, document generation and signature generation.  Document generation can
+be used to simply clean up a PDF with messy geometry to a format that is aesthetically pleasing and
+consistent across all its pages, using cropping, rotation, horizontal and vertical translation, and the like.
+Signature generation refers to the creation of individual PDFs that each comprise a folded book section (signature),
+typically printed on a double-sized sheet of paper.  The signatures are stitched together on a frame and bound,
+typically in hardcover format.
 <br>
 <br>
-SOB has two possible output functions, document generation, and signature generation, the latter referring to the
-generation of folded book sections (signatures) that are stitched together on a frame and then bound in
-(typically hardback) covers.  If you wish to simply beautify a scanned PDF, for example, to make all the pages
-uniformly justified on all sides, crop off a few edges, adjust the scale on select pages etc, then simple document
-generation will suffice.
+SOB can display the current document that it operates on using an inline PDF viewer (ICEPDF); however, it is
+expected that a high quality PDF reader such as Adobe's Acrobat Reader, Apple's Preview, or Linux's Evince, be
+used to view the output before printing.
 <br>
 <br>
 These instructions are broken into three sections, loosely corresponding to the three main tabs of the application,

@@ -61,6 +61,15 @@ public class Book implements Serializable {
     }
 
     public SerializableRectangle
+    (SerializableRectangle rectangle)
+    {
+      this.llx = rectangle.llx;
+      this.lly = rectangle.lly;
+      this.urx = rectangle.urx;
+      this.ury = rectangle.ury;
+    }
+
+    public SerializableRectangle
     (Rectangle rectangle)
     {
       this.llx = rectangle.getLeft();
@@ -150,7 +159,7 @@ public class Book implements Serializable {
     targetBookSize.put("Full paper size", new Float[]{null, null});
   }
 
-  private InputStream input;
+  private transient InputStream input;
   private List<SourceDocument> sourceDocuments;
 
   SerializableRectangle pageSize = new SerializableRectangle(PageSize.A4);
@@ -172,10 +181,10 @@ public class Book implements Serializable {
   private String comments = null;
   private String path = null;
 
-  RangedFloat leftMarginRatio = new RangedFloat("left margin", 0.05f, 0.0f, 0.1f);
-  RangedFloat rightMarginRatio = new RangedFloat("right margin", 0.05f, 0.0f, 0.1f);
-  RangedFloat bottomMarginRatio = new RangedFloat("bottom margin", 0.05f, 0.0f, 0.1f);
-  RangedFloat topMarginRatio = new RangedFloat("top margin", 0.05f, 0.0f, 0.1f);
+  RangedFloat leftMarginRatio = new RangedFloat("left margin", 0.05f, 0.0f, 0.5f);
+  RangedFloat rightMarginRatio = new RangedFloat("right margin", 0.05f, 0.0f, 0.5f);
+  RangedFloat bottomMarginRatio = new RangedFloat("bottom margin", 0.05f, 0.0f, 0.5f);
+  RangedFloat topMarginRatio = new RangedFloat("top margin", 0.05f, 0.0f, 0.5f);
   private boolean usingMargins = false;
   private boolean usingPageNumbering = false;
   private final Map<String, SourceDocument> sourceDocumentsById = new HashMap<>();
@@ -187,6 +196,50 @@ public class Book implements Serializable {
   public Book
   ()
   {}
+
+  public Book
+  (Book book)
+  {
+    sourceDocuments = new ArrayList<>();
+    sourceDocuments.addAll(book.sourceDocuments);
+    pageSize = new SerializableRectangle(book.pageSize);
+    signaturePageSize = new SerializableRectangle(book.signaturePageSize);
+    scaleToFit = book.scaleToFit;
+    pages.addAll(book.pages);
+    pageCount = book.pageCount;
+    signatureSheets = book.signatureSheets;
+    minimiseLastSignature = book.minimiseLastSignature;
+    spineOffsetRatio.copy(book.spineOffsetRatio);
+    edgeOffsetRatio.copy(book.edgeOffsetRatio);
+
+    transformSets = new ArrayList<>();
+    for (TransformSet transformSet : book.transformSets) {
+      transformSets.add(new TransformSet(transformSet));
+    }
+    effectiveTransformsByPage = new HashMap<>();
+    for (Map.Entry<PageRef, List<Transform>> transformsByPageEntry : book.effectiveTransformsByPage.entrySet() ) {
+      List<Transform> transforms = new ArrayList<>();
+      for (Transform transform : transformsByPageEntry.getValue()) {
+        transforms.add(new Transform(transform));
+      }
+      effectiveTransformsByPage.put(transformsByPageEntry.getKey(), transforms);
+    }
+    outputPath = book.outputPath;
+    signaturesOutputPath = book.signaturesOutputPath;
+    name = book.name;
+    comments = book.comments;
+    path = book.path;
+    leftMarginRatio = new RangedFloat(book.leftMarginRatio);
+    rightMarginRatio = new RangedFloat(book.rightMarginRatio);
+    bottomMarginRatio = new RangedFloat(book.bottomMarginRatio);
+    topMarginRatio = new RangedFloat(book.topMarginRatio);
+    usingMargins = book.usingMargins;
+    usingPageNumbering = book.usingPageNumbering;
+    for (Map.Entry<String, SourceDocument> sourceDocumentByIdEntry : book.sourceDocumentsById.entrySet()) {
+      SourceDocument sourceDocument = new SourceDocument(sourceDocumentByIdEntry.getValue());
+      sourceDocumentsById.put(sourceDocumentByIdEntry.getKey(), sourceDocument);
+    }
+  }
 
   public boolean getScaleToFit
   ()
@@ -520,9 +573,9 @@ public class Book implements Serializable {
   }
 
   private void logException
-  (String what, Throwable t)
+  (String where, Throwable t)
   {
-    getErrorOut().print("Caught exception " + what + ".\n\nBacktrace:\n\n");
+    getErrorOut().print("Caught exception " + where + ".\n\nBacktrace:\n\n");
     t.printStackTrace(getErrorOut());
   }
 
@@ -717,7 +770,7 @@ public class Book implements Serializable {
     return new ScaleToFitRecord(affineTransform, width, height);
   }
 
-  public enum CropType { LEFT_CROP, RIGHT_CROP, BOTTOM_CROP, TOP_CROP }
+  public enum CropType { LEFT_CROP, RIGHT_CROP, BOTTOM_CROP, TOP_CROP, ALL_CROP, MARGINS_CROP }
 
   private static class CropOp {
 
@@ -776,6 +829,12 @@ public class Book implements Serializable {
     }
     if (transforms != null) {
       for (Transform transform : transforms) {
+        if (!transform.isEnabled()) {
+          System.err.println("Skipping transform " + transform + " " + transform.hashCode());
+          continue;
+        } else {
+          System.err.println("Using transform " + transform + " " + transform.hashCode());
+        }
         switch (transform.getType()) {
           case ROTATION_IN_DEGREES -> {
             // Translate to the origin:
@@ -836,7 +895,7 @@ public class Book implements Serializable {
             affineTransform = concatenate(newTransform, affineTransform);
             concatenate(newTransform, returnValue.cropOps);
           }
-          case LEFT_CROP, RIGHT_CROP, BOTTOM_CROP, TOP_CROP -> {
+          case LEFT_CROP, RIGHT_CROP, BOTTOM_CROP, TOP_CROP, ALL_CROP -> {
             switch (transform.getType()) {
               case LEFT_CROP -> returnValue.cropOps.add(
                 new CropOp(CropType.LEFT_CROP, null, transform.getRangedFloat().getValue())
@@ -850,8 +909,14 @@ public class Book implements Serializable {
               case TOP_CROP -> returnValue.cropOps.add(
                 new CropOp(CropType.TOP_CROP, null, transform.getRangedFloat().getValue())
               );
+              case ALL_CROP -> returnValue.cropOps.add(
+                new CropOp(CropType.ALL_CROP, null, transform.getRangedFloat().getValue())
+              );
             }
           }
+          case MARGINS_CROP -> returnValue.cropOps.add(
+            new CropOp(CropType.MARGINS_CROP, null, null)
+          );
         }
       }
     }
@@ -888,19 +953,32 @@ public class Book implements Serializable {
     generatePDF(destinationPath, usingMargins, usingPageNumbering);
   }
 
-  /**
-   * Generate PDF with modifications applied
-   * @param destinationPath path of the generated PDF
-   */
   public void generatePDF
   (String destinationPath, boolean usingMargins, boolean usingPageNumbering)
   {
     try {
+      FileOutputStream out = new FileOutputStream(destinationPath);
+      generatePDF(out, usingMargins, usingPageNumbering, null);
+    } catch (Throwable t) {
+      logException("PDF generation", t);
+    }
+  }
+
+  /**
+   * Generate PDF with modifications applied
+   * @param out OutputStream to generate PDF to
+   * @param usingMargins if true, draw a margin overlay
+   * @param usingPageNumbering if true, draw a page numbering overlay
+   * @param targetPages if non-null, generate only the given pages
+   */
+  public void generatePDF
+  (OutputStream out, boolean usingMargins, boolean usingPageNumbering, Collection<PageRef> targetPages)
+  {
+    try {
       generatePages();
       computeEffectiveTransformSets();
-      File signatureFile = new File(destinationPath);
       Document document = new Document(pageSize.getRectangle(), 0, 0, 0, 0);
-      PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(signatureFile));
+      PdfWriter writer = PdfWriter.getInstance(document, out);
       document.open();
       PdfContentByte cb = writer.getDirectContent();
       PdfImportedPage page;
@@ -909,6 +987,9 @@ public class Book implements Serializable {
       setProgressLabel(translate("documentGenerationColon"));
       for (int totalPageNumber = 1; totalPageNumber <= pages.size(); totalPageNumber++) {
         PageRef pageRef = pages.get(totalPageNumber - 1);
+        if ((targetPages != null) && !targetPages.contains(pageRef)) {
+          continue;
+        }
         document.newPage();
         if (pageRef.getPdfReader() != null) {
           AffineTransform affineTransform = null;
@@ -939,6 +1020,7 @@ public class Book implements Serializable {
               }
               switch (cropOp.cropType) {
                 // Crop to a full page width / height outside the page in three directions:
+                // META refactor so this code isn't repeated for ALL_CROP:
                 case LEFT_CROP -> cb.rectangle(
                   -pageWidth, -pageHeight, pageWidth * (1.0f + cropOp.cropRatio), 3.0f * pageHeight
                 );
@@ -953,6 +1035,39 @@ public class Book implements Serializable {
                   -pageWidth, pageHeight * (1.0f - cropOp.cropRatio), 3.0f * pageWidth,
                   pageHeight * (1.0f + cropOp.cropRatio)
                 );
+                case ALL_CROP -> {
+                  cb.rectangle(
+                    -pageWidth, -pageHeight, pageWidth * (1.0f + cropOp.cropRatio), 3.0f * pageHeight
+                  );
+                  cb.rectangle(
+                    pageWidth * (1.0f - cropOp.cropRatio), -pageHeight, pageWidth * (1.0f + cropOp.cropRatio),
+                    3.0f * pageHeight
+                  );
+                  cb.rectangle(
+                    -pageWidth, -pageHeight, 3.0f * pageWidth, pageHeight * (1.0f + cropOp.cropRatio)
+                  );
+                  cb.rectangle(
+                    -pageWidth, pageHeight * (1.0f - cropOp.cropRatio), 3.0f * pageWidth,
+                    pageHeight * (1.0f + cropOp.cropRatio)
+                  );
+                }
+                case MARGINS_CROP -> {
+                  // TODO - use marginLeftX etc.... same crop patches as above for ALL_CROP...
+                  cb.rectangle(
+                    -pageWidth, -pageHeight, pageWidth * (1.0f + leftMarginRatio.getValue()), 3.0f * pageHeight
+                  );
+                  cb.rectangle(
+                    pageWidth * (1.0f - rightMarginRatio.getValue()), -pageHeight, pageWidth * (1.0f + rightMarginRatio.getValue()),
+                    3.0f * pageHeight
+                  );
+                  cb.rectangle(
+                    -pageWidth, -pageHeight, 3.0f * pageWidth, pageHeight * (1.0f + bottomMarginRatio.getValue())
+                  );
+                  cb.rectangle(
+                    -pageWidth, pageHeight * (1.0f - topMarginRatio.getValue()), 3.0f * pageWidth,
+                    pageHeight * (1.0f + topMarginRatio.getValue())
+                  );
+                }
               }
               cb.fillStroke();
             }
@@ -985,13 +1100,12 @@ public class Book implements Serializable {
           if (usingPageNumbering) {
             String pageNumberText = "" + pageRef.getPageNumberText(); // ORIGINAL page number
             String totalPageNumberText = "" + totalPageNumber; // TOTAL (result doc) page number
-            cb.setLineWidth((Float)InitFile.instance().get("pageNumbersLineThickness", 1.5f));
+            cb.setLineWidth((Float)InitFile.instance().get("pageNumbersLineThickness", 0.0f));
             cb.beginText();
             cb.setColorStroke((Color)InitFile.instance().get("pageNumbersColour", Color.BLUE));
-            cb.setColorFill((Color)InitFile.instance().get("pageNumbersFillColour", Color.WHITE));
-            // cb.setFontAndSize(FontFactory.getFont("COURIER").getBaseFont(), 82.0f);
+            cb.setColorFill((Color)InitFile.instance().get("pageNumbersColour", Color.BLUE));
             float fontHeight = pageHeight / 10.0f;
-            cb.setFontAndSize(FontFactory.getFont("COURIER").getBaseFont(), fontHeight);
+            cb.setFontAndSize(FontFactory.getFont("courier").getBaseFont(), fontHeight);
             cb.setTextRenderingMode(PdfContentByte.TEXT_RENDER_MODE_FILL_STROKE);
             float stringWidth = cb.getEffectiveStringWidth(pageNumberText, false);
             cb.moveText(
@@ -1025,7 +1139,7 @@ public class Book implements Serializable {
    * @param sheetsPerSignature the number of physical (unfolded) sheets of paper in a signature
    * @return an array of [signatureIndex][sheetIndex][pageIndex] page numbers
    */
-  static int[][][] generateSignatures
+  static int[][][] generateSignaturePageNumbers
   (int pageCount, int sheetsPerSignature, boolean minimiseLastSignature)
   {
     int signaturePages = sheetsPerSignature*4;
@@ -1081,7 +1195,7 @@ public class Book implements Serializable {
       if (pageCount <= 0) {
         throw new Exception("Document not loaded or empty");
       }
-      int[][][] signatures = generateSignatures(pageCount, signatureSheets, minimiseLastSignature);
+      int[][][] signatures = generateSignaturePageNumbers(pageCount, signatureSheets, minimiseLastSignature);
       int[] signatureIndices;
       if (signatureNumbers.length > 0) {
         // Make an array of indices from 0 to signatureNumbers.length, where each index is the signature number - 1:

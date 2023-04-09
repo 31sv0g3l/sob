@@ -17,6 +17,19 @@ public class TransformSet implements Serializable {
   ()
   {}
 
+  public TransformSet
+  (TransformSet transformSet)
+  {
+    name = transformSet.name;
+    comment = transformSet.comment;
+    pageRanges = new ArrayList<>();
+    pageRanges.addAll(transformSet.getPageRanges());
+    transforms = new ArrayList<>();
+    for (Transform transform : transformSet.getTransforms()) {
+      transforms.add(new Transform(transform));
+    }
+  }
+
   public String getName
   ()
   {

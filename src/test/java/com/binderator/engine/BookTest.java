@@ -10,7 +10,7 @@ public class BookTest {
   private void testSignatureGeneration
   (int pageCount, int sheetsPerSignature, int[][][] expectedSignatures)
   {
-    int[][][] signatures = Book.generateSignatures(pageCount, sheetsPerSignature, false);
+    int[][][] signatures = Book.generateSignaturePageNumbers(pageCount, sheetsPerSignature, false);
     assert(Arrays.deepEquals(signatures, expectedSignatures));
   }
 
@@ -300,7 +300,7 @@ public class BookTest {
   public static void generateSignatureTest
   (int pageCount, int sheetsPerSignature)
   {
-    int[][][] signatures = Book.generateSignatures(pageCount, sheetsPerSignature, false);
+    int[][][] signatures = Book.generateSignaturePageNumbers(pageCount, sheetsPerSignature, false);
     int signatureCount = 0;
     System.err.print("{\n");
     System.err.print("int pageCount = " + pageCount + ";\n");

@@ -23,6 +23,24 @@ public class RangedFloat implements Serializable {
     this.highValue = highValue;
   }
 
+  public RangedFloat
+  (RangedFloat rangedFloat)
+  {
+    name = rangedFloat.name;
+    value = rangedFloat.value;
+    lowValue = rangedFloat.lowValue;
+    highValue = rangedFloat.highValue;
+  }
+
+  public void copy
+  (RangedFloat rangedFloat)
+  {
+    name = rangedFloat.name;
+    value = rangedFloat.value;
+    lowValue = rangedFloat.lowValue;
+    highValue = rangedFloat.highValue;
+  }
+
   public String getName
   ()
   {

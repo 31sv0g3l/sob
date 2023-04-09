@@ -86,15 +86,6 @@ public class OptionsDialog extends JDialog {
     overlayOptionsRow1.add(pageNumbersColorChooserButton);
 
     overlayOptionsRow1.add(Box.createHorizontalGlue());
-    overlayOptionsRow1.add(Box.createHorizontalStrut(scale(10)));
-    overlayOptionsRow1.add(new JLabel(translate("pageNumbersFillColour")));
-    overlayOptionsRow1.add(Box.createHorizontalStrut(scale(5)));
-    JButton pageNumbersFillColorChooserButton =
-      createOptionColourChooser("pageNumbersFillColour", Color.BLUE, translate("pageNumbersFillColour"));
-    pageNumbersFillColorChooserButton.setVisible(true);
-    overlayOptionsRow1.add(pageNumbersFillColorChooserButton);
-
-    overlayOptionsRow1.add(Box.createHorizontalGlue());
 
     // Overlay Options Row 2
     JPanel overlayOptionsRow2 = new JPanel();

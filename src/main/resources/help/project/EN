@@ -17,8 +17,7 @@
 </center>
 <br>
 <br>
-The Project tab is where the main aspects of a book project are configured.  The tab content is static (no variable
-lists of controls etc), and looks like this:
+The Project tab is where the main aspects of a book project are configured.  The tab content looks like this:
 <br>
 <br>
 <center>
@@ -37,11 +36,11 @@ or File->SaveAs.</b>
   The PDF file that is generated when clicking on the GENERATE button, using defined
   <a href="sources">source files</a> and <a href="transformations">transformations</a>
 <li><b>Signatures Output Directory</b></li>
-  Signatures are sections of folded sheets.  Each section is printed to a separate file and this text field with
-  a directory chooser allows you to set the destination directory for signature PDF generation (i.e., if you choose
-  to click on the GENERATE SIGNATURES button).
+  Signatures are sections of folded sheets.  Each section is printed to a separate file; this text field (with
+  a directory chooser) allows you to set the destination directory for signature PDF generation (i.e., when
+  the GENERATE SIGNATURES button is clicked).
 <li><b>Initial Scale</b></li>
-  If checked, each chosen page of the source document(s) will be initially (and individually) pre-scaled to a largest
+  If checked, each chosen page of the source document(s) will be initially, individually pre-scaled to a largest
   contained size within the configured output page size.  Depending on the relative aspect ratios of the source and
   target pages, this may result in a maximum width or a maximum height.
 <li><b>Margins (Checkbox)</b></li>
@@ -59,7 +58,6 @@ or File->SaveAs.</b>
   the standard print dialog on a Mac, can easily scale a page to the paper size.  What really matters is that the
   page size and signature page size have the same aspect ratio, and that the aspect ratio matches that of the
   paper you intend to print on (if you are printing).
-  pages to
 <li><b>Margins (Left/Right/Bottom/Top)</b></li>
   These four fields allow you to set the width of each of the four (overlay) margins, specified as a ratio of the page
   width (left and right margins) or page height (bottom and top margins).  A left margin of 0.07, for example, will
@@ -72,12 +70,13 @@ or File->SaveAs.</b>
   possible.  Note, SOB will never print the empty sheets that pad out the last signature to the configured number of
   sheets per signature, since they are blank.
 <li><b>(Signatures) Spine Offset</b></li>
-  This is the offset (as a ratio of page width) of each document page from the spine (i.e. the fold),
-  when printed in a signature.  A non-zero value will cause the page to be scaled (with retention of aspect ratio)
-  to accommodate the offset.
-<li><b>(Signatures) Edge Offset</b></li>
-  This is the offset (as a ratio of page width) of each document page from the edge (i.e. the open edge of the book,
-  or the far left and far right margins of a signature page in landscape), when printed in a signature.
+  This is the offset (as a ratio of page width) of each output document page from the spine (i.e. the fold),
+  when printed in a signature, on either the left side of an odd page or on the right side of an even page.
   A non-zero value will cause the page to be scaled (with retention of aspect ratio) to accommodate the offset.
+<li><b>(Signatures) Edge Offset</b></li>
+  Similar to the Sping Offset, this is the offset (as a ratio of page width) of each output document page from
+  the edge (i.e. the open edge of the book, or the far left and far right margins of a signature page in
+  landscape), when printed in a signature.  A non-zero value will cause the page to be scaled (with retention of
+  aspect ratio) to accommodate the offset.
 <li><b>Comments</b></li>
   This field allows you to note comments about the book project, any outstanding changes, results, etc.

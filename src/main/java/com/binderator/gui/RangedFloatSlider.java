@@ -10,6 +10,7 @@ import java.io.*;
 
 
 import static com.binderator.gui.GUIUtils.scale;
+import static com.binderator.util.Translations.translate;
 
 
 @SuppressWarnings("unused")
@@ -58,7 +59,6 @@ public class RangedFloatSlider extends JPanel {
     setLayout(new BoxLayout(this, BoxLayout.X_AXIS));
     field.setMaximumSize(new Dimension(fieldWidth, widgetHeight));
     field.setPreferredSize(new Dimension(new Dimension(fieldWidth, widgetHeight)));
-    // add(Box.createHorizontalStrut(10));
     add(field);
     add(Box.createHorizontalStrut(scale(5)));
     add(new JLabel(":"));
@@ -88,7 +88,7 @@ public class RangedFloatSlider extends JPanel {
           if (!settingValue) {
             RangedFloatSlider.this.rangedFloat.setValue(value);
             if (unsavedChangeListener != null) unsavedChangeListener.registerUnsavedChange();
-            field.setText(String.format("%3.3g", value));
+            setText();
           }
           settingValue = false;
         }
@@ -130,6 +130,16 @@ public class RangedFloatSlider extends JPanel {
     });
     GUIUtils.addBackgroundSetter(highField);
     resetSlider();
+    field.setToolTipText(translate("rangedValueSliderTooltipValueField"));
+    lowField.setToolTipText(translate("rangedValueSliderTooltipValueLowField"));
+    highField.setToolTipText(translate("rangedValueSliderTooltipValueHighField"));
+    slider.setToolTipText(translate("rangedValueSliderTooltipSlider"));
+  }
+
+  private void setText
+  ()
+  {
+    field.setText(String.format("%3.3f", rangedFloat.getValue()));
   }
 
   private void resetSlider
@@ -152,7 +162,7 @@ public class RangedFloatSlider extends JPanel {
     if (rangedFloat != null) {
       lowField.setText("" + rangedFloat.getLowValue());
       highField.setText("" + rangedFloat.getHighValue());
-      field.setText("" + rangedFloat.getValue());
+      setText();
       resetSlider();
     }
   }

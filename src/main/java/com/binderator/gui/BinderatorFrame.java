@@ -9,9 +9,13 @@ import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.regex.Pattern;
 import javax.swing.*;
 import javax.swing.event.*;
-import javax.swing.plaf.BorderUIResource;
+import javax.swing.filechooser.*;
+import javax.swing.filechooser.FileFilter;
+import javax.swing.plaf.*;
 import javax.swing.text.*;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Rectangle;
@@ -21,13 +25,43 @@ import static com.binderator.util.Translations.translate;
 import static com.binderator.gui.GUIUtils.scale;
 
 
-public class BinderatorFrame extends JFrame implements ActionListener, UnsavedChangeListener, Book.StatusListener {
+public class BinderatorFrame extends JFrame
+  implements ActionListener, UnsavedChangeListener, Book.StatusListener, ICEViewer.CloseListener {
+
+  private class ViewerRenderingThread extends Worker {
+
+    @Override
+    public void task
+    ()
+    {
+      if (viewerActive) {
+        bookLock.lock();
+        Book book = new Book(getBook());
+        bookLock.unlock();
+        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+        book.generatePDF(byteArrayOutputStream, book.isUsingMargins(), book.isUsingPageNumbering(), null);
+        byte[] bookBytes = byteArrayOutputStream.toByteArray();
+        int pageNumber = viewer.controller.getCurrentPageNumber();
+        viewer.setContent(bookBytes);
+        viewer.controller.showPage(pageNumber);
+        System.err.println("task - viewer is active!");
+        // viewer.repaint();
+      } else {
+        System.err.println("task - viewer is inactive!");
+      }
+
+    }
+
+  }
+
 
   @Serial
   private static final long serialVersionUID = -1429747105438739695L;
-  public static final String VERSION = "0.1.0";
+  public static final String VERSION = "0.2.0";
   private static BinderatorFrame singletonInstance = null;
   private boolean haveUnsavedChanges = false;
+  private boolean haveViewerContentChange = false;
+  private ViewerRenderingThread viewerRenderingThread = null;
   String projectPath = null;
   JPanel mainPanel;
   JPanel buttonPanel;
@@ -40,6 +74,7 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
   JProgressBar statusProgressBar; // actual container of progress bar (one child)
   JButton generateButton;
   JButton generateSignaturesButton;
+  JButton viewerButton;
   JButton exitButton;
   JPanel projectPanel;
   JPanel documentsPanel;
@@ -52,7 +87,10 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
   private static final String ACTION_EXIT = "exit";
   private static final String ACTION_GENERATE = "generate";
   private static final String ACTION_GENERATE_SIGNATURES = "generateSignatures";
+  private static final String ACTION_SHOW_HIDE_VIEWER = "showHideViewer";
+  private boolean viewerActive = false;
   Book book = null;
+  ReentrantLock bookLock = new ReentrantLock();
   JComboBox<SourceDocument> sourceDocumentsComboBox;
   DefaultComboBoxModel<SourceDocument> sourceDocumentsComboBoxModel;
   JComboBox<TransformSet> transformSetsComboBox;
@@ -87,6 +125,10 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
   private JDialog optionsDialog = null;
   private JDialog inlineHelpDialog = null;
   private boolean showProgressBars = true;
+  private ICEViewer viewer = null;
+  private final FileFilter bdrFilter = new FileNameExtensionFilter("Son of Binderator files", "bdr");
+  private String basePath = null;
+
 
   private void execute
   (CommandQueue.Command command)
@@ -116,6 +158,10 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
       e -> {
         File file = new File(entryWidget.getText());
         JFileChooser fileChooser = new JFileChooser(file);
+        fileChooser.setFileFilter(new FileNameExtensionFilter("PDF files", "pdf", "PDF"));
+        if (basePath != null) {
+          fileChooser.setCurrentDirectory(new File(basePath));
+        }
         if (isDirectory) {
           fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
         }
@@ -137,7 +183,7 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
     JPanel labelPanel = new JPanel();
     labelPanel.setLayout(new BoxLayout(labelPanel, BoxLayout.X_AXIS));
     labelPanel.add(Box.createHorizontalStrut(scale(5)));
-    JLabel label = new JLabel(name + ":");
+    JLabel label = new JLabel(name);
     label.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(labelHeight)));
     labelPanel.add(Box.createHorizontalStrut(scale(5)));
     labelPanel.add(label);
@@ -158,7 +204,6 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
     JPanel combinedPanel = new JPanel();
     combinedPanel.setLayout(new BoxLayout(combinedPanel, BoxLayout.Y_AXIS));
     combinedPanel.add(labelPanel);
-    combinedPanel.add(Box.createVerticalStrut(scale(5)));
     if (entryWidget != null) {
       combinedPanel.add(entryPanel);
     }
@@ -237,6 +282,7 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
     mainTabs.add(translate("project"), projectPanel);
     projectPanel.add(Box.createVerticalStrut(scale(5)));
     projectNameTextField = new JTextField(scale(34));
+    projectNameTextField.setToolTipText(translate("projectNameTooltip"));
     projectNameTextField.addActionListener(event -> {
       try {
         getBook().setName(projectNameTextField.getText());
@@ -262,7 +308,9 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
         projectOutputPathTextField, translate("outputPath"), 22, 22, false
     );
     projectPanel.add(projectOutputPanelAndButton.getFirst());
+    projectOutputPathTextField.setToolTipText(translate("projectOutputPathTooltip"));
     projectOutputPathButton = projectOutputPanelAndButton.getSecond();
+    projectOutputPathButton.setToolTipText(translate("projectOutputPathButtonTooltip"));
     projectPanel.add(Box.createVerticalStrut(scale(5)));
     projectSignaturesOutputPathTextField = new JTextField(scale(34));
     projectSignaturesOutputPathTextField.addActionListener(event -> {
@@ -273,28 +321,40 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
         errorDialog(e);
       }
     });
+    projectSignaturesOutputPathTextField.setToolTipText(translate("projectSignaturesOutputPathTooltip"));
     GUIUtils.addBackgroundSetter(projectSignaturesOutputPathTextField);
     Pair<JPanel, JButton> projectSignaturesPathAndButton = createScaledLabeledPathSelectionWidgetPanel(
       projectSignaturesOutputPathTextField, translate("signaturesOutputDirectory"), 22, 22, true
     );
     projectPanel.add(projectSignaturesPathAndButton.getFirst());
     projectSignaturesOutputPathButton = projectSignaturesPathAndButton.getSecond();
+    projectSignaturesOutputPathButton.setToolTipText(translate("projectSignaturesOutputPathButtonTooltip"));
     projectScaleToFitCheckBox = new JCheckBox();
     projectScaleToFitCheckBox.setText(translate("initialScale"));
     projectScaleToFitCheckBox.addActionListener(e -> {
-      execute(() -> { book.setScaleToFit(projectScaleToFitCheckBox.isSelected()); });
-      registerUnsavedChange();
+      execute(() -> {
+        book.setScaleToFit(projectScaleToFitCheckBox.isSelected());
+        registerUnsavedChange();
+      });
     });
+    projectScaleToFitCheckBox.setToolTipText(translate("projectScaleToFitTooltip"));
     projectEnableMarginsCheckBox = new JCheckBox();
     projectEnableMarginsCheckBox.setText(translate("margins"));
+    projectEnableMarginsCheckBox.setToolTipText(translate("projectEnableMarginsTooltip"));
     projectEnableMarginsCheckBox.addActionListener(e -> {
-      execute(() -> { book.setUsingMargins(projectEnableMarginsCheckBox.isSelected()); });
+      execute(() -> {
+        book.setUsingMargins(projectEnableMarginsCheckBox.isSelected());
+        registerUnsavedChange();
+      });
     });
     projectEnablePageNumberingCheckBox = new JCheckBox();
     projectEnablePageNumberingCheckBox.setText(translate("pageNumbers"));
+    projectEnablePageNumberingCheckBox.setToolTipText(translate("pageNumbersTooltip"));
     projectEnablePageNumberingCheckBox.addActionListener(e -> {
-      execute(() -> { book.setUsingPageNumbering(projectEnablePageNumberingCheckBox.isSelected()); });
-      registerUnsavedChange();
+      execute(() -> {
+        book.setUsingPageNumbering(projectEnablePageNumberingCheckBox.isSelected());
+        registerUnsavedChange();
+      });
     });
     JPanel projectCheckboxPanel = new JPanel();
     projectCheckboxPanel.setLayout(new BoxLayout(projectCheckboxPanel, BoxLayout.X_AXIS));
@@ -306,6 +366,7 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
     projectCheckboxPanel.add(projectEnablePageNumberingCheckBox);
     projectCheckboxPanel.add(Box.createHorizontalGlue());
     pageSizePairsComboBox = new JComboBox<>();
+    pageSizePairsComboBox.setToolTipText(translate("pageSizeComboTooltip"));
     populatePageSizesComboBox();
     projectCheckboxPanel.add(new JLabel(translate("pageSignatureSizeColon")));
     projectCheckboxPanel.add(Box.createHorizontalStrut(scale(5)));
@@ -322,22 +383,29 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
     projectCommentTextArea = new JTextArea(scale(5), scale(34));
     projectCommentTextArea.getDocument().addDocumentListener(new DocumentListener() {
       @Override public void changedUpdate(DocumentEvent e) {
-        execute(() -> { book.setComments(projectCommentTextArea.getText()); });
-        registerUnsavedChange();
+        execute(() -> {
+          book.setComments(projectCommentTextArea.getText());
+          registerUnsavedChange();
+        });
       }
       @Override public void removeUpdate(DocumentEvent e) {
-        execute(() -> { book.setComments(projectCommentTextArea.getText()); });
-        registerUnsavedChange();
+        execute(() -> {
+          book.setComments(projectCommentTextArea.getText());
+          registerUnsavedChange();
+        });
       }
       @Override public void insertUpdate(DocumentEvent e) {
-        execute(() -> { book.setComments(projectCommentTextArea.getText()); });
-        registerUnsavedChange();
+        execute(() -> {
+          book.setComments(projectCommentTextArea.getText());
+          registerUnsavedChange();
+        });
       }
     });
     projectCommentTextArea.setLineWrap(true);
     projectCommentTextArea.setWrapStyleWord(true);
     JScrollPane projectCommentScrollPane = new JScrollPane(projectCommentTextArea);
     projectPanel.add(createScaledLabeledWidgetPanel(projectCommentScrollPane, translate("comments"), 22, 70));
+    projectCommentTextArea.setToolTipText(translate("projectCommentsTooltip"));
     updateProjectControlsPanel();
     projectPanel.add(Box.createVerticalGlue());
     // Documents panel:
@@ -351,42 +419,51 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
     documentsNavPanel.setLayout(new BoxLayout(documentsNavPanel, BoxLayout.X_AXIS));
     documentsNavPanel.add(Box.createHorizontalStrut(scale(5)));
     sourceDocumentsComboBox = new JComboBox<>();
+    sourceDocumentsComboBox.setToolTipText(translate("sourceDocumentsComboTooltip"));
     populateSourceDocumentsComboBox();
     documentsNavPanel.add(sourceDocumentsComboBox);
     sourceDocumentsComboBox.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
     sourceDocumentsComboBox.setPreferredSize(new Dimension(scale(202), scale(22)));
     documentsNavPanel.add(Box.createHorizontalStrut(scale(5)));
-    documentsNavPanel.add(newNavAndControlButton(
+    JButton newDocumentButton = newNavAndControlButton(
       "new.png",
       e -> newSourceDocument()
-    ));
+    );
+    newDocumentButton.setToolTipText(translate("sourceDocumentNewButtonTooltip"));
+    documentsNavPanel.add(newDocumentButton);
     documentsNavPanel.add(Box.createHorizontalStrut(scale(5)));
-    documentsNavPanel.add(newNavAndControlButton(
+    JButton downDocumentButton = newNavAndControlButton(
       "down.png",
       e -> {
         if (sourceDocumentsComboBox.getSelectedItem() != null) {
           downSourceDocument((SourceDocument)sourceDocumentsComboBox.getSelectedItem());
         }
       }
-    ));
+    );
+    downDocumentButton.setToolTipText(translate("sourceDocumentDownButtonTooltip"));
+    documentsNavPanel.add(downDocumentButton);
     documentsNavPanel.add(Box.createHorizontalStrut(scale(5)));
-    documentsNavPanel.add(newNavAndControlButton(
+    JButton upDocumentButton = newNavAndControlButton(
       "up.png",
       e -> {
         if (sourceDocumentsComboBox.getSelectedItem() != null) {
           upSourceDocument((SourceDocument)sourceDocumentsComboBox.getSelectedItem());
         }
       }
-    ));
+    );
+    upDocumentButton.setToolTipText(translate("sourceDocumentUpButtonTooltip"));
+    documentsNavPanel.add(upDocumentButton);
     documentsNavPanel.add(Box.createHorizontalStrut(scale(5)));
-    documentsNavPanel.add(newNavAndControlButton(
+    JButton deleteSourceDocumentButton = newNavAndControlButton(
       "delete.png",
       e -> {
         if (sourceDocumentsComboBox.getSelectedItem() != null) {
           deleteSourceDocument((SourceDocument)sourceDocumentsComboBox.getSelectedItem());
         }
       }
-    ));
+    );
+    deleteSourceDocumentButton.setToolTipText(translate("sourceDocumentDeleteButtonTooltip"));
+    documentsNavPanel.add(deleteSourceDocumentButton);
     documentsNavPanel.add(Box.createHorizontalStrut(scale(5)));
     documentsNavPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
     documentsNavPanel.setVisible(true);
@@ -404,6 +481,7 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
         }
       }
     });
+    documentNameTextField.setToolTipText(translate("sourceDocumentNameTooltip"));
     GUIUtils.addBackgroundSetter(documentNameTextField);
     documentsPanel.add(Box.createVerticalStrut(scale(5)));
     documentsPanel.add(createScaledLabeledWidgetPanel(documentIdentifierTextField, translate("documentId"), 22, 22));
@@ -417,14 +495,17 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
         }
       }
     });
+    documentIdentifierTextField.setToolTipText(translate("sourceDocumentIdTooltip"));
     documentIdentifierTextField.setMaximumSize(new Dimension(scale(130), scale(22)));
     GUIUtils.addBackgroundSetter(documentIdentifierTextField);
     documentsPanel.add(Box.createVerticalStrut(scale(5)));
     Pair<JPanel, JButton> documentPathPanelAndButton = createScaledLabeledPathSelectionWidgetPanel(
       documentPathTextField, translate("path"), 22, 22, false
     );
+    documentPathTextField.setToolTipText(translate("sourceDocumentPathTooltip"));
     documentsPanel.add(documentPathPanelAndButton.getFirst());
     documentPathButton = documentPathPanelAndButton.getSecond();
+    documentPathButton.setToolTipText(translate("sourceDocumentPathButtonTooltip"));
     documentPathTextField.addActionListener(event -> {
       if ( selectedDocument != null) {
         try {
@@ -450,6 +531,7 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
         }
       }
     });
+    documentPageRangesTextField.setToolTipText(translate("sourceDocumentPageRangesTooltip"));
     GUIUtils.addBackgroundSetter(documentPageRangesTextField);
     documentsPanel.add(createScaledLabeledWidgetPanel(
       documentBlankPagesTextField, translate("documentsBlankPages"), 22, 22
@@ -464,6 +546,7 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
         }
       }
     });
+    documentBlankPagesTextField.setToolTipText(translate("sourceDocumentBlankPagesTooltip"));
     GUIUtils.addBackgroundSetter(documentBlankPagesTextField);
     documentCommentTextArea.setLineWrap(true);
     documentCommentTextArea.setWrapStyleWord(true);
@@ -483,6 +566,7 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
         registerUnsavedChange();
       }
     });
+    documentCommentTextArea.setToolTipText(translate("sourceDocumentCommentTooltip"));
     documentsPanel.add(Box.createGlue());
     documentsPanel.add(Box.createVerticalStrut(scale(5)));
     documentsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
@@ -501,35 +585,44 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
     populateTransformSetComboBox();
     transformSetsNavPanel.add(transformSetsComboBox);
     transformSetsComboBox.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
+    transformSetsComboBox.setToolTipText(translate("transformSetsComboTooltip"));
     transformSetsNavPanel.add(Box.createHorizontalStrut(scale(5)));
-    transformSetsNavPanel.add(newNavAndControlButton("new.png", e -> newTransformSet()));
+    JButton newTransformSetButton = newNavAndControlButton("new.png", e -> newTransformSet());
+    newTransformSetButton.setToolTipText(translate("transformSetsNewTooltip"));
+    transformSetsNavPanel.add(newTransformSetButton);
     transformSetsNavPanel.add(Box.createHorizontalStrut(scale(5)));
-    transformSetsNavPanel.add(newNavAndControlButton(
+    JButton downTransformSetButton = newNavAndControlButton(
       "down.png",
       e -> {
         if (transformSetsComboBox.getSelectedItem() != null) {
           downTransformSet((TransformSet)transformSetsComboBox.getSelectedItem());
         }
       }
-    ));
+    );
+    transformSetsNavPanel.add(downTransformSetButton);
+    downTransformSetButton.setToolTipText(translate("transformSetsDownTooltip"));
     transformSetsNavPanel.add(Box.createHorizontalStrut(scale(5)));
-    transformSetsNavPanel.add(newNavAndControlButton(
+    JButton upTransformSetButton = newNavAndControlButton(
       "up.png",
       e -> {
         if (transformSetsComboBox.getSelectedItem() != null) {
           upTransformSet((TransformSet)transformSetsComboBox.getSelectedItem());
         }
       }
-    ));
+    );
+    transformSetsNavPanel.add(upTransformSetButton);
+    upTransformSetButton.setToolTipText(translate("transformSetsUpTooltip"));
     transformSetsNavPanel.add(Box.createHorizontalStrut(scale(5)));
-    transformSetsNavPanel.add(newNavAndControlButton(
+    JButton deleteTransformSetButton = newNavAndControlButton(
       "delete.png",
       e -> {
         if (transformSetsComboBox.getSelectedItem() != null) {
           deleteTransformSet((TransformSet) transformSetsComboBox.getSelectedItem());
         }
       }
-    ));
+    );
+    transformSetsNavPanel.add(deleteTransformSetButton);
+    deleteTransformSetButton.setToolTipText(translate("transformSetsDeleteTooltip"));
     transformSetsNavPanel.add(Box.createHorizontalStrut(scale(5)));
     transformSetsNavPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
     transformSetsNavPanel.setVisible(true);
@@ -547,6 +640,7 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
         }
       }
     });
+    transformSetNameTextField.setToolTipText(translate("transformSetNameTooltip"));
     GUIUtils.addBackgroundSetter(transformSetNameTextField);
     transformSetsPanel.add(createScaledLabeledWidgetPanel(
       transformSetPageRangesTextField, translate("transformSetPageRanges"), 22, 22
@@ -561,9 +655,11 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
         }
       }
     });
+    transformSetPageRangesTextField.setToolTipText(translate("transformSetPageRangesTooltip"));
     GUIUtils.addBackgroundSetter(transformSetPageRangesTextField);
     transformSetCommentTextArea.setLineWrap(true);
     transformSetCommentTextArea.setWrapStyleWord(true);
+    transformSetCommentTextArea.setToolTipText(translate("transformSetCommentsTooltip"));
     JScrollPane transformSetCommentScrollPane = new JScrollPane(transformSetCommentTextArea);
     transformSetsPanel.add(
       createScaledLabeledWidgetPanel(transformSetCommentScrollPane, translate("comments"), 22, 70)
@@ -605,16 +701,25 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
     generateButton = new JButton(translate("generate"));
     generateButton.setActionCommand(ACTION_GENERATE);
     generateButton.addActionListener(this);
+    generateButton.setToolTipText(translate("buttonTooltipGenerate"));
     buttonPanel.add(Box.createHorizontalStrut(scale(5)));
     buttonPanel.add(generateButton);
     generateSignaturesButton = new JButton(translate("generateSignatures"));
     generateSignaturesButton.setActionCommand(ACTION_GENERATE_SIGNATURES);
     generateSignaturesButton.addActionListener(this);
+    generateSignaturesButton.setToolTipText(translate("buttonTooltipGenerateSignatures"));
     buttonPanel.add(Box.createHorizontalStrut(scale(10)));
     buttonPanel.add(generateSignaturesButton);
+    viewerButton = new JButton(translate("viewer"));
+    viewerButton.setActionCommand(ACTION_SHOW_HIDE_VIEWER);
+    viewerButton.addActionListener(this);
+    viewerButton.setToolTipText(translate("buttonTooltipViewer"));
+    buttonPanel.add(Box.createHorizontalStrut(scale(10)));
+    buttonPanel.add(viewerButton);
     exitButton = new JButton(translate("exit"));
     exitButton.setActionCommand(ACTION_EXIT);
     exitButton.addActionListener(this);
+    exitButton.setToolTipText(translate("buttonTooltipExit"));
     buttonPanel.add(Box.createGlue());
     buttonPanel.add(exitButton);
     buttonPanel.add(Box.createHorizontalStrut(scale(5)));
@@ -984,6 +1089,10 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
     try {
       File chosenFile = new File(projectPath != null ? projectPath : "");
       JFileChooser fileChooser = new JFileChooser(chosenFile);
+      if (basePath != null) {
+        fileChooser.setCurrentDirectory(new File(basePath));
+      }
+      fileChooser.setFileFilter(bdrFilter);
       int fileChooserRC = fileChooser.showOpenDialog(this);
       if (fileChooserRC == JFileChooser.APPROVE_OPTION) {
         chosenFile = fileChooser.getSelectedFile();
@@ -996,6 +1105,7 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
           }
           projectPath = chosenFile.getPath();
           setBook(getStore().loadBook(projectPath));
+          basePath = chosenFile.getParent();
           InitFile.instance().set("projectPath", projectPath);
           setStatusMessage(translate("project") + " " + getBook().getName() + " " + translate("loadedSuccessfully"));
         }
@@ -1067,24 +1177,30 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
     try {
       File chosenFile = new File(projectPath != null ? projectPath : "");
       JFileChooser fileChooser = new JFileChooser(chosenFile);
+      if (basePath != null) {
+        fileChooser.setCurrentDirectory(new File(basePath));
+      }
+      fileChooser.setFileFilter(bdrFilter);
       int fileChooserRC = fileChooser.showOpenDialog(this);
       if (fileChooserRC == JFileChooser.APPROVE_OPTION) {
         chosenFile = fileChooser.getSelectedFile();
-        if (chosenFile != null) {
-          if (chosenFile.exists()) {
-            if (!chosenFile.delete()) {
-              throw new IOException(translate("couldNotOverwrite") + " \"" + chosenFile + "\"");
-            }
-          }
-          if (!chosenFile.createNewFile()) {
-            throw new IOException(translate("couldNotCreate") + " \"" + chosenFile + "\"");
-          }
-          if (!chosenFile.canWrite()) {
-            throw new IOException(translate("chosenFileAtPath") + " \"" + chosenFile + "\" " + translate("isNotWriteable"));
-          }
-          projectPath = chosenFile.getPath();
-          fileSave(true);
+        if (!chosenFile.getPath().endsWith(".bdr")) {
+          chosenFile = new File(chosenFile.getPath() + ".bdr");
         }
+        if (chosenFile.exists()) {
+          if (!chosenFile.delete()) {
+            throw new IOException(translate("couldNotOverwrite") + " \"" + chosenFile + "\"");
+          }
+        }
+        if (!chosenFile.createNewFile()) {
+          throw new IOException(translate("couldNotCreate") + " \"" + chosenFile + "\"");
+        }
+        if (!chosenFile.canWrite()) {
+          throw new IOException(translate("chosenFileAtPath") + " \"" + chosenFile + "\" " + translate("isNotWriteable"));
+        }
+        projectPath = chosenFile.getPath();
+        basePath = chosenFile.getParent();
+        fileSave(true);
       }
       // BinderatorDB.instance().saveProject(book, projectPathTextField.getText());
     } catch (Exception e) {
@@ -1198,14 +1314,32 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
   public void setBook
   (Book book)
   {
-    this.book = book;
     execute(() -> {
+      bookLock.lock();
+      this.book = book;
       book.setStatusListener(this);
+      notifyViewerBookChange();
+      bookLock.unlock();
       updateProjectControlsPanel();
       updateSourceDocumentsTab();
       updateTransformSetsTab();
       haveUnsavedChanges = false;
     });
+  }
+
+  Pattern floatPattern = Pattern.compile("-?\\d+(\\.\\d+)?([eE][+\\-]?\\d+)?");
+
+  private float validatedFloatFromString
+  (String source, String name, float min, float max)
+  throws Exception
+  {
+    if (floatPattern.matcher(source).matches()) {
+      float value = Float.parseFloat(source);
+      if ((value >= min) && (value <= max)) {
+        return value;
+      }
+    }
+    throw new Exception(name + " value \"" + source + "\" is invalid.\nMust be a number between " + min + " and " + max);
   }
 
   private void updateProjectControlsPanel
@@ -1231,21 +1365,73 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
     marginControlsPanel.add(new JLabel(translate("leftColon")));
     marginControlsPanel.add(Box.createHorizontalStrut(scale(5)));
     JTextField leftMarginRatioField = createRangedFloatField(book.getLeftMarginRatio());
+    leftMarginRatioField.addActionListener(e -> {
+      execute(() -> {
+        try {
+          book.setLeftMarginRatio(
+            validatedFloatFromString(leftMarginRatioField.getText(), "Left margin ratio", 0.0f, 0.5f)
+          );
+          registerUnsavedChange();
+        } catch (Exception ex) {
+          errorDialog(ex);
+        }
+      });
+    });
+    leftMarginRatioField.setToolTipText(translate("marginsLeftTooltip"));
     marginControlsPanel.add(leftMarginRatioField);
     marginControlsPanel.add(Box.createHorizontalGlue());
     marginControlsPanel.add(new JLabel(translate("rightColon")));
     marginControlsPanel.add(Box.createHorizontalStrut(scale(5)));
     JTextField rightMarginRatioField = createRangedFloatField(book.getRightMarginRatio());
+    rightMarginRatioField.addActionListener(e -> {
+      execute(() -> {
+        try {
+          book.setRightMarginRatio(
+            validatedFloatFromString(rightMarginRatioField.getText(), "Right margin ratio", 0.0f, 0.5f)
+          );
+          registerUnsavedChange();
+        } catch (Exception ex) {
+          errorDialog(ex);
+        }
+      });
+    });
+    rightMarginRatioField.setToolTipText(translate("marginsRightTooltip"));
     marginControlsPanel.add(rightMarginRatioField);
     marginControlsPanel.add(Box.createHorizontalGlue());
     marginControlsPanel.add(new JLabel(translate("bottomColon")));
     marginControlsPanel.add(Box.createHorizontalStrut(scale(5)));
     JTextField bottomMarginRatioField = createRangedFloatField(book.getBottomMarginRatio());
+    bottomMarginRatioField.addActionListener(e -> {
+      execute(() -> {
+        try {
+          book.setBottomMarginRatio(
+            validatedFloatFromString(bottomMarginRatioField.getText(), "Bottom margin ratio", 0.0f, 0.5f)
+          );
+          registerUnsavedChange();
+        } catch (Exception ex) {
+          errorDialog(ex);
+        }
+      });
+    });
+    bottomMarginRatioField.setToolTipText(translate("marginsBottomTooltip"));
     marginControlsPanel.add(bottomMarginRatioField);
     marginControlsPanel.add(Box.createHorizontalGlue());
     marginControlsPanel.add(new JLabel(translate("topColon")));
     marginControlsPanel.add(Box.createHorizontalStrut(scale(5)));
     JTextField topMarginRatioField = createRangedFloatField(book.getTopMarginRatio());
+    topMarginRatioField.addActionListener(e -> {
+      execute(() -> {
+        try {
+          book.setTopMarginRatio(
+            validatedFloatFromString(topMarginRatioField.getText(), "Top margin ratio", 0.0f, 0.5f)
+          );
+          registerUnsavedChange();
+        } catch (Exception ex) {
+          errorDialog(ex);
+        }
+      });
+    });
+    topMarginRatioField.setToolTipText(translate("marginsTopTooltip"));
     marginControlsPanel.add(topMarginRatioField);
     marginControlsPanel.add(Box.createHorizontalStrut(scale(5)));
     projectControlsPanel.add(marginControlsPanel);
@@ -1274,6 +1460,7 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
     );
     signatureSheetsComboBox.setMinimumSize(new Dimension(scale(58), scale(22)));
     signatureSheetsComboBox.setMaximumSize(new Dimension(scale(58), scale(22)));
+    signatureSheetsComboBox.setToolTipText(translate("signatureSheetsComboTooltip"));
     signatureControlsPanel.add(signatureSheetsComboBox);
     signatureControlsPanel.add(Box.createHorizontalGlue());
     JLabel minimiseLastSignatureLabel = new JLabel(translate("minimiseLastColon"));
@@ -1295,11 +1482,13 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
     signatureControlsPanel.add(new JLabel(translate("spineOffset")));
     signatureControlsPanel.add(Box.createHorizontalStrut(scale(5)));
     JTextField spineOffsetRatioField = createRangedFloatField(book.getSpineOffsetRatio());
+    spineOffsetRatioField.setToolTipText(translate("signatureSpineOffsetTooltip"));
     signatureControlsPanel.add(spineOffsetRatioField);
     signatureControlsPanel.add(Box.createHorizontalGlue());
     signatureControlsPanel.add(new JLabel(translate("edgeOffset")));
     signatureControlsPanel.add(Box.createHorizontalStrut(scale(5)));
     JTextField edgeOffsetRatioField = createRangedFloatField(book.getEdgeOffsetRatio());
+    edgeOffsetRatioField.setToolTipText(translate("signatureEdgeOffsetTooltip"));
     signatureControlsPanel.add(edgeOffsetRatioField);
     signatureControlsPanel.add(Box.createHorizontalStrut(scale(5)));
     projectControlsPanel.add(signatureControlsPanel);
@@ -1492,40 +1681,89 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
     }
     Collection<Transform> transforms = transformSet.getTransforms();
     for (Transform transform : transforms) {
-      JPanel rangedFloatSliderPanel = new RangedFloatSlider(transform.getRangedFloat(), this);
       JPanel controlRowPanel = new JPanel();
       controlRowPanel.setLayout(new BoxLayout(controlRowPanel, BoxLayout.X_AXIS));
       controlRowPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 22));
-      controlRowPanel.add(rangedFloatSliderPanel);
+      if (transform.hasRangedValue()) {
+        JPanel rangedFloatSliderPanel = new RangedFloatSlider(transform.getRangedFloat(), this);
+        controlRowPanel.add(rangedFloatSliderPanel);
+      } else {
+        JLabel transformLabel = new JLabel(transform.getLongDescription());
+        transformLabel.setMaximumSize(new Dimension(Integer.MAX_VALUE, (22)));
+        controlRowPanel.add(Box.createHorizontalStrut(scale(5)));
+        controlRowPanel.add(transformLabel);
+      }
       controlRowPanel.add(Box.createHorizontalStrut(scale(5)));
-      controlRowPanel.add(newNavAndControlButton(
+      JButton downButton = newNavAndControlButton(
         "down.png",
         e -> {
           transformSet.moveDown(transform);
           updateTransformControls(transformSet);
           registerUnsavedChange();
         }
-      ));
+      );
+      controlRowPanel.add(downButton);
+      downButton.setToolTipText(translate("transformTooltipDownButton"));
       controlRowPanel.add(Box.createHorizontalStrut(scale(5)));
-      controlRowPanel.add(newNavAndControlButton(
+      JButton upButton = newNavAndControlButton(
         "up.png",
         e -> {
           transformSet.moveUp(transform);
           updateTransformControls(transformSet);
           registerUnsavedChange();
         }
-      ));
+      );
+      controlRowPanel.add(upButton);
+      upButton.setToolTipText(translate("transformTooltipUpButton"));
       controlRowPanel.add(Box.createHorizontalStrut(scale(5)));
-      controlRowPanel.add(newNavAndControlButton(
+      JButton deleteButton = newNavAndControlButton(
         "delete.png",
         e -> {
           transformSet.remove(transform);
           updateTransformControls(transformSet);
           registerUnsavedChange();
         }
-      ));
-      JPanel transformPanel = createScaledLabeledWidgetPanel(controlRowPanel, transform.toString(), 22, 22);
-      transformsPanel.add(transformPanel);
+      );
+      controlRowPanel.add(deleteButton);
+      deleteButton.setToolTipText(translate("transformTooltipDeleteButton"));
+      controlRowPanel.add(Box.createHorizontalStrut(scale(5)));
+      JButton enableDisableButton = newNavAndControlButton(
+        transform.isEnabled() ? "enabled.png" : "disabled.png",
+        e -> {
+          transform.setEnabled(!transform.isEnabled());
+          updateTransformControls(transformSet);
+          registerUnsavedChange();
+        }
+      );
+      controlRowPanel.add(enableDisableButton);
+      enableDisableButton.setToolTipText(translate("transformTooltipEnableDisableButton"));
+      JPanel transformRowInnerPanel;
+      if (transform.hasRangedValue()) {
+        transformRowInnerPanel =
+          createScaledLabeledWidgetPanel(controlRowPanel, transform.toString(), 22, 22);
+      } else {
+        transformRowInnerPanel = new JPanel();
+        transformRowInnerPanel.setLayout(new BoxLayout(transformRowInnerPanel, BoxLayout.X_AXIS));
+        transformRowInnerPanel.add(Box.createHorizontalStrut(scale(5)));
+        transformRowInnerPanel.add(controlRowPanel);
+        transformRowInnerPanel.add(Box.createHorizontalStrut(scale(5)));
+        transformRowInnerPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, (int)controlRowPanel.getMaximumSize().getHeight() + 10));
+      }
+      JPanel transformRowPanel = new JPanel();
+      transformRowPanel.setLayout(new BoxLayout(transformRowPanel, BoxLayout.Y_AXIS));
+      transformRowPanel.add(Box.createVerticalStrut(scale(5)));
+      transformRowPanel.add(transformRowInnerPanel);
+      transformRowPanel.add(Box.createVerticalStrut(scale(5)));
+      transformsPanel.add(Box.createVerticalStrut(scale(5)));
+      transformRowPanel.setBorder(BorderFactory.createLineBorder(Color.GRAY));
+      transformRowPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, (int)transformRowInnerPanel.getMaximumSize().getHeight() + 10));
+      JPanel transformRowHWrapperPanel = new JPanel();
+      transformRowHWrapperPanel.setLayout(new BoxLayout(transformRowHWrapperPanel, BoxLayout.X_AXIS));
+      transformRowHWrapperPanel.add(Box.createHorizontalStrut(scale(5)));
+      transformRowHWrapperPanel.add(transformRowPanel);
+      transformRowHWrapperPanel.add(Box.createHorizontalStrut(scale(5)));
+      transformRowHWrapperPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, (int)transformRowPanel.getMaximumSize().getHeight() + 10));
+      transformsPanel.add(transformRowHWrapperPanel);
     }
     transformsPanel.add(Box.createVerticalStrut(scale(10)));
     JComboBox<Transform.Type> newTransformCombo = new JComboBox<>();
@@ -1567,7 +1805,18 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
   ()
   {
     haveUnsavedChanges = true;
+    notifyViewerBookChange();
   }
+
+  private void notifyViewerBookChange
+  ()
+  {
+    if (viewerActive) {
+      viewerRenderingThread.signalTask();
+    }
+    haveViewerContentChange = true;
+  }
+
 
   @Override
   public void actionPerformed
@@ -1588,10 +1837,40 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
             execute(() -> { book.generatePDFSignatures(book.getSignaturesOutputPath(), "signature_"); });
           }
         }
+        case ACTION_SHOW_HIDE_VIEWER -> {
+          boolean newViewer = false;
+          if (viewer == null) {
+            viewer = new ICEViewer(translate("viewerTitle"), 800, 1024, this);
+            newViewer = true;
+          }
+          if (viewerRenderingThread == null) {
+            viewerRenderingThread = new ViewerRenderingThread();
+            viewerRenderingThread.start();
+          }
+          if (viewerButton.isSelected()) {
+            viewerButton.setSelected(false);
+            viewerActive = false;
+            viewer.setVisible(false);
+          } else {
+            viewerButton.setSelected(true);
+            viewerActive = true;
+            if (newViewer) {
+              viewerRenderingThread.signalTask();
+            }
+            viewer.setVisible(true);
+          }
+        }
       }
     } catch (Throwable t) {
       errorDialog(t);
     }
+  }
+
+  @Override
+  public void onICEViewerClose
+  ()
+  {
+    gracefulExit();
   }
 
   @Override
@@ -1627,6 +1906,7 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
   (String[] args)
   throws Exception
   {
+    System.err.println("Son of Binderator : Starting...");
     String userDir = System.getProperty("user.dir");
     File userDirFile = new File(userDir);
     File initFile;
@@ -1675,6 +1955,7 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
     InlineHelp.initialise(frame, helpURL);
     if ((projectFile != null) && projectFile.canRead()) {
       Book book = frame.getStore().loadBook(projectFile.getPath());
+      frame.basePath = projectFile.getParent();
       frame.projectPath = projectFile.getPath();
       frame.setBook(book);
       frame.setStatusMessage(translate("project") + " " + book.getName() + " " + translate("loadedSuccessfully"));
@@ -1683,7 +1964,7 @@ public class BinderatorFrame extends JFrame implements ActionListener, UnsavedCh
   }
 
   public static void main
-    (String[] args)
+  (String[] args)
   {
     PrintStream errorOut = System.err;
     try {

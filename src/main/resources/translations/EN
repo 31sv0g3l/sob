@@ -5,6 +5,12 @@ app { App }
 applicationName { Son of Binderator }
 appMenu { Application Menu }
 bottomColon { Bottom: }
+buttonTooltipGenerate { Generate PDF to the output path configured in the Project tab }
+buttonTooltipGenerateSignatures {
+  Generate PDF signatures to the signatures output directory configured in the Project tab
+}
+buttonTooltipViewer { Show / hide live PDF viewer }
+buttonTooltipExit { Exit the application }
 chosenFile { Chosen file }
 chosenFileAtPath { Chosen file at path }
 comments { Comments }
@@ -38,6 +44,10 @@ isNotWriteable { is not writeable }
 loadedSuccessfully { loaded successfully }
 marginColour { Margin Colour: }
 margins { Margins }
+marginsLeftTooltip { Set the ratio of page width for the left margin }
+marginsRightTooltip { Set the ratio of page width for the right margin }
+marginsBottomTooltip { Set the ratio of page height for the bottom margin }
+marginsTopTooltip { Set the ratio of page height for the top margin }
 marginRatiosColon { Margins: }
 marginLineThickness { Margin Line Thickness: }
 marginHorizontalDivisions { Margin Horizontal Divisions: }
@@ -65,9 +75,32 @@ newProject { New project }
 open { Open }
 openProject { Open project }
 outputPath { Output Path }
+pageNumbersTooltip {
+If selected, page numbers are drawn as on overlay for the current source document page
+and current output document page.
+}
 pages { pages }
+pageSizeComboTooltip { Select the output page and signature size }
 paste { Paste }
 project { Project }
+projectCommentsTooltip { Set comments for the entire project }
+projectEnableMarginsTooltip {
+If selected, a margin overlay is drawn using the configured margin ratios.
+Margin colour is configured in the global options.
+}
+projectNameTooltip { Set the project name }
+projectOutputPathTooltip { Set the project output (PDF) path }
+projectOutputPathButtonTooltip { Browse the project output (PDF) path }
+projectScaleToFitTooltip {
+If selected, an initial scaling of content to the output page
+dimensions is peformed before any other transforms are applied
+}
+projectSignaturesOutputPathTooltip { Set the path of the (PDF) signatures output directory }
+projectSignaturesOutputPathButtonTooltip { Browse the path of the (PDF) signatures output directory }
+rangedValueSliderTooltipValueField { Set value}
+rangedValueSliderTooltipValueLowField { Set low end of value range }
+rangedValueSliderTooltipValueHighField { Set high end of value range }
+rangedValueSliderTooltipSlider { Adjust value within range }
 rightColon { Right: }
 save { Save }
 saveProject { Save project }
@@ -78,25 +111,89 @@ signatures { signatures }
 signaturesColon { Signatures: }
 sheetsColon { Sheets: }
 showProgress { Show progress bars }
+signatureEdgeOffsetTooltip {
+Set the ratio of page width from the edge (side opposite the spine)
+for an output page in a signature
+}
 signatureGenerationColon { Signature Generation: }
 signaturesOutputDirectory { Signatures Output Directory }
+signatureSheetsComboTooltip {
+Select the number of physical (unfolded, double size)
+sheets of paper in a signature
+}
+signatureSpineOffsetTooltip { Set the ratio of page width from the spine for an output page in a signature }
+sourceDocumentBlankPagesTooltip {
+Set a list of blank pages to add to the selected source document pages.
+See inline help for a full description of syntax.
+}
+sourceDocumentCommentTooltip { Set a comment for this source document }
+sourceDocumentDownButtonTooltip { Move this source document down by one position, to appear later in the output }
+sourceDocumentIdTooltip {
+Set an optional shourt id (such as "doc1")
+for this source document, for use as a reference
+in transform page ranges.
+}
+sourceDocumentNewButtonTooltip { Add a new source document }
+sourceDocumentNameTooltip { Set an optional name for this source document }
+sourceDocumentUpButtonTooltip { Move this source document up by one position, to appear earlier in the output }
+sourceDocumentDeleteButtonTooltip { Remove this source document from the project }
+sourceDocumentPageRangesTooltip {
+Set the page ranges to be used from this source document.
+See inine help for full syntax.
+}
+sourceDocumentPathTooltip { Set the (PDF) path of this source docuemnt }
+sourceDocumentPathButtonTooltip { Browse for the (PDF) path of this source docuemnt }
 sourceDocuments { Source Documents }
 sourceDocumentsComboTooltip { Select the current source document }
 successfullySaved { successfully saved }
 topColon { Top: }
+transformDescription_ROTATION_IN_DEGREES { Counterclockwise Rotation in Degrees }
+transformDescription_SCALE { Scale Ratio }
+transformDescription_SCALE_X { Horizontal Scale Ratio }
+transformDescription_SCALE_Y { Vertical Scale Ratio }
+transformDescription_LEFT_CROP { Left Crop Ratio }
+transformDescription_RIGHT_CROP { Right Crop Ratio }
+transformDescription_BOTTOM_CROP { Bottom Crop Ratio }
+transformDescription_TOP_CROP { Top Crop Ratio }
+transformDescription_ALL_CROP { All Sides Crop Ratio }
+transformDescription_MARGINS_CROP { Crop to Margins }
+transformDescription_X_TRANSLATION { Horizontal Translation Ratio }
+transformDescription_Y_TRANSLATION { Vertical Translation Ratio }
 transformCropLeft { Crop Left }
 transformCropRight { Crop Right }
 transformCropBottom { Crop Bottom }
 transformCropTop { Crop Top }
+transformCropAll { Crop All }
+transformCropMargins { Crop to Margins }
 transformRotate { Counterclockwise Rotation in Degrees }
 transformScale { Scale }
 transformScaleX { Scale Horizontally }
 transformScaleY { Scale Vertically }
+transformSetCommentsTooltip { Set a comment for this transform set }
+transformSetNameTooltip { Set an optional name for this transform set }
+transformSetPageRangesTooltip {
+Set the page ranges to which this transform set applies.
+See inline documentation for a full description of syntax.
+}
+transformSetsComboTooltip { Select the current transform set (listed in order of application) }
+transformSetsNewTooltip { Add a new transform set }
+transformSetsUpTooltip { Move this transform set up to the previous position of application }
+transformSetsDownTooltip { Move this transform set down to the next position of application }
+transformSetsDeleteTooltip { Delete this transform set }
+transformSetsEnableDisableTooltip { Enable / disable his transform set }
+transformSetsNewTooltip { Add a new transform set }
+transformSetsNewTooltip { Add a new transform set }
 transformTranslateX { Horizontal Translation }
 transformTranslateY { Vertical Translation }
 transforms { Transforms }
 transformSetPageRanges { Page Ranges - Example: 1, doc2:3-12, 35-75 odd, 24-100 even }
 unsavedChanges { Unsaved Changes }
+transformTooltipUpButton { Move this transform up to the previous step in the set }
+transformTooltipDownButton { Move this transform down to the next step in the set }
+transformTooltipDeleteButton { Remove this transform from the set }
+transformTooltipEnableDisableButton { Enable / disable this transform }
+viewer { Viewer }
+viewerTitle { Son of Binderator / ICEPDF Viewer }
 welcomeToSonOfBinderator { Welcome to Son of Binderator }
 youHaveUnsavedChangesEtc {
 You have unsaved changes.
@@ -148,6 +245,8 @@ LEFT_CROP { Left Crop }
 RIGHT_CROP { Right Crop }
 BOTTOM_CROP { Bottom Crop }
 TOP_CROP { Top Crop }
+ALL_CROP { Crop All Sides }
+MARGINS_CROP { Crop to Margins }
 X_TRANSLATION { Horizontal Translation }
 Y_TRANSLATION { Vertical Translation }
 # ***********************************************************

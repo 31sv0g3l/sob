@@ -23,7 +23,7 @@ of source files, but they must all be PDF format and be well-formed PDF document
 such as Acrobat or Apple Preview.  The sources tab looks like this:
 <br>
 <center>
-<img src="/images/applied_phys_source.png">
+<img src="/images/sources.png">
 </center>
 <br>
 At the top of the tab, a combo menu allows you to choose the current source document to configure:
@@ -35,13 +35,14 @@ As shown above, to the right of the combo menu are four buttons:<br>
 <ul>
 <li><b>New (+)</b></li> This will create a new source document, initially with the name "NEW"
 <li><b>Up (&#8593);</b></li> This will move the currently displayed source document "up" (earlier) in the list.
-That is, when the target document is generated, the current document will be read earlier.  The current document will
-remain displayed in the sources tab.
+That is, when the target document is generated, the current document will be included earlier.  The current document
+will remain displayed in the sources tab.
 <li><b>Down (&#8595;)</b></li> This will move the currently displayed source document "down" (later) in the list.
-When the target document is generated, the current document will be read later.  The current document will
+When the target document is generated, the current document will be included later.  The current document will
 remain displayed in the sources tab.
-<li><b>Delete (X)</b></li> This will delete the currently displayed source document from the list, if any.  Note: The
-associated source document will not be touched.
+<li><b>Delete (X)</b></li> This will delete the currently displayed source document from the list, if any, and the
+source document will not be included in the output.  Note: The associated source document will not be modified in
+any way.
 </ul>
 <br>
 <br>
@@ -52,8 +53,8 @@ The other fields on the page, relevant to the currently selected source document
 <li><b>Id</b></li> This is a <em>simple</em> identifier for the document, that allows you to refer to it in
 the page ranges of <a href="transformation">transformations</a>.  In general, 1-3 characters are all that is needed,
 for example "d1" to denote document 1, or "bt" to denote "biology text".
-<li><b>Path</b></li> This is the path to the actual PDF source document.  It can be edited by hand, or you can use the
-file chooser to the right of the text entry.  This field is of course mandatory.
+<li><b>Path</b></li> This is the path to the actual PDF source document.  It can be edited by hand, or you can use
+the file chooser launched from the button to the right of the text entry.  This field is of mandatory.
 <li><b>Page Ranges</b></li>
 This is where the pages to be read from the source document are specified.  If left blank, all pages are assumed.
 The format is a comma-separated list, with pages starting at 1 and ending at the number of pages in the source
