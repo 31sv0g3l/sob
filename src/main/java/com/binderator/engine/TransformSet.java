@@ -10,7 +10,7 @@ public class TransformSet implements Serializable {
   private static final long serialVersionUID = 1095643075129104426L;
   private String name = null;
   private String comment = null;
-  private List<PageRange> pageRanges = null;
+  private List<PageRange> pageRanges = new ArrayList<>();
   ArrayList<Transform> transforms = new ArrayList<>();
 
   public TransformSet

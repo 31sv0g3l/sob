@@ -211,10 +211,12 @@ public class Book implements Serializable {
     minimiseLastSignature = book.minimiseLastSignature;
     spineOffsetRatio.copy(book.spineOffsetRatio);
     edgeOffsetRatio.copy(book.edgeOffsetRatio);
-
     transformSets = new ArrayList<>();
+    computeEffectiveTransformSets();
     for (TransformSet transformSet : book.transformSets) {
-      transformSets.add(new TransformSet(transformSet));
+      if (transformSet != null) {
+        transformSets.add(new TransformSet(transformSet));
+      }
     }
     effectiveTransformsByPage = new HashMap<>();
     for (Map.Entry<PageRef, List<Transform>> transformsByPageEntry : book.effectiveTransformsByPage.entrySet() ) {
@@ -787,6 +789,7 @@ public class Book implements Serializable {
     }
 
   }
+
   private static class TransformedImage {
 
     public Image image;
@@ -829,12 +832,6 @@ public class Book implements Serializable {
     }
     if (transforms != null) {
       for (Transform transform : transforms) {
-        if (!transform.isEnabled()) {
-          System.err.println("Skipping transform " + transform + " " + transform.hashCode());
-          continue;
-        } else {
-          System.err.println("Using transform " + transform + " " + transform.hashCode());
-        }
         switch (transform.getType()) {
           case ROTATION_IN_DEGREES -> {
             // Translate to the origin:

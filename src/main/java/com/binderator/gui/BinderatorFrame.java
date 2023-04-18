@@ -44,10 +44,6 @@ public class BinderatorFrame extends JFrame
         int pageNumber = viewer.controller.getCurrentPageNumber();
         viewer.setContent(bookBytes);
         viewer.controller.showPage(pageNumber);
-        System.err.println("task - viewer is active!");
-        // viewer.repaint();
-      } else {
-        System.err.println("task - viewer is inactive!");
       }
 
     }
@@ -959,18 +955,23 @@ public class BinderatorFrame extends JFrame
   private void newTransformSet
   ()
   {
-    Book book = getBook();
-    TransformSet transformSet = new TransformSet();
-    transformSet.setName(translate("new"));
     execute(() -> {
-      book.getTransformSets().add(transformSet);
-      registerUnsavedChange();
-      populateTransformSetComboBox();
-      setEnabledTransformsWidgets(true);
-      transformSetsComboBox.setSelectedItem(transformSet);
-      selectedTransformSet = transformSet;
-      populateTransformSetWidgets();
-      updateTransformControls(transformSet);
+      bookLock.lock();
+      try {
+        Book book = getBook();
+        TransformSet transformSet = new TransformSet();
+        transformSet.setName(translate("new"));
+        book.getTransformSets().add(transformSet);
+        registerUnsavedChange();
+        populateTransformSetComboBox();
+        setEnabledTransformsWidgets(true);
+        transformSetsComboBox.setSelectedItem(transformSet);
+        selectedTransformSet = transformSet;
+        populateTransformSetWidgets();
+        updateTransformControls(transformSet);
+      } finally {
+        bookLock.unlock();
+      }
     });
   }
 
