@@ -36,14 +36,18 @@ public class BinderatorFrame extends JFrame
     {
       if (viewerActive) {
         bookLock.lock();
-        Book book = new Book(getBook());
-        bookLock.unlock();
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        book.generatePDF(byteArrayOutputStream, book.isUsingMargins(), book.isUsingPageNumbering(), null);
-        byte[] bookBytes = byteArrayOutputStream.toByteArray();
-        int pageNumber = viewer.controller.getCurrentPageNumber();
-        viewer.setContent(bookBytes);
-        viewer.controller.showPage(pageNumber);
+        if (book.getPageCount() > 0) {
+          Book book = new Book(getBook());
+          bookLock.unlock();
+          ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+          book.generatePDF(byteArrayOutputStream, book.isUsingMargins(), book.isUsingPageNumbering(), null);
+          byte[] bookBytes = byteArrayOutputStream.toByteArray();
+          int pageNumber = viewer.controller.getCurrentPageNumber();
+          viewer.setContent(bookBytes);
+          viewer.controller.showPage(pageNumber);
+        } else {
+          viewer.setContent(new byte[0]);
+        }
       }
 
     }
