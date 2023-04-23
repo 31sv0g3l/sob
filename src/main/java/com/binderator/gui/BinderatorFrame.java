@@ -165,7 +165,12 @@ public class BinderatorFrame extends JFrame
         File file = new File(entryWidget.getText());
         JFileChooser fileChooser = new JFileChooser(file);
         fileChooser.setFileFilter(new FileNameExtensionFilter("PDF files", "pdf", "PDF"));
-        if (basePath != null) {
+        String existingPath = entryWidget.getText();
+        if (existingPath != null && !existingPath.isEmpty()) {
+          File existingFile = new File(existingPath);
+          String existingDirectory = existingFile.isDirectory() ? existingPath : existingFile.getParent();
+          fileChooser.setCurrentDirectory(new File(existingDirectory));
+        } else if (basePath != null) {
           fileChooser.setCurrentDirectory(new File(basePath));
         }
         if (isDirectory) {
