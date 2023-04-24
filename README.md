@@ -1,6 +1,6 @@
 # Son of Binderator
 
-![Model](src/main/resources/help/images/binderator_preview.png)
+![Model](web/images/SOB_screenshot.png)
 
 Son of Binderator (SOB) is a Java-based graphical tool for bookbinding, specifically for cleaning up
 PDFs into a form suitable for printing, either as a simple output document or as
