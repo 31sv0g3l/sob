@@ -36,20 +36,25 @@ public class BinderatorFrame extends JFrame
     {
       if (viewerActive) {
         bookLock.lock();
-        if (book.getPageCount() > 0) {
-          Book book = new Book(getBook());
-          bookLock.unlock();
-          ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-          book.generatePDF(byteArrayOutputStream, book.isUsingMargins(), book.isUsingPageNumbering(), null);
-          byte[] bookBytes = byteArrayOutputStream.toByteArray();
-          int pageNumber = viewer.controller.getCurrentPageNumber();
-          viewer.setContent(bookBytes);
-          viewer.controller.showPage(pageNumber);
-        } else {
-          viewer.setContent(new byte[0]);
+        try {
+          if (book.getPageCount() > 0) {
+            Book book = new Book(getBook());
+            bookLock.unlock();
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            book.generatePDF(byteArrayOutputStream, book.isUsingMargins(), book.isUsingPageNumbering(), null);
+            byte[] bookBytes = byteArrayOutputStream.toByteArray();
+            int pageNumber = viewer.controller.getCurrentPageNumber();
+            viewer.setContent(bookBytes);
+            viewer.controller.showPage(pageNumber);
+          } else {
+            viewer.setContent(new byte[0]);
+          }
+        } finally {
+          if (bookLock.isHeldByCurrentThread()) {
+            bookLock.unlock();
+          }
         }
       }
-
     }
 
   }
@@ -878,7 +883,7 @@ public class BinderatorFrame extends JFrame
   }
 
   void errorDialog
-      (Throwable t)
+  (Throwable t)
   {
     JOptionPane.showMessageDialog(this, (t.getMessage()));
     t.printStackTrace(System.err);
@@ -1040,7 +1045,7 @@ public class BinderatorFrame extends JFrame
     fileMenu.setMnemonic(KeyEvent.VK_F);
     fileMenu.getAccessibleContext().setAccessibleDescription(translate("fileMenu"));
     menuBar.add(fileMenu);
-    // File->Newmenu item:
+    // File->New menu item:
     JMenuItem fileNewMenuItem = new JMenuItem(translate("New"), KeyEvent.VK_S);
     fileNewMenuItem.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_N, InputEvent.ALT_DOWN_MASK));
     fileNewMenuItem.getAccessibleContext().setAccessibleDescription(translate("newProject"));
@@ -1333,10 +1338,13 @@ public class BinderatorFrame extends JFrame
     execute(
       () -> {
         bookLock.lock();
-        this.book = book;
-        book.setStatusListener(this);
-        notifyViewerBookChange();
-        bookLock.unlock();
+        try {
+          this.book = book;
+          book.setStatusListener(this);
+          notifyViewerBookChange();
+        } finally {
+          bookLock.unlock();
+        }
         updateProjectControlsPanel();
         updateSourceDocumentsTab();
         updateTransformSetsTab();
@@ -1830,9 +1838,11 @@ public class BinderatorFrame extends JFrame
   private void notifyViewerBookChange
   ()
   {
-    if (viewerActive) {
+//    if (viewerActive) {
+    if (viewerRenderingThread != null) {
       viewerRenderingThread.signalTask();
     }
+//    }
     haveViewerContentChange = true;
   }
 
@@ -1848,12 +1858,24 @@ public class BinderatorFrame extends JFrame
         }
         case ACTION_GENERATE -> {
           if (book != null) {
-            execute(() -> { book.generatePDF(book.getOutputPath()); });
+            execute(() -> {
+              try {
+                book.generatePDF(book.getOutputPath());
+              } catch (Throwable t) {
+                errorDialog(t);
+              }
+            });
           }
         }
         case ACTION_GENERATE_SIGNATURES -> {
           if (book != null) {
-            execute(() -> { book.generatePDFSignatures(book.getSignaturesOutputPath(), "signature_"); });
+            execute(() -> {
+              try {
+                book.generatePDFSignatures(book.getSignaturesOutputPath(), "signature_");
+              } catch (Throwable t) {
+                errorDialog(t);
+              }
+            });
           }
         }
         case ACTION_SHOW_HIDE_VIEWER -> {

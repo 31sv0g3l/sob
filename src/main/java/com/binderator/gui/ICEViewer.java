@@ -66,8 +66,12 @@ public class ICEViewer extends JFrame {
   public void setContent
   (byte[] pdfContent)
   {
-    ByteArrayInputStream inputStream = new ByteArrayInputStream(pdfContent);
-    controller.openDocument(inputStream, "inline", "inline");
+    if ((pdfContent != null) && (pdfContent.length > 0)) {
+      ByteArrayInputStream inputStream = new ByteArrayInputStream(pdfContent);
+      controller.openDocument(inputStream, "inline", "inline");
+    } else {
+      controller.closeDocument();
+    }
   }
 
   private static void doMain

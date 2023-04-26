@@ -166,7 +166,7 @@ public class Book implements Serializable {
   SerializableRectangle signaturePageSize = new SerializableRectangle(PageSize.A3);
   boolean scaleToFit = true;
   private final ArrayList<PageRef> pages = new ArrayList<>();
-  private Integer pageCount;
+  private Integer pageCount = 0;
   private int signatureSheets = 8; // 32 pages
 
   // Spine and edge offsets are for signature generation only:
@@ -642,7 +642,8 @@ public class Book implements Serializable {
     if (stringId != null) {
       sourceDocumentsById.put(stringId, sourceDocument);
     }
-    clearPages();
+    sourceDocument.setBook(this);
+    generatePages();
   }
 
   private void clearPages
@@ -668,9 +669,11 @@ public class Book implements Serializable {
       clearPages();
       for (SourceDocument sourceDocument : sourceDocuments) {
         int documentPageCount = sourceDocument.getPageCount();
-        Collection<PageRef> sourceDocumentPages = sourceDocument.getPages();
-        pageCount += sourceDocumentPages.size();
-        pages.addAll(sourceDocumentPages);
+        if (documentPageCount > 0) {
+          Collection<PageRef> sourceDocumentPages = sourceDocument.getPages();
+          pageCount += sourceDocumentPages.size();
+          pages.addAll(sourceDocumentPages);
+        }
       }
       printStatus(translate("generatedDocumentHas") + " " + pageCount + " " + translate("pages") + ".");
     } catch (Exception e) {
@@ -732,7 +735,7 @@ public class Book implements Serializable {
   public int getPageCount
   ()
   {
-    return pageCount;
+    return pageCount != null ? pageCount : 0;
   }
 
   public static float mm2Points
@@ -954,10 +957,14 @@ public class Book implements Serializable {
   (String destinationPath, boolean usingMargins, boolean usingPageNumbering)
   {
     try {
+      if (destinationPath == null) {
+        throw new Exception("Output path not set");
+      }
       FileOutputStream out = new FileOutputStream(destinationPath);
       generatePDF(out, usingMargins, usingPageNumbering, null);
-    } catch (Throwable t) {
-      logException("PDF generation", t);
+    } catch (Exception e) {
+      handleException(e);
+      logException("PDF Generation", e);
     }
   }
 
@@ -1105,13 +1112,20 @@ public class Book implements Serializable {
             cb.setFontAndSize(FontFactory.getFont("courier").getBaseFont(), fontHeight);
             cb.setTextRenderingMode(PdfContentByte.TEXT_RENDER_MODE_FILL_STROKE);
             float stringWidth = cb.getEffectiveStringWidth(pageNumberText, false);
+            float fontScaleFactor = 1.0f;
+            float effectivePageWidth = 0.90f * (rightMarginX - leftMarginX);
+            if (stringWidth > effectivePageWidth) {
+              fontScaleFactor = (float) (1.0f - ((stringWidth - effectivePageWidth) / stringWidth));
+              cb.setFontAndSize(FontFactory.getFont("courier").getBaseFont(), fontScaleFactor * fontHeight);
+            }
             cb.moveText(
-              (leftMarginX + rightMarginX) / 2.0f - (stringWidth / 2.0f),
-              (bottomMarginY + topMarginY) / 2.0f + fontHeight / 2.0f
+              (leftMarginX + rightMarginX) / 2.0f - (fontScaleFactor * stringWidth / 2.0f),
+              (bottomMarginY + topMarginY) / 2.0f + fontScaleFactor * fontHeight / 2.0f
             );
             cb.showText(pageNumberText);
             cb.endText();
             cb.beginText();
+            cb.setFontAndSize(FontFactory.getFont("courier").getBaseFont(), fontHeight);
             stringWidth = cb.getEffectiveStringWidth(totalPageNumberText, false);
             cb.moveText(
               (leftMarginX + rightMarginX) / 2.0f - (stringWidth / 2.0f),

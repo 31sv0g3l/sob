@@ -26,6 +26,7 @@ public class SourceDocument implements Serializable, Comparable<SourceDocument> 
 
   }
 
+  private Book book = null;
   private String stringId;
   private String name;
   private String comment;
@@ -33,6 +34,8 @@ public class SourceDocument implements Serializable, Comparable<SourceDocument> 
   private transient PdfReader reader = null;
   private List<PageRange> pageRanges = new ArrayList<>();
   private List<BlankPages> blankPages = new ArrayList<>();
+  List<PageRef> sourcePages = null;
+  List<PageRef> pages = null;
 
   public SourceDocument
   (String path)
@@ -110,7 +113,16 @@ public class SourceDocument implements Serializable, Comparable<SourceDocument> 
   (String path)
   {
     this.path = path;
+    if (book != null) {
+      book.generatePages();
+    }
     close();
+  }
+
+  void setBook
+  (Book book)
+  {
+    this.book = book;
   }
 
   public PdfReader getReader
@@ -118,7 +130,9 @@ public class SourceDocument implements Serializable, Comparable<SourceDocument> 
   throws IOException
   {
     if (reader == null) {
-      reader = new PdfReader(new FileInputStream(path), null);
+      if ((path != null) && !path.isBlank()) {
+        reader = new PdfReader(new FileInputStream(path), null);
+      }
     }
     return reader;
   }
@@ -233,19 +247,24 @@ public class SourceDocument implements Serializable, Comparable<SourceDocument> 
 
   public int getPageCount
   ()
-  throws Exception
   {
-    return getReader().getNumberOfPages();
+    try {
+      PdfReader reader = getReader();
+      if (reader == null) {
+        return 0;
+      }
+      return reader.getNumberOfPages();
+    } catch (Throwable t) {
+      // Reader likely null - path likely not set...
+      return 0;
+    }
   }
-
-  List<PageRef> sourcePages = null;
-  List<PageRef> pages = null;
 
   public List<PageRef> getSourcePages
   ()
   throws Exception
   {
-    if (sourcePages == null) {
+    if ((sourcePages == null) || (sourcePages.isEmpty())) {
       sourcePages = new ArrayList<>();
       for (int i = 1; i <= getPageCount(); i++) {
         sourcePages.add(new PageRef(this, i));
@@ -258,7 +277,7 @@ public class SourceDocument implements Serializable, Comparable<SourceDocument> 
   ()
   throws Exception
   {
-    if (pages == null) {
+    if ((pages == null) || (pages.isEmpty())) {
       List<PageRef> sourcePages = getSourcePages();
       pages = new ArrayList<>();
       if ((pageRanges != null) && !pageRanges.isEmpty()) {
