@@ -62,7 +62,7 @@ public class BinderatorFrame extends JFrame
 
   @Serial
   private static final long serialVersionUID = -1429747105438739695L;
-  public static final String VERSION = "0.2.1";
+  public static final String VERSION = "0.2.2";
   private static BinderatorFrame singletonInstance = null;
   private boolean haveUnsavedChanges = false;
   private boolean haveViewerContentChange = false;
