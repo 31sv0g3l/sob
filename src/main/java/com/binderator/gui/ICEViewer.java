@@ -16,7 +16,7 @@ public class ICEViewer extends JFrame {
   public interface CloseListener {
 
     void onICEViewerClose
-    ();
+    (ICEViewer instance);
 
   }
 
@@ -38,6 +38,7 @@ public class ICEViewer extends JFrame {
   (String title, int width, int height, CloseListener closeListener)
   {
     super(title);
+    ICEViewer thisViewer = this;
     SwingViewBuilder factory = new SwingViewBuilder(controller);
     JPanel viewerComponentPanel = factory.buildViewerPanel();
     ComponentKeyBinding.install(controller, viewerComponentPanel);
@@ -55,9 +56,9 @@ public class ICEViewer extends JFrame {
       public void windowClosing
       (WindowEvent e)
       {
-        if (closeListener != null) {
-          closeListener.onICEViewerClose();
-        }
+      if (closeListener != null) {
+        closeListener.onICEViewerClose(thisViewer);
+      }
       }
 
     });

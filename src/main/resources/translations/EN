@@ -9,7 +9,8 @@ buttonTooltipGenerate { Generate PDF to the output path configured in the Projec
 buttonTooltipGenerateSignatures {
   Generate PDF signatures to the signatures output directory configured in the Project tab
 }
-buttonTooltipViewer { Show / hide live PDF viewer }
+buttonTooltipViewer { Show / hide live PDF viewer}
+buttonTooltipSignaturesViewer { Show / hide live PDF signatures viewer }
 buttonTooltipExit { Exit the application }
 chosenFile { Chosen file }
 chosenFileAtPath { Chosen file at path }
@@ -117,6 +118,8 @@ for an output page in a signature
 }
 signatureGenerationColon { Signature Generation: }
 signaturesOutputDirectory { Signatures Output Directory }
+signaturesViewer { View Signatures }
+signaturesViewerTitle { Son of Binderator / ICEPDF Signatures Viewer }
 signatureSheetsComboTooltip {
 Select the number of physical (unfolded, double size)
 sheets of paper in a signature
@@ -192,7 +195,7 @@ transformTooltipUpButton { Move this transform up to the previous step in the se
 transformTooltipDownButton { Move this transform down to the next step in the set }
 transformTooltipDeleteButton { Remove this transform from the set }
 transformTooltipEnableDisableButton { Enable / disable this transform }
-viewer { Viewer }
+viewer { View }
 viewerTitle { Son of Binderator / ICEPDF Viewer }
 welcomeToSonOfBinderator { Welcome to Son of Binderator }
 youHaveUnsavedChangesEtc {
