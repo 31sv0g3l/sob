@@ -20,8 +20,6 @@ couldNotOverwrite { Could not overwrite existing file at path }
 cut { Cut }
 documentGenerationColon { Document Generation: }
 documentId { Id (short identifier for use in operation page ranges) }
-documentsBlankPages { Blank Pages - Example: 1:2, 35:1 (2 blank pages after 1, 1 after 35) }
-documentsPageRanges { Page Ranges - Example: 1, 3-12, 24-25 * 3 (repetition), 35-75 odd, 24-100 even }
 doesNotExist { does not exist }
 done { Done }
 edgeOffset { Edge Offset: }
@@ -78,6 +76,19 @@ outputPath { Output Path }
 pageNumbersTooltip {
 If selected, page numbers are drawn as on overlay for the current source document page
 and current output document page.
+}
+pageRanges { Project Page Ranges }
+pageRangesTooltip {
+Set the page ranges used by this project.
+Ranges are comma separated and must use source document identifiers.
+Blank pages are represented by empty fields.  Example:
+
+,,prologue:1-4,doc1:2-130,,doc2,doc3:312-16*6,,,,
+
+The above is: Two blank pages, followed by pages 1-4 of prologue,
+followed by pages 2-130 of doc1, followed by all of doc2,
+followed by 6 copies of pages 312-316 of doc3,
+followed by four blank pages.
 }
 pages { pages }
 pageSizeComboTooltip { Select the output page and signature size }

@@ -67,11 +67,12 @@ public class PageRange implements Comparable<PageRange>, Serializable {
   static Pattern rangePattern = Pattern.compile(
     "\\s*([0-9]+)(\\s*-\\s*([0-9]+))?(\\s*\\*\\s*([1-9][0-9]*))?(\\s*([eE][vV][eE][nN]|[oO][dD][dD]))?\\s*"
   );
+
   public static List<PageRange> parsePageRanges
   (String source, boolean useDocIds)
   throws Exception
   {
-    List<PageRange> result = new ArrayList<>();
+    List<PageRange> pageRanges = new ArrayList<>();
     String[] rangeSources = source.split("\\s*,\\s*");
     Integer repetitions = null;
     for (String rangeSource : rangeSources) {
@@ -114,12 +115,23 @@ public class PageRange implements Comparable<PageRange>, Serializable {
           }
         }
         PageRange range = new PageRange(docId, from, to, repetitions, even);
-        result.add(range);
+        pageRanges.add(range);
       } else {
         throw new ParseException("String \"" + rangeSource + "\" is not a valid page range", 0);
       }
     }
-    return result;
+    return pageRanges;
+  }
+
+  public static List<PageRef> toPageRefs
+  (Collection<PageRange> pageRanges, Map<String, SourceDocument> sourceDocumentsById)
+  throws Exception
+  {
+    List<PageRef> pageRefs = new ArrayList<>();
+    for (PageRange pageRange : pageRanges) {
+      pageRange.getPageRefs(pageRefs, sourceDocumentsById);
+    }
+    return pageRefs;
   }
 
   public static String toString

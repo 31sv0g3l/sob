@@ -113,9 +113,6 @@ public class SourceDocument implements Serializable, Comparable<SourceDocument> 
   (String path)
   {
     this.path = path;
-    if (book != null) {
-      book.generatePages();
-    }
     close();
   }
 

@@ -49,6 +49,8 @@ public class BinderatorFrame extends JFrame
           } else {
             viewer.setContent(new byte[0]);
           }
+        } catch (Exception e) {
+          errorDialog(e);
         } finally {
           if (bookLock.isHeldByCurrentThread()) {
             bookLock.unlock();
@@ -83,6 +85,8 @@ public class BinderatorFrame extends JFrame
   JButton exitButton;
   JPanel projectPanel;
   JPanel documentsPanel;
+  JPanel pagesPanel;
+  JPanel documentsAndPagesPanel;
   JPanel transformSetsPanel;
   JPanel transformsPanel;
   ImageIcon newIcon;
@@ -119,8 +123,7 @@ public class BinderatorFrame extends JFrame
   JTextField documentPathTextField = new JTextField(34);
   JButton documentPathButton;
   JTextArea documentCommentTextArea = new JTextArea(5, 34);
-  JTextField documentPageRangesTextField = new JTextField(34);
-  JTextField documentBlankPagesTextField = new JTextField(34);
+  JTextArea pageRangesTextArea = new JTextArea(7, 34);
   // Page Operations Panel Widgets:
   JTextField transformSetNameTextField = new JTextField(34);
   JTextField transformSetPageRangesTextField = new JTextField(34);
@@ -429,7 +432,37 @@ public class BinderatorFrame extends JFrame
     JScrollPane documentsPane = new JScrollPane(documentsPanel);
     documentsPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
     documentsPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-    mainTabs.add(translate("sourceDocuments"), documentsPane);
+    // Pages panel below documents panel:
+    pagesPanel = new JPanel();
+    pagesPanel.setLayout(new BoxLayout(pagesPanel, BoxLayout.X_AXIS));
+    pageRangesTextArea.setLineWrap(true);
+    pageRangesTextArea.setWrapStyleWord(true);
+    JScrollPane pagesRangesScrollPane = new JScrollPane(pageRangesTextArea);
+    pagesRangesScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+    pagesRangesScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+    pagesPanel.add(createScaledLabeledWidgetPanel(pagesRangesScrollPane, translate("pageRanges"), 22, 94));
+    pageRangesTextArea.getDocument().addDocumentListener(new DocumentListener() {
+      @Override public void changedUpdate(DocumentEvent e) {
+        handlePageRangesChange(pageRangesTextArea.getText());
+      }
+      @Override public void removeUpdate(DocumentEvent e) {
+        handlePageRangesChange(pageRangesTextArea.getText());
+      }
+      @Override public void insertUpdate(DocumentEvent e) {
+        handlePageRangesChange(pageRangesTextArea.getText());
+      }
+    });
+    pageRangesTextArea.setToolTipText(translate("pageRangesTooltip"));
+
+    // Combined documents and pages panel:
+    documentsAndPagesPanel = new JPanel();
+    documentsAndPagesPanel.setLayout(new BoxLayout(documentsAndPagesPanel, BoxLayout.Y_AXIS));
+    documentsAndPagesPanel.add(documentsPane);
+    JSeparator documentsAndPagesSeparator = new JSeparator(JSeparator.HORIZONTAL);
+    documentsAndPagesSeparator.setForeground(Color.BLACK);
+    documentsAndPagesPanel.add(documentsAndPagesSeparator);
+    documentsAndPagesPanel.add(pagesPanel);
+    mainTabs.add(translate("sourceDocuments"), documentsAndPagesPanel);
     documentsPanel.setLayout(new BoxLayout(documentsPanel, BoxLayout.Y_AXIS));
     JPanel documentsNavPanel = new JPanel();
     documentsNavPanel.setLayout(new BoxLayout(documentsNavPanel, BoxLayout.X_AXIS));
@@ -488,7 +521,7 @@ public class BinderatorFrame extends JFrame
     documentsPanel.add(Box.createVerticalStrut(5));
     documentsPanel.add(createScaledLabeledWidgetPanel(documentNameTextField, translate("name"), 22, 22));
     documentNameTextField.addActionListener(event -> {
-      if ( selectedDocument != null) {
+      if (selectedDocument != null) {
         try {
           selectedDocument.setName(documentNameTextField.getText());
           registerUnsavedChange();
@@ -502,7 +535,7 @@ public class BinderatorFrame extends JFrame
     documentsPanel.add(Box.createVerticalStrut(scale(5)));
     documentsPanel.add(createScaledLabeledWidgetPanel(documentIdentifierTextField, translate("documentId"), 22, 22));
     documentIdentifierTextField.addActionListener(event -> {
-      if ( selectedDocument != null) {
+      if (selectedDocument != null) {
         try {
           selectedDocument.setStringId(documentIdentifierTextField.getText());
           registerUnsavedChange();
@@ -523,7 +556,7 @@ public class BinderatorFrame extends JFrame
     documentPathButton = documentPathPanelAndButton.getSecond();
     documentPathButton.setToolTipText(translate("sourceDocumentPathButtonTooltip"));
     documentPathTextField.addActionListener(event -> {
-      if ( selectedDocument != null) {
+      if (selectedDocument != null) {
         try {
           selectedDocument.setPath(documentPathTextField.getText());
           registerUnsavedChange();
@@ -534,36 +567,6 @@ public class BinderatorFrame extends JFrame
     });
     GUIUtils.addBackgroundSetter(documentPathTextField);
     documentsPanel.add(Box.createVerticalStrut(scale(5)));
-    documentsPanel.add(createScaledLabeledWidgetPanel(
-      documentPageRangesTextField, translate("documentsPageRanges"), 22, 22
-    ));
-    documentPageRangesTextField.addActionListener(event -> {
-      if ( selectedDocument != null) {
-        try {
-          selectedDocument.setPageRanges(PageRange.parsePageRanges(documentPageRangesTextField.getText(), false));
-          registerUnsavedChange();
-        } catch (Exception e) {
-          errorDialog(e);
-        }
-      }
-    });
-    documentPageRangesTextField.setToolTipText(translate("sourceDocumentPageRangesTooltip"));
-    GUIUtils.addBackgroundSetter(documentPageRangesTextField);
-    documentsPanel.add(createScaledLabeledWidgetPanel(
-      documentBlankPagesTextField, translate("documentsBlankPages"), 22, 22
-    ));
-    documentBlankPagesTextField.addActionListener(event -> {
-      if ( selectedDocument != null) {
-        try {
-          selectedDocument.setBlankPages(SourceDocument.parseBlankPages(documentBlankPagesTextField.getText()));
-          registerUnsavedChange();
-        } catch (Exception e) {
-          errorDialog(e);
-        }
-      }
-    });
-    documentBlankPagesTextField.setToolTipText(translate("sourceDocumentBlankPagesTooltip"));
-    GUIUtils.addBackgroundSetter(documentBlankPagesTextField);
     documentCommentTextArea.setLineWrap(true);
     documentCommentTextArea.setWrapStyleWord(true);
     JScrollPane documentCommentScrollPane = new JScrollPane(documentCommentTextArea);
@@ -587,7 +590,7 @@ public class BinderatorFrame extends JFrame
     documentsPanel.add(Box.createVerticalStrut(scale(5)));
     documentsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
     setEnabledSourceDocumentsWidgets(false);
-    // Operations panel:
+    // Transforms panel:
     transformSetsPanel = new JPanel();
     JScrollPane transformSetsPane = new JScrollPane(transformSetsPanel);
     transformSetsPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -795,8 +798,6 @@ public class BinderatorFrame extends JFrame
     documentPathTextField.setEnabled(enabled);
     documentPathButton.setEnabled(enabled);
     documentCommentTextArea.setEnabled(enabled);
-    documentPageRangesTextField.setEnabled(enabled);
-    documentBlankPagesTextField.setEnabled(enabled);
   }
 
   private void setEnabledTransformsWidgets
@@ -880,6 +881,12 @@ public class BinderatorFrame extends JFrame
       } else if (component instanceof Container)
         installContextMenu((Container) component);
     }
+  }
+
+  private void handlePageRangesChange
+  (String pageRangesText)
+  {
+    getBook().setPageRangesSource(pageRangesText);
   }
 
   void errorDialog
@@ -1534,8 +1541,6 @@ public class BinderatorFrame extends JFrame
       documentNameTextField.setText("");
       documentPathTextField.setText("");
       documentCommentTextArea.setText("");
-      documentPageRangesTextField.setText("");
-      documentBlankPagesTextField.setText("");
       setEnabledSourceDocumentsWidgets(false);
     }
   }
@@ -1570,15 +1575,11 @@ public class BinderatorFrame extends JFrame
       documentIdentifierTextField.setText(selectedDocument.getStringId());
       documentNameTextField.setText(selectedDocument.getName());
       documentPathTextField.setText(selectedDocument.getPath());
-      documentPageRangesTextField.setText(selectedDocument.getPageRangesString());
-      documentBlankPagesTextField.setText(selectedDocument.getBlankPagesString());
       documentCommentTextArea.setText(selectedDocument.getComment());
     } else {
       documentIdentifierTextField.setText("");
       documentNameTextField.setText("");
       documentPathTextField.setText("");
-      documentPageRangesTextField.setText("");
-      documentBlankPagesTextField.setText("");
       documentCommentTextArea.setText("");
     }
   }

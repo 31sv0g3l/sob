@@ -9,6 +9,7 @@ import com.lowagie.text.pdf.*;
 import java.awt.*;
 import java.awt.geom.*;
 import java.io.*;
+import java.sql.Array;
 import java.util.*;
 import java.util.List;
 
@@ -165,7 +166,8 @@ public class Book implements Serializable {
   SerializableRectangle pageSize = new SerializableRectangle(PageSize.A4);
   SerializableRectangle signaturePageSize = new SerializableRectangle(PageSize.A3);
   boolean scaleToFit = true;
-  private final ArrayList<PageRef> pages = new ArrayList<>();
+  private String pageRangesSource = null;
+  private List<PageRef> pages = null;
   private Integer pageCount = 0;
   private int signatureSheets = 8; // 32 pages
 
@@ -205,6 +207,7 @@ public class Book implements Serializable {
     pageSize = new SerializableRectangle(book.pageSize);
     signaturePageSize = new SerializableRectangle(book.signaturePageSize);
     scaleToFit = book.scaleToFit;
+    pages = new ArrayList<>();
     pages.addAll(book.pages);
     pageCount = book.pageCount;
     signatureSheets = book.signatureSheets;
@@ -379,6 +382,7 @@ public class Book implements Serializable {
 
   public void setSourceDocuments
   (Collection<SourceDocument> sourceDocuments)
+  throws Exception
   {
     this.sourceDocuments = new ArrayList<>();
     for (SourceDocument sourceDocument : sourceDocuments) {
@@ -529,7 +533,7 @@ public class Book implements Serializable {
         Set<PageRef> transformPages = new TreeSet<>();
         if (transformSet.getPageRanges() != null) {
           for (PageRange pageRange : transformSet.getPageRanges()) {
-            transformPages.addAll(pageRange.getPageRefs(pages, sourceDocumentsById));
+            transformPages.addAll(pageRange.getPageRefs(getPages(), sourceDocumentsById));
           }
         }
         for (PageRef transformPage : transformPages) {
@@ -636,25 +640,57 @@ public class Book implements Serializable {
 
   public void addSourceDocument
   (SourceDocument sourceDocument)
+  throws Exception
   {
     sourceDocuments.add(sourceDocument);
     String stringId = sourceDocument.getStringId();
     if (stringId != null) {
+      if (sourceDocumentsById.containsKey(stringId)) {
+        throw new Exception("A source document with id \"" + stringId + "\" is already defined");
+      }
       sourceDocumentsById.put(stringId, sourceDocument);
     }
     sourceDocument.setBook(this);
-    generatePages();
   }
 
   private void clearPages
   ()
   {
     pageCount = 0;
-    pages.clear();
+    pages = null;
+  }
+
+  public void setPageRangesSource
+  (String pageRangesSource)
+  {
+    this.pageRangesSource = pageRangesSource;
+    pages = null;
+  }
+
+  public void setPages
+  (Collection<PageRef> pages)
+  {
+    this.pages = new ArrayList<>();
+    this.pages.addAll(pages);
+  }
+
+  public List<PageRef> getPages
+  ()
+  throws Exception
+  {
+    if (pages == null) {
+      if (pageRangesSource == null) {
+        pages = new ArrayList<>();
+      } else {
+        pages = PageRange.toPageRefs(PageRange.parsePageRanges(pageRangesSource, true), sourceDocumentsById);
+      }
+    }
+    return pages;
   }
 
   public void setSourceDocumentsByPath
   (String ... sourceDocumentPaths)
+  throws Exception
   {
     sourceDocuments = new ArrayList<>();
     for (String sourceDocumentPath : sourceDocumentPaths) {
@@ -662,6 +698,7 @@ public class Book implements Serializable {
     }
   }
 
+/*
   public void generatePages
   ()
   {
@@ -680,12 +717,13 @@ public class Book implements Serializable {
       handleException(e);
     }
   }
+ */
 
   public boolean closePDFs
   ()
   {
     try {
-      pages.clear();
+      clearPages();
       for (SourceDocument currentDoc : sourceDocuments) {
         try {
           if (currentDoc.getReader() != null) {
@@ -697,26 +735,6 @@ public class Book implements Serializable {
     } catch (Exception e) {
       logException("closing PDF", e);
       return false;
-    }
-  }
-
-  public void omitPages
-  (int ... pageNumbers)
-  {
-    ArrayList<PageRef> pagesToOmit = new ArrayList<>();
-    for (int pageNumber : pageNumbers) {
-      pagesToOmit.add(pages.get(pageNumber - 1));
-    }
-    for (PageRef pageToOmit : pagesToOmit) {
-      pages.remove(pageToOmit);
-    }
-  }
-
-  public void addBlankPagesAfter
-  (int pageNumber, int blankPageCount)
-  {
-    for (int i = 0; i < blankPageCount; i++) {
-      pages.add(pageNumber, new PageRef(null, 0));
     }
   }
 
@@ -734,8 +752,9 @@ public class Book implements Serializable {
 
   public int getPageCount
   ()
+  throws Exception
   {
-    return pageCount != null ? pageCount : 0;
+    return getPages() != null ? pages.size() : 0;
   }
 
   public static float mm2Points
@@ -979,7 +998,6 @@ public class Book implements Serializable {
   (OutputStream out, boolean usingMargins, boolean usingPageNumbering, Collection<PageRef> targetPages)
   {
     try {
-      generatePages();
       computeEffectiveTransformSets();
       Document document = new Document(pageSize.getRectangle(), 0, 0, 0, 0);
       PdfWriter writer = PdfWriter.getInstance(document, out);
@@ -989,8 +1007,8 @@ public class Book implements Serializable {
       float pageWidth = pageSize.getRectangle().getWidth();
       float pageHeight = pageSize.getRectangle().getHeight();
       setProgressLabel(translate("documentGenerationColon"));
-      for (int totalPageNumber = 1; totalPageNumber <= pages.size(); totalPageNumber++) {
-        PageRef pageRef = pages.get(totalPageNumber - 1);
+      for (int totalPageNumber = 1; totalPageNumber <= getPages().size(); totalPageNumber++) {
+        PageRef pageRef = getPages().get(totalPageNumber - 1);
         if ((targetPages != null) && !targetPages.contains(pageRef)) {
           continue;
         }
@@ -1135,10 +1153,10 @@ public class Book implements Serializable {
             cb.endText();
           }
         }
-        setProgress(totalPageNumber, pages.size());
+        setProgress(totalPageNumber, getPages().size());
       }
       document.close();
-      printStatus(translate("generated") + " " + pages.size() + " " + translate("pages") + ".");
+      printStatus(translate("generated") + " " + getPages().size() + " " + translate("pages") + ".");
     } catch (Exception e) {
       handleException(e);
     }
