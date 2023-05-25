@@ -886,7 +886,29 @@ public class BinderatorFrame extends JFrame
   private void handlePageRangesChange
   (String pageRangesText)
   {
-    getBook().setPageRangesSource(pageRangesText);
+    execute(() -> {
+      String errorMessage = null;
+      try {
+        getBook().setPageRangesSource(pageRangesText);
+        // Pre-parse and colour the background to the page ranges text area red, every time we encounter an error,
+        // and white whenver it's good.  This will avoid an error dialog popping up from the rendering thread when
+        // the viewer is open:
+        getBook().getPages();
+        registerUnsavedChange();
+      } catch (Throwable t) {
+        errorMessage = t.getMessage();
+        t.printStackTrace(System.err);
+      } finally {
+        if (errorMessage != null) {
+          pageRangesTextArea.setBackground(new Color(255, 230, 230));
+          setStatusMessage(errorMessage);
+        } else {
+          pageRangesTextArea.setBackground(Color.WHITE);
+          setStatusMessage("Page range text is valid");
+          registerUnsavedChange();
+        }
+      }
+    });
   }
 
   void errorDialog
@@ -1542,6 +1564,17 @@ public class BinderatorFrame extends JFrame
       documentPathTextField.setText("");
       documentCommentTextArea.setText("");
       setEnabledSourceDocumentsWidgets(false);
+    }
+    String pageRangesSource = book.getPageRangesSource();
+    if (pageRangesSource != null) {
+      pageRangesTextArea.setText(pageRangesSource);
+      execute(() -> {
+        try {
+          book.getPages();
+        } catch (Throwable t) {
+          errorDialog(t);
+        }
+      });
     }
   }
 

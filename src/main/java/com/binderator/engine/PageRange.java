@@ -16,7 +16,7 @@ public class PageRange implements Comparable<PageRange>, Serializable {
   private final String docId;
   private final Integer startPageNumber;
   private final Integer endPageNumber;
-  private final Integer repetitions;
+  private Integer repetitions;
   private final Boolean even;
 
   public String getDocId
@@ -41,6 +41,18 @@ public class PageRange implements Comparable<PageRange>, Serializable {
   ()
   {
     return even;
+  }
+
+  public boolean isBlank
+  ()
+  {
+    return docId == null;
+  }
+
+  public int getRepetitions
+  ()
+  {
+    return repetitions != null ? repetitions : 0;
   }
 
   public PageRange
@@ -75,8 +87,16 @@ public class PageRange implements Comparable<PageRange>, Serializable {
     List<PageRange> pageRanges = new ArrayList<>();
     String[] rangeSources = source.split("\\s*,\\s*");
     Integer repetitions = null;
+    // A cumulative blank range:
+    PageRange blankRange = null;
     for (String rangeSource : rangeSources) {
       if (rangeSource.isEmpty()) {
+        // A blank page:
+        if (blankRange != null) {
+          blankRange.repetitions = blankRange.getRepetitions() + 1;
+        } else {
+          blankRange = new PageRange(null, 0, 0, 1, true);
+        }
         continue;
       }
       Matcher rangeMatcher =
@@ -104,21 +124,28 @@ public class PageRange implements Comparable<PageRange>, Serializable {
         Boolean even = null;
         if ((evenSource != null) && !evenSource.isEmpty()) {
           if (Objects.equals(from, to)) {
-            throw new Exception("Invalid even/odd specifier for single page in range");
+            throw new Exception("Invalid even/odd specifier for single page in range: " + rangeSource);
           }
           if (evenSource.equalsIgnoreCase("even")) {
             even = true;
           } else if (evenSource.equalsIgnoreCase("odd")) {
             even = false;
           } else {
-            throw new Exception ("Invalid even/odd specifier \"" + evenSource + "\" in page range");
+            throw new Exception ("Invalid even/odd specifier \"" + evenSource + "\" in page range: " + rangeSource);
           }
         }
-        PageRange range = new PageRange(docId, from, to, repetitions, even);
-        pageRanges.add(range);
+        if (blankRange != null) {
+          pageRanges.add(blankRange);
+          blankRange = null;
+        }
+        pageRanges.add(new PageRange(docId, from, to, repetitions, even));
       } else {
         throw new ParseException("String \"" + rangeSource + "\" is not a valid page range", 0);
       }
+    }
+    if (blankRange != null) {
+      pageRanges.add(blankRange);
+      blankRange = null;
     }
     return pageRanges;
   }
@@ -129,7 +156,13 @@ public class PageRange implements Comparable<PageRange>, Serializable {
   {
     List<PageRef> pageRefs = new ArrayList<>();
     for (PageRange pageRange : pageRanges) {
-      pageRange.getPageRefs(pageRefs, sourceDocumentsById);
+      if (pageRange.isBlank()) {
+        for (int i = 0; i < pageRange.getRepetitions(); i++) {
+          pageRefs.add(new PageRef(null, 0));
+        }
+        continue;
+      }
+      pageRefs.addAll(pageRange.getPageRefs(null, sourceDocumentsById));
     }
     return pageRefs;
   }
@@ -196,13 +229,15 @@ public class PageRange implements Comparable<PageRange>, Serializable {
     int startPageIndex = (startPageNumber != null) ? startPageNumber - 1 : 0;
     if ((startPageIndex < 0) || (startPageIndex >= orderedPages.size())) {
       throw new Exception(
-        "Invalid start page " + (startPageIndex + 1) + " in range on " + orderedPages.size() + " source pages"
+        "Invalid start page " + (startPageIndex + 1) + " in page range over " + orderedPages.size() +
+        " source pages from document " + docId
       );
     }
     int endPageIndex = (endPageNumber != null) ? endPageNumber - 1 : orderedPages.size() - 1;
     if ((endPageIndex < 0) || (endPageIndex >= orderedPages.size())) {
       throw new Exception(
-        "Invalid end page " + (endPageIndex + 1) + " in range on " + orderedPages.size() + " source pages"
+        "Invalid end page " + (endPageIndex + 1) + " in page range over " + orderedPages.size() +
+        " source pages from document " + docId
       );
     }
     int repetitions = this.repetitions != null ? this.repetitions : 1;

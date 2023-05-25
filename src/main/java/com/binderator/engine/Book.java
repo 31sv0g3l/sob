@@ -9,7 +9,6 @@ import com.lowagie.text.pdf.*;
 import java.awt.*;
 import java.awt.geom.*;
 import java.io.*;
-import java.sql.Array;
 import java.util.*;
 import java.util.List;
 
@@ -168,7 +167,6 @@ public class Book implements Serializable {
   boolean scaleToFit = true;
   private String pageRangesSource = null;
   private List<PageRef> pages = null;
-  private Integer pageCount = 0;
   private int signatureSheets = 8; // 32 pages
 
   // Spine and edge offsets are for signature generation only:
@@ -207,9 +205,11 @@ public class Book implements Serializable {
     pageSize = new SerializableRectangle(book.pageSize);
     signaturePageSize = new SerializableRectangle(book.signaturePageSize);
     scaleToFit = book.scaleToFit;
+    pageRangesSource = book.pageRangesSource;
     pages = new ArrayList<>();
-    pages.addAll(book.pages);
-    pageCount = book.pageCount;
+    if (book.pages != null) {
+      pages.addAll(book.pages);
+    }
     signatureSheets = book.signatureSheets;
     minimiseLastSignature = book.minimiseLastSignature;
     spineOffsetRatio.copy(book.spineOffsetRatio);
@@ -656,8 +656,13 @@ public class Book implements Serializable {
   private void clearPages
   ()
   {
-    pageCount = 0;
     pages = null;
+  }
+
+  public String getPageRangesSource
+  ()
+  {
+    return pageRangesSource;
   }
 
   public void setPageRangesSource
@@ -1009,11 +1014,11 @@ public class Book implements Serializable {
       setProgressLabel(translate("documentGenerationColon"));
       for (int totalPageNumber = 1; totalPageNumber <= getPages().size(); totalPageNumber++) {
         PageRef pageRef = getPages().get(totalPageNumber - 1);
-        if ((targetPages != null) && !targetPages.contains(pageRef)) {
+        if ((!pageRef.isBlankPage()) && ((targetPages != null) && !targetPages.contains(pageRef))) {
           continue;
         }
         document.newPage();
-        if (pageRef.getPdfReader() != null) {
+        if ((!pageRef.isBlankPage()) && (pageRef.getPdfReader() != null)) {
           AffineTransform affineTransform = null;
           TransformedImage transformedImage =
             generatePageImage(writer, pageRef, pageSize.getRectangle(), totalPageNumber % 2 == 0);
@@ -1221,10 +1226,10 @@ public class Book implements Serializable {
     try {
       // We are generating signatures _from_ the output path:
       generatePDF(outputPath);
-      if (pageCount <= 0) {
+      if (getPageCount() <= 0) {
         throw new Exception("Document not loaded or empty");
       }
-      int[][][] signatures = generateSignaturePageNumbers(pageCount, signatureSheets, minimiseLastSignature);
+      int[][][] signatures = generateSignaturePageNumbers(getPageCount(), signatureSheets, minimiseLastSignature);
       int[] signatureIndices;
       if (signatureNumbers.length > 0) {
         // Make an array of indices from 0 to signatureNumbers.length, where each index is the signature number - 1:
@@ -1249,7 +1254,7 @@ public class Book implements Serializable {
       int totalSignaturePageCount = signatureSheets * 4 * signatures.length;
       int generatedPageCount = 0;
       setProgressLabel(translate("signatureGenerationColon"));
-      setProgress(0, pageCount);
+      setProgress(0, getPageCount());
       for (int signatureIndex : signatureIndices) {
         String signatureFileName = destinationSignaturePrefix + "_sig_" + (signatureIndex + 1) + ".pdf";
         File signatureDirectory = new File(destinationDirectoryPath);

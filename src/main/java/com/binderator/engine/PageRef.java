@@ -48,7 +48,7 @@ public class PageRef implements Comparable<PageRef>, Serializable {
   ()
   throws IOException
   {
-    return sourceDocument.getReader();
+    return sourceDocument != null ? sourceDocument.getReader() : null;
   }
 
   public int getPageNumber
