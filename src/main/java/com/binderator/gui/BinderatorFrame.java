@@ -2035,6 +2035,7 @@ public class BinderatorFrame extends JFrame
       frame.setBook(book);
       frame.setStatusMessage(translate("project") + " " + book.getName() + " " + translate("loadedSuccessfully"));
     }
+    frame.execute(() -> { frame.haveUnsavedChanges = false; });
     frame.setVisible(true);
   }
 

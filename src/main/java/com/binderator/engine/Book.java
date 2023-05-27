@@ -1018,6 +1018,7 @@ public class Book implements Serializable {
           continue;
         }
         document.newPage();
+        writer.setPageEmpty(false);
         if ((!pageRef.isBlankPage()) && (pageRef.getPdfReader() != null)) {
           AffineTransform affineTransform = null;
           TransformedImage transformedImage =
