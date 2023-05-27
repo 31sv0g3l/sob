@@ -1383,6 +1383,10 @@ public class Book implements Serializable {
       cb.stroke();
     }
     cb.restoreState();
+    cb.setColorStroke(Color.BLACK);
+    cb.moveTo(signatureMidX, 0.0f);
+    cb.lineTo(signatureMidX, signatureHeight);
+    cb.stroke();
   }
 
 }
