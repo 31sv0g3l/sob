@@ -1207,7 +1207,7 @@ public class Book implements Serializable {
   public void generatePDFSignatures
   (String destinationDirectoryPath, String destinationSignaturePrefix, int ... signatureNumbers)
   {
-    generatePDFSignatures(null, destinationDirectoryPath, destinationSignaturePrefix, signatureNumbers);
+    generatePDFSignatures(null, destinationDirectoryPath, destinationSignaturePrefix, false, signatureNumbers);
   }
 
   /**
@@ -1216,12 +1216,16 @@ public class Book implements Serializable {
    *        of destinationDirectoryPath and destinationSignaturePrefix.
    * @param destinationDirectoryPath path to the directory in which to generate signature files.  This parameter will
    *        be ignored if out is non-null.
+   * @param addSpineImage if true, a simulated spine-create image will be drawn in the middle of signatures.
    * @param destinationSignaturePrefix filename prefix for individaul signature files.  This parameter will be ignored
    *        if out is non-null.
    * @param signatureNumbers if non-null, an array of 1-based signature numbers to generate
    */
   public void generatePDFSignatures
-  (OutputStream out, String destinationDirectoryPath, String destinationSignaturePrefix, int ... signatureNumbers)
+  (
+    OutputStream out, String destinationDirectoryPath, String destinationSignaturePrefix, boolean addSpineImage,
+    int ... signatureNumbers
+  )
   {
     try {
       // We are generating signatures from the output:
@@ -1290,6 +1294,9 @@ public class Book implements Serializable {
         PdfContentByte cb = writer.getDirectContent();
         for (int signatureSheetIndex = 0; signatureSheetIndex < signatureSheets; signatureSheetIndex++) {
           int[] sheetSourcePageNumbers = signatures[signatureIndex][signatureSheetIndex];
+          if (addSpineImage) {
+            addSpineImage(cb);
+          }
           for (int signatureSheetPageIndex = 0; signatureSheetPageIndex < 4; signatureSheetPageIndex++) {
             generatedPageCount++;
             // We assume that, if generating to a given stream, it is for a viewer, and we don't want to render
@@ -1298,6 +1305,9 @@ public class Book implements Serializable {
             boolean even = signatureSheetPageIndex % 2 == 0;
             if (even) {
               document.newPage();
+              if (addSpineImage) {
+                addSpineImage(cb);
+              }
             }
             int totalPageNumber = sheetSourcePageNumbers[signatureSheetPageIndex];
             if (totalPageNumber > 0) {
@@ -1338,6 +1348,35 @@ public class Book implements Serializable {
       printStatus(translate("generated") + " " + signatures.length + " " + translate("signatures") + ".");
     } catch (Exception e) {
       handleException(e);
+    }
+  }
+
+  private void addSpineImage
+  (PdfContentByte cb)
+  {
+    int nLines = 34;
+    float pointsWidth = 106f;
+    float signatureMidX = signaturePageSize.getRectangle().getHeight() / 2.0f;
+    float signatureHeight = signaturePageSize.getRectangle().getWidth();
+    float lineWidth = pointsWidth/(float)nLines;
+    cb.setLineWidth(lineWidth);
+    for (int i = 0; i < nLines / 2; i++) {
+      float ratio = 0.5f  + 0.5f * (((float)i) / ((float)nLines / 2.0f));
+      if (ratio > 1.0f) {
+        ratio = 1.0f;
+      }
+      Color color = null;
+      try {
+        color = new Color(ratio, ratio, ratio);
+      } catch (Exception e) {
+        System.err.println("ratio: " + ratio);
+      }
+      cb.setColorStroke(color);
+      cb.moveTo(signatureMidX - i * lineWidth, 0.0f);
+      cb.lineTo(signatureMidX - i * lineWidth, signatureHeight);
+      cb.moveTo(signatureMidX + i * lineWidth, 0.0f);
+      cb.lineTo(signatureMidX + i * lineWidth, signatureHeight);
+      cb.stroke();
     }
   }
 

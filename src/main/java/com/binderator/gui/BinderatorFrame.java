@@ -50,7 +50,7 @@ public class BinderatorFrame extends JFrame
             }
             if (signaturesViewerActive) {
               ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-              book.generatePDFSignatures(byteArrayOutputStream, null, null);
+              book.generatePDFSignatures(byteArrayOutputStream, null, null, true);
               byte[] signaturesBytes = byteArrayOutputStream.toByteArray();
               int pageNumber = signaturesViewer.controller.getCurrentPageNumber();
               signaturesViewer.setContent(signaturesBytes, false);
@@ -74,10 +74,9 @@ public class BinderatorFrame extends JFrame
 
   @Serial
   private static final long serialVersionUID = -1429747105438739695L;
-  public static final String VERSION = "0.2.2";
+  public static final String VERSION = "0.2.3";
   private static BinderatorFrame singletonInstance = null;
   private boolean haveUnsavedChanges = false;
-  private boolean haveViewerContentChange = false;
   private ViewerRenderingThread viewerRenderingThread = null;
   String projectPath = null;
   JPanel mainPanel;
@@ -1892,12 +1891,9 @@ public class BinderatorFrame extends JFrame
   private void notifyViewerBookChange
   ()
   {
-//    if (viewerActive) {
     if (viewerRenderingThread != null) {
       viewerRenderingThread.signalTask();
     }
-//    }
-    haveViewerContentChange = true;
   }
 
 
