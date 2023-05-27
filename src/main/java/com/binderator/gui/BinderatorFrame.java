@@ -34,18 +34,28 @@ public class BinderatorFrame extends JFrame
     public void task
     ()
     {
-      if (viewerActive) {
+      if (viewerActive || signaturesViewerActive) {
         bookLock.lock();
         try {
           if (book.getPageCount() > 0) {
             Book book = new Book(getBook());
             bookLock.unlock();
-            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-            book.generatePDF(byteArrayOutputStream, book.isUsingMargins(), book.isUsingPageNumbering(), null);
-            byte[] bookBytes = byteArrayOutputStream.toByteArray();
-            int pageNumber = viewer.controller.getCurrentPageNumber();
-            viewer.setContent(bookBytes);
-            viewer.controller.showPage(pageNumber);
+            if (viewerActive) {
+              ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+              book.generatePDF(byteArrayOutputStream, book.isUsingMargins(), book.isUsingPageNumbering(), null);
+              byte[] bookBytes = byteArrayOutputStream.toByteArray();
+              int pageNumber = viewer.controller.getCurrentPageNumber();
+              viewer.setContent(bookBytes);
+              viewer.controller.showPage(pageNumber);
+            }
+            if (signaturesViewerActive) {
+              ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+              book.generatePDF(byteArrayOutputStream, book.isUsingMargins(), book.isUsingPageNumbering(), null);
+              byte[] signaturesBytes = byteArrayOutputStream.toByteArray();
+              int pageNumber = signaturesViewer.controller.getCurrentPageNumber();
+              signaturesViewer.setContent(signaturesBytes);
+              signaturesViewer.controller.showPage(pageNumber);
+            }
           } else {
             viewer.setContent(new byte[0]);
           }
@@ -82,6 +92,7 @@ public class BinderatorFrame extends JFrame
   JButton generateButton;
   JButton generateSignaturesButton;
   JButton viewerButton;
+  JButton signaturesViewerButton;
   JButton exitButton;
   JPanel projectPanel;
   JPanel documentsPanel;
@@ -97,7 +108,9 @@ public class BinderatorFrame extends JFrame
   private static final String ACTION_GENERATE = "generate";
   private static final String ACTION_GENERATE_SIGNATURES = "generateSignatures";
   private static final String ACTION_SHOW_HIDE_VIEWER = "showHideViewer";
+  private static final String ACTION_SHOW_HIDE_SIGNATURES_VIEWER = "showHideSignaturesViewer";
   private boolean viewerActive = false;
+  private boolean signaturesViewerActive = false;
   Book book = null;
   ReentrantLock bookLock = new ReentrantLock();
   JComboBox<SourceDocument> sourceDocumentsComboBox;
@@ -134,6 +147,7 @@ public class BinderatorFrame extends JFrame
   private JDialog inlineHelpDialog = null;
   private boolean showProgressBars = true;
   private ICEViewer viewer = null;
+  private ICEViewer signaturesViewer = null;
   private final FileFilter bdrFilter = new FileNameExtensionFilter("Son of Binderator files", "bdr");
   private String basePath = null;
 
@@ -735,6 +749,12 @@ public class BinderatorFrame extends JFrame
     viewerButton.setToolTipText(translate("buttonTooltipViewer"));
     buttonPanel.add(Box.createHorizontalStrut(scale(10)));
     buttonPanel.add(viewerButton);
+    signaturesViewerButton = new JButton(translate("signaturesViewer"));
+    signaturesViewerButton.setActionCommand(ACTION_SHOW_HIDE_SIGNATURES_VIEWER);
+    signaturesViewerButton.addActionListener(this);
+    signaturesViewerButton.setToolTipText(translate("buttonTooltipSignaturesViewer"));
+    buttonPanel.add(Box.createHorizontalStrut(scale(10)));
+    buttonPanel.add(signaturesViewerButton);
     exitButton = new JButton(translate("exit"));
     exitButton.setActionCommand(ACTION_EXIT);
     exitButton.addActionListener(this);
@@ -1935,6 +1955,29 @@ public class BinderatorFrame extends JFrame
             viewer.setVisible(true);
           }
         }
+        case ACTION_SHOW_HIDE_SIGNATURES_VIEWER -> {
+          boolean newViewer = false;
+          if (signaturesViewer == null) {
+            signaturesViewer = new ICEViewer(translate("signaturesViewerTitle"), 1400, 1024, this);
+            newViewer = true;
+          }
+          if (viewerRenderingThread == null) {
+            viewerRenderingThread = new ViewerRenderingThread();
+            viewerRenderingThread.start();
+          }
+          if (signaturesViewerButton.isSelected()) {
+            signaturesViewerButton.setSelected(false);
+            signaturesViewerActive = false;
+            signaturesViewer.setVisible(false);
+          } else {
+            signaturesViewerButton.setSelected(true);
+            signaturesViewerActive = true;
+            if (newViewer) {
+              viewerRenderingThread.signalTask();
+            }
+            signaturesViewer.setVisible(true);
+          }
+        }
       }
     } catch (Throwable t) {
       errorDialog(t);
@@ -1943,9 +1986,17 @@ public class BinderatorFrame extends JFrame
 
   @Override
   public void onICEViewerClose
-  ()
+  (ICEViewer instance)
   {
-    gracefulExit();
+    if (instance == viewer) {
+      if (viewerButton.isSelected()) {
+        viewerButton.setSelected(false);
+      }
+    } else if (instance == signaturesViewer) {
+      if (signaturesViewerButton.isSelected()) {
+        signaturesViewerButton.setSelected(false);
+      }
+    }
   }
 
   @Override
