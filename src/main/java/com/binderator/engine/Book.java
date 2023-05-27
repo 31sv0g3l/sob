@@ -1360,8 +1360,12 @@ public class Book implements Serializable {
     float signatureHeight = signaturePageSize.getRectangle().getWidth();
     float lineWidth = pointsWidth/(float)nLines;
     cb.setLineWidth(lineWidth);
+    cb.saveState();
+    PdfGState newGState = new PdfGState();
+    newGState.setStrokeOpacity(0.5f);
+    cb.setGState(newGState);
     for (int i = 0; i < nLines / 2; i++) {
-      float ratio = 0.5f  + 0.5f * (((float)i) / ((float)nLines / 2.0f));
+      float ratio = 0.3f  + 0.7f * (((float)i) / ((float)nLines / 2.0f));
       if (ratio > 1.0f) {
         ratio = 1.0f;
       }
@@ -1378,6 +1382,7 @@ public class Book implements Serializable {
       cb.lineTo(signatureMidX + i * lineWidth, signatureHeight);
       cb.stroke();
     }
+    cb.restoreState();
   }
 
 }
