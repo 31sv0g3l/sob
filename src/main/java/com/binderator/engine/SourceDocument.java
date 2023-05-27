@@ -126,7 +126,7 @@ public class SourceDocument implements Serializable, Comparable<SourceDocument> 
   (SourceDocument other)
   {
     int comparison;
-    if ((comparison = Objects.compare(this.path, other.path, String::compareTo)) != 0) {
+   if ((comparison = Objects.compare(this.path, other.path, String::compareTo)) != 0) {
       return comparison;
     }
     if ((comparison = Objects.compare(this.name, other.name, String::compareTo)) != 0) {

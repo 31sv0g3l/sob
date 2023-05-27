@@ -80,9 +80,17 @@ public class PageRef implements Comparable<PageRef>, Serializable {
   public int compareTo
   (PageRef other)
   {
-    int comparison = Objects.compare(sourceDocument, other.sourceDocument, SourceDocument::compareTo);
-    if (comparison != 0) {
-      return comparison;
+    if (sourceDocument == null) {
+      if (other.sourceDocument != null) {
+        return -1;
+      }
+    } else if (other.sourceDocument == null) {
+      return 1;
+    } else {
+      int comparison = Objects.compare(sourceDocument, other.sourceDocument, SourceDocument::compareTo);
+      if (comparison != 0) {
+        return comparison;
+      }
     }
     return Integer.compare(pageNumber, other.pageNumber);
   }

@@ -50,10 +50,10 @@ public class BinderatorFrame extends JFrame
             }
             if (signaturesViewerActive) {
               ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-              book.generatePDF(byteArrayOutputStream, book.isUsingMargins(), book.isUsingPageNumbering(), null);
+              book.generatePDFSignatures(byteArrayOutputStream, null, null);
               byte[] signaturesBytes = byteArrayOutputStream.toByteArray();
               int pageNumber = signaturesViewer.controller.getCurrentPageNumber();
-              signaturesViewer.setContent(signaturesBytes);
+              signaturesViewer.setContent(signaturesBytes, false);
               signaturesViewer.controller.showPage(pageNumber);
             }
           } else {

@@ -621,6 +621,7 @@ public class Book implements Serializable {
     if (statusListener != null) {
       statusListener.handleBookException(e);
     }
+    e.printStackTrace(System.err);
   }
 
   public PrintStream getErrorOut
@@ -702,27 +703,6 @@ public class Book implements Serializable {
       addSourceDocument(new SourceDocument(sourceDocumentPath));
     }
   }
-
-/*
-  public void generatePages
-  ()
-  {
-    try {
-      clearPages();
-      for (SourceDocument sourceDocument : sourceDocuments) {
-        int documentPageCount = sourceDocument.getPageCount();
-        if (documentPageCount > 0) {
-          Collection<PageRef> sourceDocumentPages = sourceDocument.getPages();
-          pageCount += sourceDocumentPages.size();
-          pages.addAll(sourceDocumentPages);
-        }
-      }
-      printStatus(translate("generatedDocumentHas") + " " + pageCount + " " + translate("pages") + ".");
-    } catch (Exception e) {
-      handleException(e);
-    }
-  }
- */
 
   public boolean closePDFs
   ()
@@ -859,6 +839,9 @@ public class Book implements Serializable {
     }
     if (transforms != null) {
       for (Transform transform : transforms) {
+        if (!transform.isEnabled()) {
+          continue;
+        }
         switch (transform.getType()) {
           case ROTATION_IN_DEGREES -> {
             // Translate to the origin:
@@ -1224,6 +1207,22 @@ public class Book implements Serializable {
   public void generatePDFSignatures
   (String destinationDirectoryPath, String destinationSignaturePrefix, int ... signatureNumbers)
   {
+    generatePDFSignatures(null, destinationDirectoryPath, destinationSignaturePrefix, signatureNumbers);
+  }
+
+  /**
+   * Generate PDF signature files based on the current settings of this Book.
+   * @param out if non-null, an output stream to which <em>all</em> signatures will be generated, ignoring the values
+   *        of destinationDirectoryPath and destinationSignaturePrefix.
+   * @param destinationDirectoryPath path to the directory in which to generate signature files.  This parameter will
+   *        be ignored if out is non-null.
+   * @param destinationSignaturePrefix filename prefix for individaul signature files.  This parameter will be ignored
+   *        if out is non-null.
+   * @param signatureNumbers if non-null, an array of 1-based signature numbers to generate
+   */
+  public void generatePDFSignatures
+  (OutputStream out, String destinationDirectoryPath, String destinationSignaturePrefix, int ... signatureNumbers)
+  {
     try {
       // We are generating signatures _from_ the output path:
       generatePDF(outputPath);
@@ -1256,23 +1255,32 @@ public class Book implements Serializable {
       int generatedPageCount = 0;
       setProgressLabel(translate("signatureGenerationColon"));
       setProgress(0, getPageCount());
+      PdfWriter writer = null;
+      Document document = null;
       for (int signatureIndex : signatureIndices) {
         String signatureFileName = destinationSignaturePrefix + "_sig_" + (signatureIndex + 1) + ".pdf";
-        File signatureDirectory = new File(destinationDirectoryPath);
-        if (!(signatureDirectory.canExecute() && signatureDirectory.canWrite())) {
-          if (!signatureDirectory.mkdirs()) {
-            throw new Exception("Couldn't access / create signatures directory \"" + destinationDirectoryPath + "\"");
+        File signatureDirectory = (out == null) ? new File(destinationDirectoryPath) : null;
+        if (signatureDirectory != null) {
+          if (!(signatureDirectory.canExecute() && signatureDirectory.canWrite())) {
+            if (!signatureDirectory.mkdirs()) {
+              throw new Exception("Couldn't access / create signatures directory \"" + destinationDirectoryPath + "\"");
+            }
           }
         }
         File signatureFile = new File(destinationDirectoryPath, signatureFileName);
         // Rectangle unitSize = new Rectangle(pageSize.getHeight() / 2.0f, pageSize.getWidth());
-        Document document = new Document(signaturePageSize.getRectangle().rotate(), 0, 0, 0, 0);
-        document.setMargins(0.0f, 0.0f, 0.0f, 0.0f);
         Rectangle halfSize = new Rectangle(
           signaturePageSize.getRectangle().getHeight() / 2.0f,
           signaturePageSize.getRectangle().getWidth()
         );
-        PdfWriter writer = PdfWriter.getInstance(document, new FileOutputStream(signatureFile));
+        OutputStream signatureStream = (out != null) ? out : new FileOutputStream(signatureFile);
+        if (out == null || document == null) {
+          document = new Document(signaturePageSize.getRectangle().rotate(), 0, 0, 0, 0);
+          document.setMargins(0.0f, 0.0f, 0.0f, 0.0f);
+        }
+        if (out == null || writer == null) {
+            writer = PdfWriter.getInstance(document, signatureStream);
+        }
         document.open();
         PdfContentByte cb = writer.getDirectContent();
         SourceDocument outputSourceDocument = new SourceDocument(outputPath);
@@ -1281,7 +1289,9 @@ public class Book implements Serializable {
           int[] sheetSourcePageNumbers = signatures[signatureIndex][signatureSheetIndex];
           for (int signatureSheetPageIndex = 0; signatureSheetPageIndex < 4; signatureSheetPageIndex++) {
             generatedPageCount++;
-            boolean upsideDown = signatureSheetPageIndex > 1;
+            // We assume that, if generating to a given stream, it is for a viewer, and we don't want to render
+            // every other signature page upside down:
+            boolean upsideDown = (out == null) && signatureSheetPageIndex > 1;
             boolean even = signatureSheetPageIndex % 2 == 0;
             if (even) {
               document.newPage();
@@ -1315,6 +1325,11 @@ public class Book implements Serializable {
             setProgress(generatedPageCount, totalSignaturePageCount);
           }
         }
+        if (out == null) {
+          document.close();
+        }
+      }
+      if (out != null) {
         document.close();
       }
       printStatus(translate("generated") + " " + signatures.length + " " + translate("signatures") + ".");

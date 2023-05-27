@@ -2,6 +2,8 @@ package com.binderator.gui;
 
 
 import org.icepdf.ri.common.*;
+import org.icepdf.ri.common.views.DocumentViewControllerImpl;
+
 import javax.swing.*;
 import java.awt.event.*;
 import java.io.*;
@@ -65,11 +67,21 @@ public class ICEViewer extends JFrame {
   }
 
   public void setContent
-  (byte[] pdfContent)
+  (byte[] content)
+  {
+    setContent(content, false);
+  }
+
+  public void setContent
+  (byte[] pdfContent, boolean rotateLeft)
   {
     if ((pdfContent != null) && (pdfContent.length > 0)) {
       ByteArrayInputStream inputStream = new ByteArrayInputStream(pdfContent);
       controller.openDocument(inputStream, "inline", "inline");
+      if (rotateLeft) {
+        controller.rotateLeft();
+      }
+      controller.setPageFitMode(DocumentViewControllerImpl.PAGE_FIT_WINDOW_HEIGHT, true);
     } else {
       controller.closeDocument();
     }
