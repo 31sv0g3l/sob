@@ -1,10 +1,8 @@
 package com.binderator.engine;
 
 
-import com.binderator.util.*;
 import com.lowagie.text.pdf.*;
 import java.io.*;
-import java.text.*;
 import java.util.*;
 import java.util.regex.*;
 
@@ -15,11 +13,11 @@ public class SourceDocument implements Serializable, Comparable<SourceDocument> 
   @Serial
   private static final long serialVersionUID = -1029037522867925664L;
 
-  private Book book = null;
   private String stringId;
   private String name;
   private String comment;
-  private String path;
+  private String path = null;
+  private InputStream inputStream = null;
   private transient PdfReader reader = null;
   List<PageRef> sourcePages = null;
   List<PageRef> pages = null;
@@ -37,6 +35,21 @@ public class SourceDocument implements Serializable, Comparable<SourceDocument> 
     name = sourceDocument.name;
     comment = sourceDocument.comment;
     path = sourceDocument.path;
+  }
+
+  public SourceDocument
+  (InputStream inputStream)
+  {
+    this(null, null, inputStream);
+  }
+
+  public SourceDocument
+  (String stringId, String name, InputStream inputStream)
+  {
+    this.stringId = stringId;
+    this.name = name;
+    path = null;
+    this.inputStream = inputStream;
   }
 
   public SourceDocument
@@ -106,7 +119,6 @@ public class SourceDocument implements Serializable, Comparable<SourceDocument> 
   void setBook
   (Book book)
   {
-    this.book = book;
   }
 
   public PdfReader getReader
@@ -114,7 +126,9 @@ public class SourceDocument implements Serializable, Comparable<SourceDocument> 
   throws IOException
   {
     if (reader == null) {
-      if ((path != null) && !path.isBlank()) {
+      if (inputStream != null) {
+        reader = new PdfReader(inputStream, null);
+      } else if ((path != null) && !path.isBlank()) {
         reader = new PdfReader(new FileInputStream(path), null);
       }
     }

@@ -1224,8 +1224,13 @@ public class Book implements Serializable {
   (OutputStream out, String destinationDirectoryPath, String destinationSignaturePrefix, int ... signatureNumbers)
   {
     try {
-      // We are generating signatures _from_ the output path:
-      generatePDF(outputPath);
+      // We are generating signatures from the output:
+      ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+      generatePDF(byteArrayOutputStream, isUsingMargins(), isUsingPageNumbering(), null);
+      byte[] bookBytes = byteArrayOutputStream.toByteArray();
+      InputStream bookStream = new ByteArrayInputStream(bookBytes);
+      SourceDocument outputSourceDocument = new SourceDocument(bookStream);
+      List<PageRef> outputPages = outputSourceDocument.getSourcePages();
       if (getPageCount() <= 0) {
         throw new Exception("Document not loaded or empty");
       }
@@ -1283,8 +1288,6 @@ public class Book implements Serializable {
         }
         document.open();
         PdfContentByte cb = writer.getDirectContent();
-        SourceDocument outputSourceDocument = new SourceDocument(outputPath);
-        List<PageRef> outputPages = outputSourceDocument.getSourcePages();
         for (int signatureSheetIndex = 0; signatureSheetIndex < signatureSheets; signatureSheetIndex++) {
           int[] sheetSourcePageNumbers = signatures[signatureIndex][signatureSheetIndex];
           for (int signatureSheetPageIndex = 0; signatureSheetPageIndex < 4; signatureSheetPageIndex++) {
