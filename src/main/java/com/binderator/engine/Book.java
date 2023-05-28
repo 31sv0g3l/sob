@@ -6,6 +6,8 @@ import com.lowagie.text.*;
 import com.lowagie.text.Image;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.*;
+
+import javax.xml.transform.Source;
 import java.awt.*;
 import java.awt.geom.*;
 import java.io.*;
@@ -35,6 +37,9 @@ public class Book implements Serializable {
 
     void handleBookProgress
     (float progress, float maxProgress);
+
+    void handlePageRangesChange
+    (String pageRangesText);
 
   }
 
@@ -517,8 +522,8 @@ public class Book implements Serializable {
   {
     sourceDocumentsById.clear();
     for (SourceDocument document : sourceDocuments) {
-      if ((document.getStringId() != null) && !document.getStringId().isEmpty()) {
-        sourceDocumentsById.put(document.getStringId(), document);
+      if ((document.getId() != null) && !document.getId().isEmpty()) {
+        sourceDocumentsById.put(document.getId(), document);
       }
     }
   }
@@ -644,7 +649,7 @@ public class Book implements Serializable {
   throws Exception
   {
     sourceDocuments.add(sourceDocument);
-    String stringId = sourceDocument.getStringId();
+    String stringId = sourceDocument.getId();
     if (stringId != null) {
       if (sourceDocumentsById.containsKey(stringId)) {
         throw new Exception("A source document with id \"" + stringId + "\" is already defined");
@@ -652,6 +657,18 @@ public class Book implements Serializable {
       sourceDocumentsById.put(stringId, sourceDocument);
     }
     sourceDocument.setBook(this);
+  }
+
+  void  changeSourceDocumentId
+  (String oldId, String newId, SourceDocument sourceDocument)
+  {
+    if (oldId != null) {
+      sourceDocumentsById.remove(oldId);
+    }
+    if (newId != null) {
+      sourceDocumentsById.put(newId, sourceDocument);
+    }
+    statusListener.handlePageRangesChange(pageRangesSource);
   }
 
   private void clearPages

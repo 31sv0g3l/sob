@@ -60,7 +60,7 @@ public class PageRef implements Comparable<PageRef>, Serializable {
   public String getPageNumberText
   ()
   {
-    String docId = sourceDocument != null ? sourceDocument.getStringId() : null;
+    String docId = sourceDocument != null ? sourceDocument.getId() : null;
     return docId != null ? docId + ':' + pageNumber : "" + pageNumber;
   }
 

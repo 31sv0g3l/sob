@@ -550,7 +550,8 @@ public class BinderatorFrame extends JFrame
     documentIdentifierTextField.addActionListener(event -> {
       if (selectedDocument != null) {
         try {
-          selectedDocument.setStringId(documentIdentifierTextField.getText());
+          String oldId = selectedDocument.getId();
+          selectedDocument.setId(documentIdentifierTextField.getText());
           registerUnsavedChange();
         } catch (Exception e) {
           errorDialog(e);
@@ -902,7 +903,8 @@ public class BinderatorFrame extends JFrame
     }
   }
 
-  private void handlePageRangesChange
+  @Override
+  public void handlePageRangesChange
   (String pageRangesText)
   {
     execute(() -> {
@@ -1624,7 +1626,7 @@ public class BinderatorFrame extends JFrame
   {
     selectedDocument = (SourceDocument)sourceDocumentsComboBox.getSelectedItem();
     if (selectedDocument != null) {
-      documentIdentifierTextField.setText(selectedDocument.getStringId());
+      documentIdentifierTextField.setText(selectedDocument.getId());
       documentNameTextField.setText(selectedDocument.getName());
       documentPathTextField.setText(selectedDocument.getPath());
       documentCommentTextArea.setText(selectedDocument.getComment());

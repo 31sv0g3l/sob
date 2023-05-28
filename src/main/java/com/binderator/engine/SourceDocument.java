@@ -13,7 +13,7 @@ public class SourceDocument implements Serializable, Comparable<SourceDocument> 
   @Serial
   private static final long serialVersionUID = -1029037522867925664L;
 
-  private String stringId;
+  private String id;
   private String name;
   private String comment;
   private String path = null;
@@ -21,6 +21,7 @@ public class SourceDocument implements Serializable, Comparable<SourceDocument> 
   private transient PdfReader reader = null;
   List<PageRef> sourcePages = null;
   List<PageRef> pages = null;
+  private Book book = null;
 
   public SourceDocument
   (String path)
@@ -31,7 +32,7 @@ public class SourceDocument implements Serializable, Comparable<SourceDocument> 
   public SourceDocument
   (SourceDocument sourceDocument)
   {
-    stringId = sourceDocument.stringId;
+    id = sourceDocument.id;
     name = sourceDocument.name;
     comment = sourceDocument.comment;
     path = sourceDocument.path;
@@ -46,7 +47,7 @@ public class SourceDocument implements Serializable, Comparable<SourceDocument> 
   public SourceDocument
   (String stringId, String name, InputStream inputStream)
   {
-    this.stringId = stringId;
+    this.id = stringId;
     this.name = name;
     path = null;
     this.inputStream = inputStream;
@@ -61,22 +62,24 @@ public class SourceDocument implements Serializable, Comparable<SourceDocument> 
   public SourceDocument
   (String stringId, String name, String path, String comment)
   {
-    this.stringId = stringId;
+    this.id = stringId;
     this.name = name;
     this.comment = comment;
     this.path = path;
   }
 
-  public String getStringId
+  public String getId
   ()
   {
-    return stringId;
+    return id;
   }
 
-  public void setStringId
-  (String stringId)
+  public void setId
+  (String id)
   {
-    this.stringId = stringId;
+    String oldId = this.id;
+    this.id = id;
+    book.changeSourceDocumentId(oldId, id, this);
   }
 
   public String getName
@@ -119,6 +122,7 @@ public class SourceDocument implements Serializable, Comparable<SourceDocument> 
   void setBook
   (Book book)
   {
+    this.book = book;
   }
 
   public PdfReader getReader
@@ -146,7 +150,7 @@ public class SourceDocument implements Serializable, Comparable<SourceDocument> 
     if ((comparison = Objects.compare(this.name, other.name, String::compareTo)) != 0) {
       return comparison;
     }
-    if ((comparison = Objects.compare(this.stringId, other.stringId, String::compareTo)) != 0) {
+    if ((comparison = Objects.compare(this.id, other.id, String::compareTo)) != 0) {
       return comparison;
     }
     return 0;
