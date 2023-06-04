@@ -58,8 +58,12 @@ public class BinderatorFrame extends JFrame
               signaturesViewer.controller.showPage(pageNumber);
             }
           } else {
-            viewer.setContent(new byte[0]);
-            signaturesViewer.setContent(new byte[0]);
+            if (viewer != null) {
+              viewer.setContent(new byte[0]);
+            }
+            if (signaturesViewer != null) {
+              signaturesViewer.setContent(new byte[0]);
+            }
           }
         } catch (Exception e) {
           errorDialog(e);
