@@ -1593,6 +1593,7 @@ public class BinderatorFrame extends JFrame
         try {
           book.getPages();
         } catch (Throwable t) {
+          t.printStackTrace(System.err);
           errorDialog(t);
         }
       });

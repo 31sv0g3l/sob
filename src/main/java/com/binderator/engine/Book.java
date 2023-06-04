@@ -247,6 +247,7 @@ public class Book implements Serializable {
     usingPageNumbering = book.usingPageNumbering;
     for (Map.Entry<String, SourceDocument> sourceDocumentByIdEntry : book.sourceDocumentsById.entrySet()) {
       SourceDocument sourceDocument = new SourceDocument(sourceDocumentByIdEntry.getValue());
+      sourceDocument.setBook(this);
       sourceDocumentsById.put(sourceDocumentByIdEntry.getKey(), sourceDocument);
     }
   }
@@ -641,6 +642,10 @@ public class Book implements Serializable {
     if (sourceDocuments == null) {
       sourceDocuments = new ArrayList<>();
     }
+    for (SourceDocument sourceDocument : sourceDocuments)
+    {
+      sourceDocument.setBook(this);
+    }
     return List.copyOf(sourceDocuments);
   }
 
@@ -649,6 +654,7 @@ public class Book implements Serializable {
   throws Exception
   {
     sourceDocuments.add(sourceDocument);
+    sourceDocument.setBook(this);
     String stringId = sourceDocument.getId();
     if (stringId != null) {
       if (sourceDocumentsById.containsKey(stringId)) {
@@ -656,12 +662,12 @@ public class Book implements Serializable {
       }
       sourceDocumentsById.put(stringId, sourceDocument);
     }
-    sourceDocument.setBook(this);
   }
 
   void  changeSourceDocumentId
   (String oldId, String newId, SourceDocument sourceDocument)
   {
+    sourceDocument.setBook(this);
     if (oldId != null) {
       sourceDocumentsById.remove(oldId);
     }
