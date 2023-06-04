@@ -918,7 +918,9 @@ public class BinderatorFrame extends JFrame
       List<PageRef> oldPages = new ArrayList<>();
       List<PageRef> newPages = new ArrayList<>();
       try {
-        oldPages = getBook().getPages();
+        try {
+          oldPages = getBook().getPages();
+        } catch (Exception ignored) {}
         getBook().setPageRangesSource(pageRangesText);
         newPages = getBook().getPages();
         // Pre-parse and colour the background to the page ranges text area red, every time we encounter an error,

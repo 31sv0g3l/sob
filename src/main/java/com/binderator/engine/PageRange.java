@@ -88,7 +88,7 @@ public class PageRange implements Comparable<PageRange>, Serializable {
     if (source.isEmpty()) {
       return pageRanges;
     }
-    String[] rangeSources = source.split(",", -1);
+    String[] rangeSources = source.split("\\s*,\\s*", -1);
     Integer repetitions = null;
     // A cumulative blank range:
     PageRange blankRange = null;
