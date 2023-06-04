@@ -9,6 +9,7 @@ import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
+import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.regex.Pattern;
 import javax.swing.*;
@@ -58,6 +59,7 @@ public class BinderatorFrame extends JFrame
             }
           } else {
             viewer.setContent(new byte[0]);
+            signaturesViewer.setContent(new byte[0]);
           }
         } catch (Exception e) {
           errorDialog(e);
@@ -909,13 +911,16 @@ public class BinderatorFrame extends JFrame
   {
     execute(() -> {
       String errorMessage = null;
+      List<PageRef> oldPages = new ArrayList<>();
+      List<PageRef> newPages = new ArrayList<>();
       try {
+        oldPages = getBook().getPages();
         getBook().setPageRangesSource(pageRangesText);
+        newPages = getBook().getPages();
         // Pre-parse and colour the background to the page ranges text area red, every time we encounter an error,
-        // and white whenver it's good.  This will avoid an error dialog popping up from the rendering thread when
+        // and white whenever it's good.  This will avoid an error dialog popping up from the rendering thread when
         // the viewer is open:
         getBook().getPages();
-        registerUnsavedChange();
       } catch (Throwable t) {
         errorMessage = t.getMessage();
         t.printStackTrace(System.err);
@@ -926,6 +931,8 @@ public class BinderatorFrame extends JFrame
         } else {
           pageRangesTextArea.setBackground(Color.WHITE);
           setStatusMessage("Page range text is valid");
+        }
+        if (!oldPages.equals(newPages)) {
           registerUnsavedChange();
         }
       }
@@ -1584,6 +1591,7 @@ public class BinderatorFrame extends JFrame
       documentNameTextField.setText("");
       documentPathTextField.setText("");
       documentCommentTextArea.setText("");
+      documentIdentifierTextField.setText("");
       setEnabledSourceDocumentsWidgets(false);
     }
     String pageRangesSource = book.getPageRangesSource();
@@ -1597,6 +1605,8 @@ public class BinderatorFrame extends JFrame
           errorDialog(t);
         }
       });
+    } else {
+      pageRangesTextArea.setText("");
     }
   }
 
