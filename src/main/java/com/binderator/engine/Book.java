@@ -6,8 +6,6 @@ import com.lowagie.text.*;
 import com.lowagie.text.Image;
 import com.lowagie.text.Rectangle;
 import com.lowagie.text.pdf.*;
-
-import javax.xml.transform.Source;
 import java.awt.*;
 import java.awt.geom.*;
 import java.io.*;
@@ -707,13 +705,13 @@ public class Book implements Serializable {
   ()
   throws Exception
   {
-    if (pages == null) {
+//    if (pages == null) {
       if (pageRangesSource == null) {
         pages = new ArrayList<>();
       } else {
         pages = PageRange.toPageRefs(PageRange.parsePageRanges(pageRangesSource, true), sourceDocumentsById);
       }
-    }
+//    }
     return pages;
   }
 

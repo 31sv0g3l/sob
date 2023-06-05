@@ -10,7 +10,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.List;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.*;
 import java.util.regex.Pattern;
 import javax.swing.*;
 import javax.swing.event.*;
@@ -83,6 +83,11 @@ public class BinderatorFrame extends JFrame
   public static final String VERSION = "0.2.3";
   private static BinderatorFrame singletonInstance = null;
   private boolean haveUnsavedChanges = false;
+  private static FileFilter binderatorFileFilter =
+    new FileNameExtensionFilter("Son of Binderator files","sob", "SOB", "bdr");
+  private static FileFilter pdfFileFilter =
+    new FileNameExtensionFilter("PDF files","pdf", "PDF");
+
   private ViewerRenderingThread viewerRenderingThread = null;
   String projectPath = null;
   JPanel mainPanel;
@@ -153,7 +158,6 @@ public class BinderatorFrame extends JFrame
   private boolean showProgressBars = true;
   private ICEViewer viewer = null;
   private ICEViewer signaturesViewer = null;
-  private final FileFilter bdrFilter = new FileNameExtensionFilter("Son of Binderator files", "bdr");
   private String basePath = null;
 
 
@@ -1175,8 +1179,9 @@ public class BinderatorFrame extends JFrame
       JFileChooser fileChooser = new JFileChooser(chosenFile);
       if (basePath != null) {
         fileChooser.setCurrentDirectory(new File(basePath));
+        fileChooser.setFileFilter(binderatorFileFilter);
       }
-      fileChooser.setFileFilter(bdrFilter);
+      fileChooser.setFileFilter(binderatorFileFilter);
       int fileChooserRC = fileChooser.showOpenDialog(this);
       if (fileChooserRC == JFileChooser.APPROVE_OPTION) {
         chosenFile = fileChooser.getSelectedFile();
@@ -1196,6 +1201,14 @@ public class BinderatorFrame extends JFrame
       }
     } catch (Exception e) {
       errorDialog(e);
+    } finally {
+      execute(this::deregisterUnsavedChanges);
+      // Add any code to finalise / clean up initialisation of the new Book here...
+      // Explicitly set the page ranges source again, since it can be updated to an empty string out of order by
+      // the deserialisation of a source document id:
+      execute(() -> {
+        getBook().setPageRangesSource(pageRangesTextArea.getText());
+      });
     }
   }
 
@@ -1263,13 +1276,14 @@ public class BinderatorFrame extends JFrame
       JFileChooser fileChooser = new JFileChooser(chosenFile);
       if (basePath != null) {
         fileChooser.setCurrentDirectory(new File(basePath));
+        fileChooser.setFileFilter(binderatorFileFilter);
       }
-      fileChooser.setFileFilter(bdrFilter);
+      fileChooser.setFileFilter(binderatorFileFilter);
       int fileChooserRC = fileChooser.showOpenDialog(this);
       if (fileChooserRC == JFileChooser.APPROVE_OPTION) {
         chosenFile = fileChooser.getSelectedFile();
-        if (!chosenFile.getPath().endsWith(".bdr")) {
-          chosenFile = new File(chosenFile.getPath() + ".bdr");
+        if (!chosenFile.getPath().endsWith(".sob")) {
+          chosenFile = new File(chosenFile.getPath() + ".sob");
         }
         if (chosenFile.exists()) {
           if (!chosenFile.delete()) {
@@ -1412,6 +1426,7 @@ public class BinderatorFrame extends JFrame
         updateSourceDocumentsTab();
         updateTransformSetsTab();
         haveUnsavedChanges = false;
+        notifyViewerBookChange();
       },
       true
     );
@@ -1905,6 +1920,12 @@ public class BinderatorFrame extends JFrame
   {
     haveUnsavedChanges = true;
     notifyViewerBookChange();
+  }
+
+  private void deregisterUnsavedChanges
+  ()
+  {
+    haveUnsavedChanges = false;
   }
 
   private void notifyViewerBookChange
