@@ -3,6 +3,7 @@ aboutMenu { About Menu }
 aboutSOB { About Son of Binderator }
 app { App }
 applicationName { Son of Binderator }
+apply { APPLY }
 appMenu { Application Menu }
 bottomColon { Bottom: }
 buttonTooltipGenerate { Generate PDF to the output path configured in the Project tab }
@@ -24,6 +25,7 @@ documentId { Id (short identifier for use in operation page ranges) }
 doesNotExist { does not exist }
 done { Done }
 edgeOffset { Edge Offset: }
+edgeOffsetRatio { edge offset ratio }
 exit { Exit }
 file { File }
 fileMenu { File menu }
@@ -58,6 +60,7 @@ Minimise the number of sheets used in the last signature
 to produce the least possible number of blank pages
 }
 spineOffset { Spine Offset: }
+spineOffsetRatio { spine offset ratio }
 ok { OK }
 options { Options }
 overlayOptions { Overlay Options }

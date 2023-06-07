@@ -702,17 +702,22 @@ public class Book implements Serializable {
   }
 
   public List<PageRef> getPages
+  (String pageRangesSource)
+  throws Exception
+  {
+    if (pageRangesSource == null) {
+      pages = new ArrayList<>();
+    } else {
+      pages = PageRange.toPageRefs(PageRange.parsePageRanges(pageRangesSource, true), sourceDocumentsById);
+    }
+    return pages;
+  }
+
+  public List<PageRef> getPages
   ()
   throws Exception
   {
-//    if (pages == null) {
-      if (pageRangesSource == null) {
-        pages = new ArrayList<>();
-      } else {
-        pages = PageRange.toPageRefs(PageRange.parsePageRanges(pageRangesSource, true), sourceDocumentsById);
-      }
-//    }
-    return pages;
+    return getPages(pageRangesSource);
   }
 
   public void setSourceDocumentsByPath
@@ -777,13 +782,13 @@ public class Book implements Serializable {
     return points * 0.352777778f;
   }
 
-  private record ScaleToFitRecord(AffineTransform affineTransform, float width, float height) {};
+  private record ScaleToFitRecord(AffineTransform affineTransform, float width, float height) {}
 
   // Initially scale a source page image to a minimal fit in the target page size.
   private ScaleToFitRecord scaleToFit
   (Image pageImage, Rectangle pageSize)
   {
-    float scaleFactor = 1.0f;
+    float scaleFactor;
     float xOffset = 0.0f;
     float yOffset = 0.0f;
     if ((pageSize.getHeight() / pageSize.getWidth()) > (pageImage.getHeight() / pageImage.getWidth())) {
@@ -1143,7 +1148,7 @@ public class Book implements Serializable {
             float fontScaleFactor = 1.0f;
             float effectivePageWidth = 0.90f * (rightMarginX - leftMarginX);
             if (stringWidth > effectivePageWidth) {
-              fontScaleFactor = (float) (1.0f - ((stringWidth - effectivePageWidth) / stringWidth));
+              fontScaleFactor = 1.0f - ((stringWidth - effectivePageWidth) / stringWidth);
               cb.setFontAndSize(FontFactory.getFont("courier").getBaseFont(), fontScaleFactor * fontHeight);
             }
             cb.moveText(
@@ -1363,7 +1368,7 @@ public class Book implements Serializable {
           document.close();
         }
       }
-      if (out != null) {
+      if ((out != null) && (document != null)) {
         document.close();
       }
       printStatus(translate("generated") + " " + signatures.length + " " + translate("signatures") + ".");

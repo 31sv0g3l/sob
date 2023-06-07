@@ -11,6 +11,7 @@ import java.awt.event.*;
 import java.io.*;
 import java.util.List;
 import java.util.concurrent.locks.*;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import javax.swing.*;
 import javax.swing.event.*;
@@ -83,9 +84,9 @@ public class BinderatorFrame extends JFrame
   public static final String VERSION = "0.2.3";
   private static BinderatorFrame singletonInstance = null;
   private boolean haveUnsavedChanges = false;
-  private static FileFilter binderatorFileFilter =
+  private static final FileFilter binderatorFileFilter =
     new FileNameExtensionFilter("Son of Binderator files","sob", "SOB", "bdr");
-  private static FileFilter pdfFileFilter =
+  private static final FileFilter pdfFileFilter =
     new FileNameExtensionFilter("PDF files","pdf", "PDF");
 
   private ViewerRenderingThread viewerRenderingThread = null;
@@ -147,6 +148,10 @@ public class BinderatorFrame extends JFrame
   JButton documentPathButton;
   JTextArea documentCommentTextArea = new JTextArea(5, 34);
   JTextArea pageRangesTextArea = new JTextArea(7, 34);
+  boolean pageRangesTextValid = false;
+  JButton pageRangesApplyButton = new JButton();
+  final Color pageRangesApplyButtonDefaultColor = pageRangesApplyButton.getBackground();
+
   // Page Operations Panel Widgets:
   JTextField transformSetNameTextField = new JTextField(34);
   JTextField transformSetPageRangesTextField = new JTextField(34);
@@ -159,6 +164,10 @@ public class BinderatorFrame extends JFrame
   private ICEViewer viewer = null;
   private ICEViewer signaturesViewer = null;
   private String basePath = null;
+  JTextField leftMarginRatioField;
+  JTextField rightMarginRatioField;
+  JTextField bottomMarginRatioField;
+  JTextField topMarginRatioField;
 
 
   private void execute
@@ -373,31 +382,25 @@ public class BinderatorFrame extends JFrame
     projectSignaturesOutputPathButton.setToolTipText(translate("projectSignaturesOutputPathButtonTooltip"));
     projectScaleToFitCheckBox = new JCheckBox();
     projectScaleToFitCheckBox.setText(translate("initialScale"));
-    projectScaleToFitCheckBox.addActionListener(e -> {
-      execute(() -> {
-        book.setScaleToFit(projectScaleToFitCheckBox.isSelected());
-        registerUnsavedChange();
-      });
-    });
+    projectScaleToFitCheckBox.addActionListener(e -> execute(() -> {
+      book.setScaleToFit(projectScaleToFitCheckBox.isSelected());
+      registerUnsavedChange();
+    }));
     projectScaleToFitCheckBox.setToolTipText(translate("projectScaleToFitTooltip"));
     projectEnableMarginsCheckBox = new JCheckBox();
     projectEnableMarginsCheckBox.setText(translate("margins"));
     projectEnableMarginsCheckBox.setToolTipText(translate("projectEnableMarginsTooltip"));
-    projectEnableMarginsCheckBox.addActionListener(e -> {
-      execute(() -> {
-        book.setUsingMargins(projectEnableMarginsCheckBox.isSelected());
-        registerUnsavedChange();
-      });
-    });
+    projectEnableMarginsCheckBox.addActionListener(e -> execute(() -> {
+      book.setUsingMargins(projectEnableMarginsCheckBox.isSelected());
+      registerUnsavedChange();
+    }));
     projectEnablePageNumberingCheckBox = new JCheckBox();
     projectEnablePageNumberingCheckBox.setText(translate("pageNumbers"));
     projectEnablePageNumberingCheckBox.setToolTipText(translate("pageNumbersTooltip"));
-    projectEnablePageNumberingCheckBox.addActionListener(e -> {
-      execute(() -> {
-        book.setUsingPageNumbering(projectEnablePageNumberingCheckBox.isSelected());
-        registerUnsavedChange();
-      });
-    });
+    projectEnablePageNumberingCheckBox.addActionListener(e -> execute(() -> {
+      book.setUsingPageNumbering(projectEnablePageNumberingCheckBox.isSelected());
+      registerUnsavedChange();
+    }));
     JPanel projectCheckboxPanel = new JPanel();
     projectCheckboxPanel.setLayout(new BoxLayout(projectCheckboxPanel, BoxLayout.X_AXIS));
     projectCheckboxPanel.add(Box.createHorizontalStrut(scale(5)));
@@ -460,10 +463,25 @@ public class BinderatorFrame extends JFrame
     pagesPanel.setLayout(new BoxLayout(pagesPanel, BoxLayout.X_AXIS));
     pageRangesTextArea.setLineWrap(true);
     pageRangesTextArea.setWrapStyleWord(true);
-    JScrollPane pagesRangesScrollPane = new JScrollPane(pageRangesTextArea);
-    pagesRangesScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-    pagesRangesScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-    pagesPanel.add(createScaledLabeledWidgetPanel(pagesRangesScrollPane, translate("pageRanges"), 22, 94));
+    JScrollPane pageRangesScrollPane = new JScrollPane(pageRangesTextArea);
+    pageRangesScrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+    pageRangesScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+    JPanel pageRangesPanel = new JPanel();
+    pageRangesPanel.setLayout(new BoxLayout(pageRangesPanel, BoxLayout.X_AXIS));
+    pageRangesPanel.setPreferredSize(new Dimension(Integer.MAX_VALUE, 100));
+    pageRangesPanel.add(pageRangesScrollPane);
+    pageRangesApplyButton.setPreferredSize(new Dimension(34, Integer.MAX_VALUE));
+    pageRangesApplyButton.setMaximumSize(new Dimension(34, Integer.MAX_VALUE));
+    // pageRangeApplyButon.setText(translate("apply"));
+    pageRangesPanel.add(pageRangesApplyButton);
+    pageRangesApplyButton.addActionListener(
+      e -> execute(() -> {
+        getBook().setPageRangesSource(pageRangesTextArea.getText());
+        pageRangesApplyButton.setBackground(pageRangesApplyButtonDefaultColor);
+        registerUnsavedChange();
+      })
+    );
+    pagesPanel.add(createScaledLabeledWidgetPanel(pageRangesPanel, translate("pageRanges"), 22, 94));
     pageRangesTextArea.getDocument().addDocumentListener(new DocumentListener() {
       @Override public void changedUpdate(DocumentEvent e) {
         handlePageRangesChange(pageRangesTextArea.getText());
@@ -560,7 +578,6 @@ public class BinderatorFrame extends JFrame
     documentIdentifierTextField.addActionListener(event -> {
       if (selectedDocument != null) {
         try {
-          String oldId = selectedDocument.getId();
           selectedDocument.setId(documentIdentifierTextField.getText());
           registerUnsavedChange();
         } catch (Exception e) {
@@ -777,6 +794,7 @@ public class BinderatorFrame extends JFrame
     statusPanel.setLayout(new BoxLayout(statusPanel, BoxLayout.X_AXIS));
     statusPanel.setMinimumSize(new Dimension(scale(-1), scale(24)));
     statusPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(24)));
+    statusPanel.setPreferredSize(new Dimension(Integer.MAX_VALUE, scale(24)));
     statusPanel.setBorder(new BorderUIResource.LineBorderUIResource(Color.LIGHT_GRAY, 2));
     statusProgressBarFullPanel = new JPanel();
     statusProgressBarFullPanel.setLayout(new BoxLayout(statusProgressBarFullPanel, BoxLayout.X_AXIS));
@@ -849,6 +867,12 @@ public class BinderatorFrame extends JFrame
     statusPanel.setVisible(true);
   }
 
+  private void resetStatusMessage
+  ()
+  {
+    setStatusMessage("");
+  }
+
   private void setStatusProgressLabel
   (String label)
   {
@@ -919,31 +943,25 @@ public class BinderatorFrame extends JFrame
   {
     execute(() -> {
       String errorMessage = null;
-      List<PageRef> oldPages = new ArrayList<>();
-      List<PageRef> newPages = new ArrayList<>();
       try {
-        try {
-          oldPages = getBook().getPages();
-        } catch (Exception ignored) {}
-        getBook().setPageRangesSource(pageRangesText);
-        newPages = getBook().getPages();
         // Pre-parse and colour the background to the page ranges text area red, every time we encounter an error,
         // and white whenever it's good.  This will avoid an error dialog popping up from the rendering thread when
         // the viewer is open:
-        getBook().getPages();
+        getBook().getPages(pageRangesText);
       } catch (Throwable t) {
         errorMessage = t.getMessage();
         t.printStackTrace(System.err);
       } finally {
         if (errorMessage != null) {
-          pageRangesTextArea.setBackground(new Color(255, 230, 230));
+          pageRangesTextArea.setBackground(Color.PINK);
+          pageRangesApplyButton.setBackground(Color.PINK);
+          pageRangesTextValid = false;
           setStatusMessage(errorMessage);
         } else {
           pageRangesTextArea.setBackground(Color.WHITE);
+          pageRangesApplyButton.setBackground(Color.CYAN);
+          pageRangesTextValid = true;
           setStatusMessage("Page range text is valid");
-        }
-        if (!oldPages.equals(newPages)) {
-          registerUnsavedChange();
         }
       }
     });
@@ -1202,14 +1220,21 @@ public class BinderatorFrame extends JFrame
     } catch (Exception e) {
       errorDialog(e);
     } finally {
-      execute(this::deregisterUnsavedChanges);
-      // Add any code to finalise / clean up initialisation of the new Book here...
-      // Explicitly set the page ranges source again, since it can be updated to an empty string out of order by
-      // the deserialisation of a source document id:
-      execute(() -> {
-        getBook().setPageRangesSource(pageRangesTextArea.getText());
-      });
+      postLoadCleanup();
     }
+  }
+
+  private void postLoadCleanup
+  ()
+  {
+    execute(this::deregisterUnsavedChanges);
+    // Add any code to finalise / clean up initialisation of the new Book here...
+    // Explicitly set the page ranges source again, since it can be updated to an empty string out of order by
+    // the deserialisation of a source document id:
+    execute(() -> {
+      getBook().setPageRangesSource(pageRangesTextArea.getText());
+      pageRangesApplyButton.setBackground(pageRangesApplyButtonDefaultColor);
+    });
   }
 
   // Returns true if operation can continue, false if the user chose cancel on unsaved changes.
@@ -1315,9 +1340,7 @@ public class BinderatorFrame extends JFrame
     JPanel aboutPanel = (JPanel)aboutDialog.getContentPane();
     aboutPanel.setLayout(new BoxLayout(aboutPanel, BoxLayout.Y_AXIS));
     JButton okButton = new JButton(translate("ok"));
-    okButton.addActionListener(e -> {
-      aboutDialog.setVisible(false);
-    });
+    okButton.addActionListener(e -> aboutDialog.setVisible(false));
     aboutPanel.add(Box.createVerticalStrut(scale(10)));
     JLabel messageLabel = new JLabel(message);
     messageLabel.setOpaque(true);
@@ -1382,12 +1405,12 @@ public class BinderatorFrame extends JFrame
     if (checkForUnsavedChanges()) return;
     try {
       InitFile.instance().save();
-    } catch (Exception ignored) {};
+    } catch (Exception ignored) {}
     System.exit(0);
   }
 
   private JTextField createRangedFloatField
-  (RangedFloat rangedFloat)
+  (RangedFloat rangedFloat, ThrowingConsumer<JTextField, Exception> action)
   {
     JTextField field = new JTextField();
     GUIUtils.addBackgroundSetter(field);
@@ -1396,16 +1419,27 @@ public class BinderatorFrame extends JFrame
       @Override
       public void keyReleased(KeyEvent ke) {
         String typed = field.getText();
-        if (!typed.matches("-?[\\d]+(\\.[\\d]+)?") || typed.length() > 5) {
+        if (!typed.matches("-?\\d+(\\.\\d+)?") || typed.length() > 5) {
+          setStatusMessage(rangedFloat.getName() + " value \"" + typed +"\" is invalid");
+          field.setBackground(Color.PINK);
           return;
         }
         float value = Float.parseFloat(typed);
         rangedFloat.setValue(value);
+        resetStatusMessage();
       }
 
     });
     field.setText("" + rangedFloat.getValue());
     field.setMaximumSize(new Dimension(scale(100), scale(22)));
+    field.addActionListener(e -> execute(() -> {
+      try {
+        action.apply(field);
+        registerUnsavedChange();
+      } catch (Exception ex) {
+        errorDialog(ex);
+      }
+    }));
     return field;
   }
 
@@ -1469,73 +1503,39 @@ public class BinderatorFrame extends JFrame
     marginControlsPanel.add(Box.createHorizontalGlue());
     marginControlsPanel.add(new JLabel(translate("leftColon")));
     marginControlsPanel.add(Box.createHorizontalStrut(scale(5)));
-    JTextField leftMarginRatioField = createRangedFloatField(book.getLeftMarginRatio());
-    leftMarginRatioField.addActionListener(e -> {
-      execute(() -> {
-        try {
-          book.setLeftMarginRatio(
-            validatedFloatFromString(leftMarginRatioField.getText(), "Left margin ratio", 0.0f, 0.5f)
-          );
-          registerUnsavedChange();
-        } catch (Exception ex) {
-          errorDialog(ex);
-        }
-      });
-    });
+    leftMarginRatioField = createRangedFloatField(
+      book.getLeftMarginRatio(),
+      f -> {
+        book.setLeftMarginRatio(validatedFloatFromString(f.getText(), "Left margin ratio", 0.0f, 0.5f));
+      }
+    );
     leftMarginRatioField.setToolTipText(translate("marginsLeftTooltip"));
     marginControlsPanel.add(leftMarginRatioField);
     marginControlsPanel.add(Box.createHorizontalGlue());
     marginControlsPanel.add(new JLabel(translate("rightColon")));
     marginControlsPanel.add(Box.createHorizontalStrut(scale(5)));
-    JTextField rightMarginRatioField = createRangedFloatField(book.getRightMarginRatio());
-    rightMarginRatioField.addActionListener(e -> {
-      execute(() -> {
-        try {
-          book.setRightMarginRatio(
-            validatedFloatFromString(rightMarginRatioField.getText(), "Right margin ratio", 0.0f, 0.5f)
-          );
-          registerUnsavedChange();
-        } catch (Exception ex) {
-          errorDialog(ex);
-        }
-      });
-    });
+    JTextField rightMarginRatioField = createRangedFloatField(
+      book.getRightMarginRatio(),
+      f -> { book.setRightMarginRatio(validatedFloatFromString(f.getText(), "Right margin ratio", 0.0f, 0.5f)); }
+    );
     rightMarginRatioField.setToolTipText(translate("marginsRightTooltip"));
     marginControlsPanel.add(rightMarginRatioField);
     marginControlsPanel.add(Box.createHorizontalGlue());
     marginControlsPanel.add(new JLabel(translate("bottomColon")));
     marginControlsPanel.add(Box.createHorizontalStrut(scale(5)));
-    JTextField bottomMarginRatioField = createRangedFloatField(book.getBottomMarginRatio());
-    bottomMarginRatioField.addActionListener(e -> {
-      execute(() -> {
-        try {
-          book.setBottomMarginRatio(
-            validatedFloatFromString(bottomMarginRatioField.getText(), "Bottom margin ratio", 0.0f, 0.5f)
-          );
-          registerUnsavedChange();
-        } catch (Exception ex) {
-          errorDialog(ex);
-        }
-      });
-    });
+    JTextField bottomMarginRatioField = createRangedFloatField(
+      book.getBottomMarginRatio(),
+      f -> { book.setBottomMarginRatio(validatedFloatFromString(f.getText(), "Bottom margin ratio", 0.0f, 0.5f)); }
+    );
     bottomMarginRatioField.setToolTipText(translate("marginsBottomTooltip"));
     marginControlsPanel.add(bottomMarginRatioField);
     marginControlsPanel.add(Box.createHorizontalGlue());
     marginControlsPanel.add(new JLabel(translate("topColon")));
     marginControlsPanel.add(Box.createHorizontalStrut(scale(5)));
-    JTextField topMarginRatioField = createRangedFloatField(book.getTopMarginRatio());
-    topMarginRatioField.addActionListener(e -> {
-      execute(() -> {
-        try {
-          book.setTopMarginRatio(
-            validatedFloatFromString(topMarginRatioField.getText(), "Top margin ratio", 0.0f, 0.5f)
-          );
-          registerUnsavedChange();
-        } catch (Exception ex) {
-          errorDialog(ex);
-        }
-      });
-    });
+    JTextField topMarginRatioField = createRangedFloatField(
+      book.getTopMarginRatio(),
+      f -> { book.setTopMarginRatio(validatedFloatFromString(f.getText(), "Top margin ratio", 0.0f, 0.5f)); }
+    );
     topMarginRatioField.setToolTipText(translate("marginsTopTooltip"));
     marginControlsPanel.add(topMarginRatioField);
     marginControlsPanel.add(Box.createHorizontalStrut(scale(5)));
@@ -1586,13 +1586,19 @@ public class BinderatorFrame extends JFrame
     signatureControlsPanel.add(Box.createHorizontalGlue());
     signatureControlsPanel.add(new JLabel(translate("spineOffset")));
     signatureControlsPanel.add(Box.createHorizontalStrut(scale(5)));
-    JTextField spineOffsetRatioField = createRangedFloatField(book.getSpineOffsetRatio());
+    JTextField spineOffsetRatioField = createRangedFloatField(
+      book.getSpineOffsetRatio(),
+      f -> { book.setSpineOffsetRatio(validatedFloatFromString(f.getText(), translate("spineOffsetRatio"), 0.0f, 0.9f));}
+    );
     spineOffsetRatioField.setToolTipText(translate("signatureSpineOffsetTooltip"));
     signatureControlsPanel.add(spineOffsetRatioField);
     signatureControlsPanel.add(Box.createHorizontalGlue());
     signatureControlsPanel.add(new JLabel(translate("edgeOffset")));
     signatureControlsPanel.add(Box.createHorizontalStrut(scale(5)));
-    JTextField edgeOffsetRatioField = createRangedFloatField(book.getEdgeOffsetRatio());
+    JTextField edgeOffsetRatioField = createRangedFloatField(
+      book.getEdgeOffsetRatio(),
+      f -> { book.setEdgeOffsetRatio(validatedFloatFromString(f.getText(), translate("edgeOffsetRatio"), 0.0f, 0.9f));}
+    );
     edgeOffsetRatioField.setToolTipText(translate("signatureEdgeOffsetTooltip"));
     signatureControlsPanel.add(edgeOffsetRatioField);
     signatureControlsPanel.add(Box.createHorizontalStrut(scale(5)));
@@ -1943,9 +1949,7 @@ public class BinderatorFrame extends JFrame
   {
     try {
       switch (event.getActionCommand()) {
-        case ACTION_EXIT -> {
-          gracefulExit();
-        }
+        case ACTION_EXIT -> gracefulExit();
         case ACTION_GENERATE -> {
           if (book != null) {
             execute(() -> {
@@ -2121,8 +2125,10 @@ public class BinderatorFrame extends JFrame
       frame.projectPath = projectFile.getPath();
       frame.setBook(book);
       frame.setStatusMessage(translate("project") + " " + book.getName() + " " + translate("loadedSuccessfully"));
+      frame.postLoadCleanup();
+    } else {
+      frame.execute(() -> { frame.haveUnsavedChanges = false; });
     }
-    frame.execute(() -> { frame.haveUnsavedChanges = false; });
     frame.setVisible(true);
   }
 
