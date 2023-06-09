@@ -82,6 +82,10 @@ If selected, page numbers are drawn as on overlay for the current source documen
 and current output document page.
 }
 pageRanges { Project Page Ranges }
+pageRangesErrors {
+The current page ranges text contains errors.
+Please correct and try again...
+}
 pageRangesTooltip {
 Set the page ranges used by this project.
 Ranges are comma separated and must use source document identifiers.

@@ -75,6 +75,10 @@ public class PageRange implements Comparable<PageRange>, Serializable {
     "\\s*(([_a-zA-Z][_a-zA-Z0-9]*):)?([0-9]+)(\\s*-\\s*([0-9]+))?(\\s*([eE][vV][eE][nN]|[oO][dD][dD]))?\\s*"
   );
 
+  static Pattern onlyDocIdRangePattern = Pattern.compile(
+    "\\s*(([_a-zA-Z][_a-zA-Z0-9]*):)([0-9]+)(\\s*-\\s*([0-9]+))?(\\s*([eE][vV][eE][nN]|[oO][dD][dD]))?\\s*"
+  );
+
   // For use in source document specifications; can contain repetitions:
   static Pattern rangePattern = Pattern.compile(
     "\\s*([0-9]+)(\\s*-\\s*([0-9]+))?(\\s*\\*\\s*([1-9][0-9]*))?(\\s*([eE][vV][eE][nN]|[oO][dD][dD]))?\\s*"
@@ -82,6 +86,13 @@ public class PageRange implements Comparable<PageRange>, Serializable {
 
   public static List<PageRange> parsePageRanges
   (String source, boolean useDocIds)
+  throws Exception
+  {
+    return parsePageRanges(source, useDocIds, false);
+  }
+
+  public static List<PageRange> parsePageRanges
+  (String source, boolean allowDocIds, boolean requireDocIds)
   throws Exception
   {
     List<PageRange> pageRanges = new ArrayList<>();
@@ -104,21 +115,23 @@ public class PageRange implements Comparable<PageRange>, Serializable {
         continue;
       }
       Matcher rangeMatcher =
-        useDocIds ? docIdRangePattern.matcher(rangeSource) : rangePattern.matcher(rangeSource);
+        allowDocIds
+          ? (requireDocIds ? onlyDocIdRangePattern.matcher(rangeSource) : docIdRangePattern.matcher(rangeSource))
+          : rangePattern.matcher(rangeSource);
       if (rangeMatcher.matches()) {
         String docId = null;
-        if (useDocIds) {
+        if (allowDocIds) {
           docId = rangeMatcher.group(2);
           docId = docId != null && !docId.isEmpty() ? docId : null;
         }
-        String fromSource = rangeMatcher.group(useDocIds ? 3 : 1);
+        String fromSource = rangeMatcher.group(allowDocIds ? 3 : 1);
         Integer from = Integer.parseInt(fromSource);
         Integer to = from;
-        if ((rangeMatcher.group(useDocIds ? 4 : 2) != null) && !rangeMatcher.group(useDocIds ? 4 : 2).isEmpty()) {
-          String toSource = rangeMatcher.group(useDocIds ? 5 : 3);
+        if ((rangeMatcher.group(allowDocIds ? 4 : 2) != null) && !rangeMatcher.group(allowDocIds ? 4 : 2).isEmpty()) {
+          String toSource = rangeMatcher.group(allowDocIds ? 5 : 3);
           to = (toSource != null) && !toSource.isEmpty() ? Integer.parseInt(toSource) : null;
         }
-        if (!useDocIds) {
+        if (!allowDocIds) {
           String repetitionsSource = rangeMatcher.group(5);
           if ((repetitionsSource != null) && !repetitionsSource.isEmpty()) {
             repetitions = Integer.parseInt(repetitionsSource);
@@ -149,7 +162,6 @@ public class PageRange implements Comparable<PageRange>, Serializable {
     }
     if (blankRange != null) {
       pageRanges.add(blankRange);
-      blankRange = null;
     }
     return pageRanges;
   }

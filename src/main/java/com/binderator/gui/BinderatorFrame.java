@@ -9,9 +9,7 @@ import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
-import java.util.List;
 import java.util.concurrent.locks.*;
-import java.util.function.Function;
 import java.util.regex.Pattern;
 import javax.swing.*;
 import javax.swing.event.*;
@@ -476,9 +474,13 @@ public class BinderatorFrame extends JFrame
     pageRangesPanel.add(pageRangesApplyButton);
     pageRangesApplyButton.addActionListener(
       e -> execute(() -> {
-        getBook().setPageRangesSource(pageRangesTextArea.getText());
-        pageRangesApplyButton.setBackground(pageRangesApplyButtonDefaultColor);
-        registerUnsavedChange();
+        if (pageRangesTextValid) {
+          getBook().setPageRangesSource(pageRangesTextArea.getText());
+          pageRangesApplyButton.setBackground(pageRangesApplyButtonDefaultColor);
+          registerUnsavedChange();
+        } else {
+          messageDialog(translate("pageRangesErrors"));
+        }
       })
     );
     pagesPanel.add(createScaledLabeledWidgetPanel(pageRangesPanel, translate("pageRanges"), 22, 94));
@@ -972,6 +974,12 @@ public class BinderatorFrame extends JFrame
   {
     JOptionPane.showMessageDialog(this, (t.getMessage()));
     t.printStackTrace(System.err);
+  }
+
+  void messageDialog
+  (String message)
+  {
+    JOptionPane.showMessageDialog(this, message);
   }
 
   private void newSourceDocument
