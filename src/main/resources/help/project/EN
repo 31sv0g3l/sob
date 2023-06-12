@@ -80,3 +80,14 @@ or File->SaveAs.</b>
   aspect ratio) to accommodate the offset.
 <li><b>Comments</b></li>
   This field allows you to note comments about the book project, any outstanding changes, results, etc.
+<li><b>Generate Button</b></li>
+  Pressing this button will generate a (non-signature) plain PDF version of the project with transforms applied.
+  Note, if margins and page numbers are left on, they will appear in the result document.  The PDF will be generated
+  to the location specified in the <b>Output Path</b> field, above.
+<li><b>Generate Signatures</b></li>
+  This button will generate a series of binding signature PDF files to the signature output folder specified in the
+  <b>Signatures Output Directory</b> field, above.  Note, as with the Generate button, if margins and/or page numbers
+  are enabled, they will appear in the signature output.
+
+
+

@@ -30,9 +30,9 @@ typically printed on a double-sized sheet of paper.  The signatures are stitched
 typically in hardcover format.
 <br>
 <br>
-SOB can display the current document that it operates on using an inline PDF viewer (ICEPDF); however, it is
-expected that a high quality PDF reader such as Adobe's Acrobat Reader, Apple's Preview, or Linux's Evince, be
-used to view the output before printing.
+SOB can display the current document that it operates on using an inline PDF viewer (ICEPDF); however,
+a high quality PDF reader such as Adobe's Acrobat Reader, Apple's Preview, or Linux's Evince, can be
+still used to view the output before printing.
 <br>
 <br>
 These instructions are broken into three sections, loosely corresponding to the three main tabs of the application,
