@@ -708,7 +708,7 @@ public class Book implements Serializable {
     if (pageRangesSource == null) {
       pages = new ArrayList<>();
     } else {
-      pages = PageRange.toPageRefs(PageRange.parsePageRanges(pageRangesSource, true, true), sourceDocumentsById);
+      pages = PageRange.toPageRefs(PageRange.parsePageRanges(pageRangesSource, true), sourceDocumentsById);
     }
     return pages;
   }

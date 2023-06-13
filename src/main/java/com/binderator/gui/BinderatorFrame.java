@@ -710,7 +710,7 @@ public class BinderatorFrame extends JFrame
     transformSetPageRangesTextField.addActionListener(event -> {
       if ( selectedTransformSet != null) {
         try {
-          selectedTransformSet.setPageRanges(PageRange.parsePageRanges(transformSetPageRangesTextField.getText(), true));
+          selectedTransformSet.setPageRanges(PageRange.parsePageRanges(transformSetPageRangesTextField.getText(), false));
           registerUnsavedChange();
         } catch (Exception e) {
           errorDialog(e);
