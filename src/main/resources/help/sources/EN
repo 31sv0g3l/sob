@@ -63,19 +63,32 @@ document is to be used to generate output.
 <li><b>Comments</b></li>
 This is a place to leave comments specific to the current source document only.
 <li><b>Project Page Ranges</b></li>
-This is where the pages to be read from the configured source document are specified, defining the output.  If left
-blank, the output document will be empty.
+This field is not specific to an individual source document; rather, it is where the page ragnes to be read from
+all the configured source documents are specified, defining the total project output.  <b>If left blank, the output
+document will be empty</b>.
 
 The format is a comma-separated list of page ranges, where only whitespace or no space between commas denotes a
-blank page.  Page renages are specified using a document id prefix and a colon, followed by either a page number
-such as "45" or a page range such as "23-74".  An optional "odd" or "even" specifier can follow a page range, to
-denote that only odd or even pages within the range are to be included, respectively.  Ranges can overlap, and
-repetitions may also be specified using an asterisk and a multiplier count after a range,
-for example, "12-15 * 6", meaning pages 12 to 15 repeated 6 times, i.e. 24 pages in total.
-
+blank page.  Page ranges are specified using a document id prefix and a colon, followed by either a page number
+such as "45" or a page range such as "23-74".  Ranges can overlap, and repetitions may also be specified using an
+asterisk and a multiplier count after a range, for example, "12-15 * 6", meaning pages 12 through 15 repeated 6 times,
+i.e. 24 pages in total.  An optional "odd" or "even" specifier can follow a page range (after any repetiion), to
+denote that only odd or even pages within the range are to be included, respectively.
+<br>
+Example:<br>
+<br>
+,,p:1-4,,d1:1-45 even,,,d2:1-500,d1:78-79*30,,,,,<br><br>
+* Two initial blank pages<br>
+* Pages 1-4 of document "p"<br>
+* A blank page<br>
+* Even pages from page 1 to page 45 of document "d1"<br>
+* Two blank pages<br>
+* The first 500 pages of document "d2"<br>
+* Pages 78 and 79 of document "d1", repeated 30 times<br>
+* Five trailing blank pages<br>
+<br>
 Changes to the Project Page Ranges field are not applied until the button to the right of the field is clicked.
-When an outstanding change can be applied, the button will appear cyan in colour.
-
+When an outstanding change can be applied, the button will appear cyan in colour.<br>
+<br>
 When an error exists in the specified page ranges, the background of the field will appear light red and a
-relevant error message will appear in the status area at the bottom of the window.
+relevant error message will appear in the status area at the bottom of the window.<br>
 </ul>

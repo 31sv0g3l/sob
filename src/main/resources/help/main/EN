@@ -25,9 +25,9 @@ of bookbinding.
 SOB has two possible output functions, document generation and signature generation.  Document generation can
 be used to simply clean up a PDF with messy geometry to a format that is aesthetically pleasing and
 consistent across all its pages, using cropping, rotation, horizontal and vertical translation, and the like.
-Signature generation refers to the creation of individual PDFs that each comprise a folded book section (signature),
-typically printed on a double-sized sheet of paper.  The signatures are stitched together on a frame and bound,
-typically in hardcover format.
+Signature generation refers to the creation of individual PDFs, each of which is a folded book section (signature),
+to be printed on both sides of a double-sized sheet of paper.  Signatures are stitched together on a sewing frame
+and bound, typically in hardcover (library / "case" binding) format.
 <br>
 <br>
 SOB can display the current document that it operates on using an inline PDF viewer (ICEPDF); however,
