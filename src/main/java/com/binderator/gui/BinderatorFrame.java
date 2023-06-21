@@ -1694,9 +1694,7 @@ public class BinderatorFrame extends JFrame
     edgeOffsetRatioField.setText("" + book.getEdgeOffsetRatio().getValue());
     double trimLinesHorizontalRatio = book.getTrimLinesHorizontalRatio() != null ? book.getTrimLinesHorizontalRatio().getValue() : 0.0f;
     double trimLinesVerticalRatio = book.getTrimLinesVerticalRatio() != null ? book.getTrimLinesVerticalRatio().getValue() : 0.0f;
-//  signatureTrimLinesHorizontalRatioField.setText("" + book.getTrimLinesHorizontalRatio().getValue());
     signatureTrimLinesHorizontalRatioField.setText("" + trimLinesHorizontalRatio);
-//  signatureTrimLinesVerticalRatioField.setText("" + book.getTrimLinesVerticalRatio().getValue());
     signatureTrimLinesVerticalRatioField.setText("" + trimLinesVerticalRatio);
     signatureTrimLinesComboBox.setSelectedItem(book.getTrimLinesType());
   }
