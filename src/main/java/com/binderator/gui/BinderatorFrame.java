@@ -138,7 +138,7 @@ public class BinderatorFrame extends JFrame
   JCheckBox projectEnablePageNumberingCheckBox;
   JComboBox<Pair<Rectangle, Rectangle>> pageSizePairsComboBox;
   DefaultComboBoxModel<Pair<Rectangle, Rectangle>> pageSizePairsComboBoxModel;
-  JPanel projectControlsPanel;
+
   // Documents Panel Widgets:
   JTextField documentNameTextField = new JTextField(34);
   JTextField documentIdentifierTextField = new JTextField(8);
@@ -162,10 +162,24 @@ public class BinderatorFrame extends JFrame
   private ICEViewer viewer = null;
   private ICEViewer signaturesViewer = null;
   private String basePath = null;
+
+  JPanel projectControlsPanel;
+  JPanel marginControlsPanel;
   JTextField leftMarginRatioField;
   JTextField rightMarginRatioField;
   JTextField bottomMarginRatioField;
   JTextField topMarginRatioField;
+  JPanel signatureControlsPanel;
+  JComboBox<Integer> signatureSheetsComboBox;
+  JCheckBox minimiseLastSignatureCheckbox;
+  JTextField spineOffsetRatioField;
+  JTextField edgeOffsetRatioField;
+  JComboBox<Book.TrimLinesType> signatureTrimLinesComboBox;
+  private static final String TRIM_LINES_NONE = translate("trimLinesNone");
+  private static final String TRIM_LINES_DEFAULT = translate("trimLinesDefault");
+  private static final String TRIM_LINES_CUSTOM = translate("trimLinesCustom");
+  JTextField signatureTrimLinesVerticalRatioField;
+  JTextField signatureTrimLinesHorizontalRatioField;
 
 
   private void execute
@@ -449,6 +463,175 @@ public class BinderatorFrame extends JFrame
     JScrollPane projectCommentScrollPane = new JScrollPane(projectCommentTextArea);
     projectPanel.add(createScaledLabeledWidgetPanel(projectCommentScrollPane, translate("comments"), 22, 70));
     projectCommentTextArea.setToolTipText(translate("projectCommentsTooltip"));
+    JPanel marginControlsPanel = new JPanel();
+    marginControlsPanel.setLayout(new BoxLayout(marginControlsPanel, BoxLayout.X_AXIS));
+    marginControlsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
+    marginControlsPanel.add(Box.createHorizontalStrut(scale(5)));
+    marginControlsPanel.add(new JLabel(translate("marginRatiosColon")));
+    marginControlsPanel.add(Box.createHorizontalStrut(scale(5)));
+    marginControlsPanel.add(Box.createHorizontalGlue());
+    marginControlsPanel.add(new JLabel(translate("leftColon")));
+    marginControlsPanel.add(Box.createHorizontalStrut(scale(5)));
+    leftMarginRatioField = createRangedFloatField(
+      book.getLeftMarginRatio(),
+      f -> {
+        getBook().setLeftMarginRatio(validatedFloatFromString(f.getText(), "Left margin ratio", 0.0f, 0.5f));
+      }
+    );
+    leftMarginRatioField.setToolTipText(translate("marginsLeftTooltip"));
+    marginControlsPanel.add(leftMarginRatioField);
+    marginControlsPanel.add(Box.createHorizontalGlue());
+    marginControlsPanel.add(new JLabel(translate("rightColon")));
+    marginControlsPanel.add(Box.createHorizontalStrut(scale(5)));
+    rightMarginRatioField = createRangedFloatField(
+      book.getRightMarginRatio(),
+      f -> { getBook().setRightMarginRatio(validatedFloatFromString(f.getText(), "Right margin ratio", 0.0f, 0.5f)); }
+    );
+    rightMarginRatioField.setToolTipText(translate("marginsRightTooltip"));
+    marginControlsPanel.add(rightMarginRatioField);
+    marginControlsPanel.add(Box.createHorizontalGlue());
+    marginControlsPanel.add(new JLabel(translate("bottomColon")));
+    marginControlsPanel.add(Box.createHorizontalStrut(scale(5)));
+    bottomMarginRatioField = createRangedFloatField(
+      book.getBottomMarginRatio(),
+      f -> { getBook().setBottomMarginRatio(validatedFloatFromString(f.getText(), "Bottom margin ratio", 0.0f, 0.5f)); }
+    );
+    bottomMarginRatioField.setToolTipText(translate("marginsBottomTooltip"));
+    marginControlsPanel.add(bottomMarginRatioField);
+    marginControlsPanel.add(Box.createHorizontalGlue());
+    marginControlsPanel.add(new JLabel(translate("topColon")));
+    marginControlsPanel.add(Box.createHorizontalStrut(scale(5)));
+    topMarginRatioField = createRangedFloatField(
+      book.getTopMarginRatio(),
+      f -> { getBook().setTopMarginRatio(validatedFloatFromString(f.getText(), "Top margin ratio", 0.0f, 0.5f)); }
+    );
+    topMarginRatioField.setToolTipText(translate("marginsTopTooltip"));
+    marginControlsPanel.add(topMarginRatioField);
+    marginControlsPanel.add(Box.createHorizontalStrut(scale(5)));
+    projectControlsPanel.add(marginControlsPanel);
+    projectControlsPanel.add(Box.createVerticalStrut(scale(5)));
+
+    JPanel signatureControlsTopPanel = new JPanel();
+    signatureControlsTopPanel.setLayout(new BoxLayout(signatureControlsTopPanel, BoxLayout.X_AXIS));
+    signatureControlsTopPanel.add(Box.createHorizontalStrut(scale(5)));
+    signatureControlsTopPanel.add(new JLabel(translate("signaturesColon")));
+    signatureControlsTopPanel.add(Box.createHorizontalStrut(scale(5)));
+    signatureControlsTopPanel.add(Box.createHorizontalGlue());
+    signatureControlsTopPanel.add(new JLabel(translate("sheetsColon")));
+    signatureControlsTopPanel.add(Box.createHorizontalStrut(scale(5)));
+    signatureSheetsComboBox = new JComboBox<>();
+    for (int i = 1; i <= 20; i++) {
+      signatureSheetsComboBox.addItem(i);
+    }
+    signatureSheetsComboBox.setSelectedItem(book.getSignatureSheets());
+    signatureSheetsComboBox.addActionListener(
+      e -> {
+        if (signatureSheetsComboBox.getSelectedItem() != null) {
+          getBook().setSignatureSheets((Integer) signatureSheetsComboBox.getSelectedItem());
+          registerUnsavedChange();
+        }
+      }
+    );
+    signatureSheetsComboBox.setMinimumSize(new Dimension(scale(58), scale(22)));
+    signatureSheetsComboBox.setMaximumSize(new Dimension(scale(58), scale(22)));
+    signatureSheetsComboBox.setToolTipText(translate("signatureSheetsComboTooltip"));
+    signatureControlsTopPanel.add(signatureSheetsComboBox);
+    signatureControlsTopPanel.add(Box.createHorizontalGlue());
+    JLabel minimiseLastSignatureLabel = new JLabel(translate("minimiseLastColon"));
+    signatureControlsTopPanel.add(minimiseLastSignatureLabel);
+    minimiseLastSignatureCheckbox = new JCheckBox();
+    String minimiseLastSignatureTooltip = translate("minimiseLastSignatureTooltip");
+    minimiseLastSignatureLabel.setToolTipText(minimiseLastSignatureTooltip);
+    minimiseLastSignatureCheckbox.setToolTipText(minimiseLastSignatureTooltip);
+    minimiseLastSignatureCheckbox.setToolTipText(minimiseLastSignatureTooltip);
+    minimiseLastSignatureCheckbox.setSelected(book.isMinimisingLastSignature());
+    minimiseLastSignatureCheckbox.addActionListener(
+      e -> {
+        getBook().setMinimiseLastSignature(minimiseLastSignatureCheckbox.isSelected());
+        registerUnsavedChange();
+      }
+    );
+    signatureControlsTopPanel.add(minimiseLastSignatureCheckbox);
+    signatureControlsTopPanel.add(Box.createHorizontalGlue());
+    signatureControlsTopPanel.add(new JLabel(translate("spineOffset")));
+    signatureControlsTopPanel.add(Box.createHorizontalStrut(scale(5)));
+    spineOffsetRatioField = createRangedFloatField(
+      getBook().getSpineOffsetRatio(),
+      f -> { getBook().setSpineOffsetRatio(validatedFloatFromString(f.getText(), translate("spineOffsetRatio"), 0.0f, 0.9f));}
+    );
+    spineOffsetRatioField.setToolTipText(translate("signatureSpineOffsetTooltip"));
+    signatureControlsTopPanel.add(spineOffsetRatioField);
+    signatureControlsTopPanel.add(Box.createHorizontalGlue());
+    signatureControlsTopPanel.add(new JLabel(translate("edgeOffset")));
+    signatureControlsTopPanel.add(Box.createHorizontalStrut(scale(5)));
+    edgeOffsetRatioField = createRangedFloatField(
+      getBook().getEdgeOffsetRatio(),
+      f -> { getBook().setEdgeOffsetRatio(validatedFloatFromString(f.getText(), translate("edgeOffsetRatio"), 0.0f, 0.9f));}
+    );
+    edgeOffsetRatioField.setToolTipText(translate("signatureEdgeOffsetTooltip"));
+    signatureControlsTopPanel.add(edgeOffsetRatioField);
+    signatureControlsTopPanel.add(Box.createHorizontalStrut(scale(5)));
+
+    JPanel signatureControlsBottomPanel = new JPanel();
+    signatureControlsBottomPanel.setLayout(new BoxLayout(signatureControlsBottomPanel, BoxLayout.X_AXIS));
+    signatureControlsBottomPanel.add(Box.createHorizontalStrut(scale(106)));
+    signatureTrimLinesComboBox = new JComboBox<>();
+    signatureTrimLinesComboBox.addItem(Book.TrimLinesType.NONE);
+    signatureTrimLinesComboBox.addItem(Book.TrimLinesType.DEFAULT);
+    signatureTrimLinesComboBox.addItem(Book.TrimLinesType.CUSTOM);
+    signatureTrimLinesComboBox.setMinimumSize(new Dimension(scale(58), scale(22)));
+    signatureTrimLinesComboBox.setMaximumSize(new Dimension(scale(58), scale(22)));
+    signatureTrimLinesComboBox.setToolTipText(translate("trimLinesComboTooltip"));
+    signatureControlsBottomPanel.add(new JLabel(translate("trimLinesColon")));
+    signatureControlsBottomPanel.add(signatureTrimLinesComboBox);
+    signatureControlsBottomPanel.add(Box.createHorizontalGlue());
+    final JLabel signatureTrimLinesHorizontalColonLabel = new JLabel(translate("trimLinesHorizontalColon"));
+    signatureTrimLinesHorizontalColonLabel.setVisible(false);
+    signatureControlsBottomPanel.add(signatureTrimLinesHorizontalColonLabel);
+    signatureTrimLinesHorizontalRatioField = createRangedFloatField(
+      getBook().getTrimLinesHorizontalRatio(),
+      f -> { getBook().getTrimLinesHorizontalRatio().setValue(validatedFloatFromString(f.getText(), translate("trimLinesHorizontalRatio"), 0.0f, 0.5f));}
+    );
+    signatureControlsBottomPanel.add(signatureTrimLinesHorizontalRatioField);
+    signatureControlsBottomPanel.add(Box.createHorizontalGlue());
+    final JLabel signatureTrimLinesVerticalColonLabel = new JLabel(translate("trimLinesVerticalColon"));
+    signatureTrimLinesVerticalColonLabel.setVisible(false);
+    signatureControlsBottomPanel.add(signatureTrimLinesVerticalColonLabel);
+    signatureTrimLinesVerticalRatioField = createRangedFloatField(
+      getBook().getTrimLinesVerticalRatio(),
+      f -> { getBook().getTrimLinesVerticalRatio().setValue(validatedFloatFromString(f.getText(), translate("trimLinesVerticalRatio"), 0.0f, 0.5f));}
+    );
+    signatureControlsBottomPanel.add(signatureTrimLinesVerticalRatioField);
+    signatureTrimLinesComboBox.addActionListener(
+      e -> {
+        if (signatureTrimLinesComboBox.getSelectedItem() != null) {
+          Book.TrimLinesType selectedItem = (Book.TrimLinesType)signatureTrimLinesComboBox.getSelectedItem();
+          getBook().setTrimLinesType(selectedItem);
+          if (selectedItem.equals(Book.TrimLinesType.CUSTOM)) {
+            signatureTrimLinesHorizontalColonLabel.setVisible(true);
+            signatureTrimLinesVerticalColonLabel.setVisible(true);
+            signatureTrimLinesHorizontalRatioField.setVisible(true);
+            signatureTrimLinesVerticalRatioField.setVisible(true);
+          } else {
+            signatureTrimLinesHorizontalColonLabel.setVisible(false);
+            signatureTrimLinesVerticalColonLabel.setVisible(false);
+            signatureTrimLinesHorizontalRatioField.setVisible(false);
+            signatureTrimLinesVerticalRatioField.setVisible(false);
+          }
+          registerUnsavedChange();
+        }
+      }
+    );
+    signatureTrimLinesComboBox.setSelectedItem(getBook().getTrimLinesType());
+    signatureControlsBottomPanel.add(Box.createHorizontalStrut(scale(5)));
+
+    JPanel signatureControlsPanel = new JPanel();
+    signatureControlsPanel.setLayout(new BoxLayout(signatureControlsPanel, BoxLayout.Y_AXIS));
+    signatureControlsPanel.add(signatureControlsTopPanel);
+    signatureControlsPanel.add(signatureControlsBottomPanel);
+    projectControlsPanel.add(signatureControlsPanel);
+    projectControlsPanel.add(Box.createVerticalGlue());
+
     updateProjectControlsPanel();
     projectPanel.add(Box.createVerticalGlue());
     // Documents panel:
@@ -1501,117 +1684,21 @@ public class BinderatorFrame extends JFrame
     projectEnableMarginsCheckBox.setSelected(book.isUsingMargins());
     projectEnablePageNumberingCheckBox.setSelected(book.isUsingPageNumbering());
     setPageSizePairsComboBoxSelection();
-    projectControlsPanel.removeAll();
-    JPanel marginControlsPanel = new JPanel();
-    marginControlsPanel.setLayout(new BoxLayout(marginControlsPanel, BoxLayout.X_AXIS));
-    marginControlsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
-    marginControlsPanel.add(Box.createHorizontalStrut(scale(5)));
-    marginControlsPanel.add(new JLabel(translate("marginRatiosColon")));
-    marginControlsPanel.add(Box.createHorizontalStrut(scale(5)));
-    marginControlsPanel.add(Box.createHorizontalGlue());
-    marginControlsPanel.add(new JLabel(translate("leftColon")));
-    marginControlsPanel.add(Box.createHorizontalStrut(scale(5)));
-    leftMarginRatioField = createRangedFloatField(
-      book.getLeftMarginRatio(),
-      f -> {
-        book.setLeftMarginRatio(validatedFloatFromString(f.getText(), "Left margin ratio", 0.0f, 0.5f));
-      }
-    );
-    leftMarginRatioField.setToolTipText(translate("marginsLeftTooltip"));
-    marginControlsPanel.add(leftMarginRatioField);
-    marginControlsPanel.add(Box.createHorizontalGlue());
-    marginControlsPanel.add(new JLabel(translate("rightColon")));
-    marginControlsPanel.add(Box.createHorizontalStrut(scale(5)));
-    JTextField rightMarginRatioField = createRangedFloatField(
-      book.getRightMarginRatio(),
-      f -> { book.setRightMarginRatio(validatedFloatFromString(f.getText(), "Right margin ratio", 0.0f, 0.5f)); }
-    );
-    rightMarginRatioField.setToolTipText(translate("marginsRightTooltip"));
-    marginControlsPanel.add(rightMarginRatioField);
-    marginControlsPanel.add(Box.createHorizontalGlue());
-    marginControlsPanel.add(new JLabel(translate("bottomColon")));
-    marginControlsPanel.add(Box.createHorizontalStrut(scale(5)));
-    JTextField bottomMarginRatioField = createRangedFloatField(
-      book.getBottomMarginRatio(),
-      f -> { book.setBottomMarginRatio(validatedFloatFromString(f.getText(), "Bottom margin ratio", 0.0f, 0.5f)); }
-    );
-    bottomMarginRatioField.setToolTipText(translate("marginsBottomTooltip"));
-    marginControlsPanel.add(bottomMarginRatioField);
-    marginControlsPanel.add(Box.createHorizontalGlue());
-    marginControlsPanel.add(new JLabel(translate("topColon")));
-    marginControlsPanel.add(Box.createHorizontalStrut(scale(5)));
-    JTextField topMarginRatioField = createRangedFloatField(
-      book.getTopMarginRatio(),
-      f -> { book.setTopMarginRatio(validatedFloatFromString(f.getText(), "Top margin ratio", 0.0f, 0.5f)); }
-    );
-    topMarginRatioField.setToolTipText(translate("marginsTopTooltip"));
-    marginControlsPanel.add(topMarginRatioField);
-    marginControlsPanel.add(Box.createHorizontalStrut(scale(5)));
-    projectControlsPanel.add(marginControlsPanel);
-    projectControlsPanel.add(Box.createVerticalStrut(scale(5)));
-
-    JPanel signatureControlsPanel = new JPanel();
-    signatureControlsPanel.setLayout(new BoxLayout(signatureControlsPanel, BoxLayout.X_AXIS));
-    signatureControlsPanel.add(Box.createHorizontalStrut(scale(5)));
-    signatureControlsPanel.add(new JLabel(translate("signaturesColon")));
-    signatureControlsPanel.add(Box.createHorizontalStrut(scale(5)));
-    signatureControlsPanel.add(Box.createHorizontalGlue());
-    signatureControlsPanel.add(new JLabel(translate("sheetsColon")));
-    signatureControlsPanel.add(Box.createHorizontalStrut(scale(5)));
-    JComboBox<Integer> signatureSheetsComboBox = new JComboBox<>();
-    for (int i = 1; i <= 20; i++) {
-      signatureSheetsComboBox.addItem(i);
-    }
+    leftMarginRatioField.setText("" + book.getLeftMarginRatio().getValue());
+    rightMarginRatioField.setText("" + book.getRightMarginRatio().getValue());
+    bottomMarginRatioField.setText("" + book.getBottomMarginRatio().getValue());
+    topMarginRatioField.setText("" + book.getTopMarginRatio().getValue());
     signatureSheetsComboBox.setSelectedItem(book.getSignatureSheets());
-    signatureSheetsComboBox.addActionListener(
-      e -> {
-        if (signatureSheetsComboBox.getSelectedItem() != null) {
-          book.setSignatureSheets((Integer) signatureSheetsComboBox.getSelectedItem());
-          registerUnsavedChange();
-        }
-      }
-    );
-    signatureSheetsComboBox.setMinimumSize(new Dimension(scale(58), scale(22)));
-    signatureSheetsComboBox.setMaximumSize(new Dimension(scale(58), scale(22)));
-    signatureSheetsComboBox.setToolTipText(translate("signatureSheetsComboTooltip"));
-    signatureControlsPanel.add(signatureSheetsComboBox);
-    signatureControlsPanel.add(Box.createHorizontalGlue());
-    JLabel minimiseLastSignatureLabel = new JLabel(translate("minimiseLastColon"));
-    signatureControlsPanel.add(minimiseLastSignatureLabel);
-    JCheckBox minimiseLastSignatureCheckbox = new JCheckBox();
-    String minimiseLastSignatureTooltip = translate("minimiseLastSignatureTooltip");
-    minimiseLastSignatureLabel.setToolTipText(minimiseLastSignatureTooltip);
-    minimiseLastSignatureCheckbox.setToolTipText(minimiseLastSignatureTooltip);
-    minimiseLastSignatureCheckbox.setToolTipText(minimiseLastSignatureTooltip);
     minimiseLastSignatureCheckbox.setSelected(book.isMinimisingLastSignature());
-    minimiseLastSignatureCheckbox.addActionListener(
-      e -> {
-        book.setMinimiseLastSignature(minimiseLastSignatureCheckbox.isSelected());
-        registerUnsavedChange();
-      }
-    );
-    signatureControlsPanel.add(minimiseLastSignatureCheckbox);
-    signatureControlsPanel.add(Box.createHorizontalGlue());
-    signatureControlsPanel.add(new JLabel(translate("spineOffset")));
-    signatureControlsPanel.add(Box.createHorizontalStrut(scale(5)));
-    JTextField spineOffsetRatioField = createRangedFloatField(
-      book.getSpineOffsetRatio(),
-      f -> { book.setSpineOffsetRatio(validatedFloatFromString(f.getText(), translate("spineOffsetRatio"), 0.0f, 0.9f));}
-    );
-    spineOffsetRatioField.setToolTipText(translate("signatureSpineOffsetTooltip"));
-    signatureControlsPanel.add(spineOffsetRatioField);
-    signatureControlsPanel.add(Box.createHorizontalGlue());
-    signatureControlsPanel.add(new JLabel(translate("edgeOffset")));
-    signatureControlsPanel.add(Box.createHorizontalStrut(scale(5)));
-    JTextField edgeOffsetRatioField = createRangedFloatField(
-      book.getEdgeOffsetRatio(),
-      f -> { book.setEdgeOffsetRatio(validatedFloatFromString(f.getText(), translate("edgeOffsetRatio"), 0.0f, 0.9f));}
-    );
-    edgeOffsetRatioField.setToolTipText(translate("signatureEdgeOffsetTooltip"));
-    signatureControlsPanel.add(edgeOffsetRatioField);
-    signatureControlsPanel.add(Box.createHorizontalStrut(scale(5)));
-    projectControlsPanel.add(signatureControlsPanel);
-    projectControlsPanel.add(Box.createVerticalGlue());
+    spineOffsetRatioField.setText("" + book.getSpineOffsetRatio().getValue());
+    edgeOffsetRatioField.setText("" + book.getEdgeOffsetRatio().getValue());
+    double trimLinesHorizontalRatio = book.getTrimLinesHorizontalRatio() != null ? book.getTrimLinesHorizontalRatio().getValue() : 0.0f;
+    double trimLinesVerticalRatio = book.getTrimLinesVerticalRatio() != null ? book.getTrimLinesVerticalRatio().getValue() : 0.0f;
+//  signatureTrimLinesHorizontalRatioField.setText("" + book.getTrimLinesHorizontalRatio().getValue());
+    signatureTrimLinesHorizontalRatioField.setText("" + trimLinesHorizontalRatio);
+//  signatureTrimLinesVerticalRatioField.setText("" + book.getTrimLinesVerticalRatio().getValue());
+    signatureTrimLinesVerticalRatioField.setText("" + trimLinesVerticalRatio);
+    signatureTrimLinesComboBox.setSelectedItem(book.getTrimLinesType());
   }
 
   private void updateSourceDocumentsTab

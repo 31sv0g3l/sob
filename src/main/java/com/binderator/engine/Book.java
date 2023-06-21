@@ -162,6 +162,28 @@ public class Book implements Serializable {
     targetBookSize.put("Full paper size", new Float[]{null, null});
   }
 
+  public enum TrimLinesType {
+
+    NONE(translate("trimLinesNone")),
+    DEFAULT(translate("trimLinesDefault")),
+    CUSTOM(translate("trimLinesCustom"));
+
+    private final String label;
+
+    TrimLinesType
+    (String label)
+    {
+      this.label = label;
+    }
+
+    public String toString
+    ()
+    {
+      return label;
+    }
+
+  }
+
   private transient InputStream input;
   private List<SourceDocument> sourceDocuments;
 
@@ -175,7 +197,9 @@ public class Book implements Serializable {
   // Spine and edge offsets are for signature generation only:
   private final RangedFloat spineOffsetRatio = new RangedFloat("spine offset", 0.05f, 0f, 0.5f);
   private final RangedFloat edgeOffsetRatio = new RangedFloat("edge offset", 0f, 0f, 0.5f);
-
+  private TrimLinesType trimLinesType = TrimLinesType.NONE;
+  private final RangedFloat trimLinesHorizontalRatio = new RangedFloat("trim lines horizontal ratio", 0f, 0f, 0.5f);
+  private final RangedFloat trimLinesVerticalRatio = new RangedFloat("trim lines vertical ratio", 0f, 0f, 0.5f);
   List<TransformSet> transformSets = new ArrayList<>();
   Map<PageRef, List<Transform>> effectiveTransformsByPage = new HashMap<>();
   private String outputPath = null;
@@ -217,6 +241,9 @@ public class Book implements Serializable {
     minimiseLastSignature = book.minimiseLastSignature;
     spineOffsetRatio.copy(book.spineOffsetRatio);
     edgeOffsetRatio.copy(book.edgeOffsetRatio);
+    trimLinesType = book.trimLinesType;
+    trimLinesHorizontalRatio.copy(book.trimLinesHorizontalRatio);
+    trimLinesVerticalRatio.copy(book.trimLinesVerticalRatio);
     transformSets = new ArrayList<>();
     computeEffectiveTransformSets();
     for (TransformSet transformSet : book.transformSets) {
@@ -561,6 +588,30 @@ public class Book implements Serializable {
   ()
   {
     return edgeOffsetRatio;
+  }
+
+  public TrimLinesType getTrimLinesType
+  ()
+  {
+    return trimLinesType;
+  }
+
+  public void setTrimLinesType
+  (TrimLinesType trimLinesType)
+  {
+    this.trimLinesType = trimLinesType;
+  }
+
+  public RangedFloat getTrimLinesHorizontalRatio
+  ()
+  {
+    return trimLinesHorizontalRatio;
+  }
+
+  public RangedFloat getTrimLinesVerticalRatio
+  ()
+  {
+    return trimLinesVerticalRatio;
   }
 
   private static Rectangle getPaperSizeRectangle
@@ -1303,7 +1354,6 @@ public class Book implements Serializable {
           }
         }
         File signatureFile = new File(destinationDirectoryPath, signatureFileName);
-        // Rectangle unitSize = new Rectangle(pageSize.getHeight() / 2.0f, pageSize.getWidth());
         Rectangle halfSize = new Rectangle(
           signaturePageSize.getRectangle().getHeight() / 2.0f,
           signaturePageSize.getRectangle().getWidth()
@@ -1318,11 +1368,23 @@ public class Book implements Serializable {
         }
         document.open();
         PdfContentByte cb = writer.getDirectContent();
+        float pageRatio = 1.0f - spineOffsetRatio.getValue() - edgeOffsetRatio.getValue();
+        float spineOffset = spineOffsetRatio.getValue() * halfSize.getWidth();
+        float edgeOffset = edgeOffsetRatio.getValue() * halfSize.getWidth();
+        float yOffset = halfSize.getHeight() * (1.0f - pageRatio) * 0.5f;
+        boolean usingTrimLines = !trimLinesType.equals(TrimLinesType.NONE);
+        float horizontalTrimRatio = 0.0f;
+        float verticalTrimRatio = 0.0f;
+        float TRIM_FACTOR = 0.9f;
+        if (trimLinesType == TrimLinesType.DEFAULT) {
+          horizontalTrimRatio = TRIM_FACTOR * edgeOffsetRatio.getValue();
+          verticalTrimRatio = TRIM_FACTOR * (spineOffsetRatio.getValue() + edgeOffsetRatio.getValue()) / 2.0f;
+        } else {
+          horizontalTrimRatio = trimLinesHorizontalRatio.getValue();
+          verticalTrimRatio = trimLinesVerticalRatio.getValue();
+        }
         for (int signatureSheetIndex = 0; signatureSheetIndex < signatureSheets; signatureSheetIndex++) {
           int[] sheetSourcePageNumbers = signatures[signatureIndex][signatureSheetIndex];
-          if (addSpineImage) {
-            addSpineImage(cb);
-          }
           for (int signatureSheetPageIndex = 0; signatureSheetPageIndex < 4; signatureSheetPageIndex++) {
             generatedPageCount++;
             // We assume that, if generating to a given stream, it is for a viewer, and we don't want to render
@@ -1342,10 +1404,6 @@ public class Book implements Serializable {
                 PdfImportedPage importedPage = writer.getImportedPage(pageRef.getPdfReader(), pageRef.getPageNumber());
                 Image pageImage = Image.getInstance(importedPage);
                 pageImage.setAbsolutePosition(0f, 0f);
-                float pageRatio = 1.0f - spineOffsetRatio.getValue() - edgeOffsetRatio.getValue();
-                float spineOffset = spineOffsetRatio.getValue() * halfSize.getWidth();
-                float edgeOffset = edgeOffsetRatio.getValue() * halfSize.getWidth();
-                float yOffset = halfSize.getHeight() * (1.0f - pageRatio) * 0.5f;
                 pageImage.scaleAbsolute(
                   pageRatio * halfSize.getWidth(), pageRatio * halfSize.getHeight()
                 );
@@ -1361,6 +1419,9 @@ public class Book implements Serializable {
                 document.newPage();
               }
             }
+            if (even && usingTrimLines) {
+              addTrimLines(cb, halfSize, horizontalTrimRatio, verticalTrimRatio);
+            }
             setProgress(generatedPageCount, totalSignaturePageCount);
           }
         }
@@ -1375,6 +1436,26 @@ public class Book implements Serializable {
     } catch (Exception e) {
       handleException(e);
     }
+  }
+
+  private void addTrimLines
+  (PdfContentByte cb, Rectangle halfSize, float horizontalTrimRatio, float verticalTrimRatio)
+  {
+    cb.setLineWidth(1.0f);
+    cb.setColorStroke(Color.BLACK);
+    float pageWidth = halfSize.getWidth() * 2.0f;
+    float pageHeight = halfSize.getHeight();
+    float trimWidth = halfSize.getWidth() * horizontalTrimRatio;
+    float trimHeight = halfSize.getHeight() * verticalTrimRatio;
+    cb.moveTo(0.0f, pageHeight - trimHeight);
+    cb.lineTo(pageWidth, pageHeight - trimHeight);
+    cb.moveTo(0.0f, trimHeight);
+    cb.lineTo(pageWidth, trimHeight);
+    cb.moveTo(trimWidth, 0.0f);
+    cb.lineTo(trimWidth, pageHeight);
+    cb.moveTo(pageWidth - trimWidth, 0.0f);
+    cb.lineTo(pageWidth - trimWidth, pageHeight);
+    cb.stroke();
   }
 
   private void addSpineImage

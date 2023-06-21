@@ -213,6 +213,17 @@ transformTooltipUpButton { Move this transform up to the previous step in the se
 transformTooltipDownButton { Move this transform down to the next step in the set }
 transformTooltipDeleteButton { Remove this transform from the set }
 transformTooltipEnableDisableButton { Enable / disable this transform }
+trimLinesColon { Trim Lines: }
+trimLinesNone { None }
+trimLinesDefault { Default }
+trimLinesComboTooltip {
+Select the printed trimming line type for generated signatures.
+}
+trimLinesCustom { Custom }
+trimLinesHorizontalColon { Horizontal Trim: }
+trimLinesHorizontalRatio { trim lines horizontal ratio }
+trimLinesVerticalColon { Vertical Trim: }
+trimLinesVerticalRatio { trim lines vertical ratio }
 viewer { View }
 viewerTitle { Son of Binderator / ICEPDF Viewer }
 welcomeToSonOfBinderator { Welcome to Son of Binderator }
