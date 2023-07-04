@@ -35,10 +35,12 @@ public class RangedFloat implements Serializable {
   public void copy
   (RangedFloat rangedFloat)
   {
-    name = rangedFloat.name;
-    value = rangedFloat.value;
-    lowValue = rangedFloat.lowValue;
-    highValue = rangedFloat.highValue;
+    if (rangedFloat != null) {
+      name = rangedFloat.name;
+      value = rangedFloat.value;
+      lowValue = rangedFloat.lowValue;
+      highValue = rangedFloat.highValue;
+    }
   }
 
   public String getName

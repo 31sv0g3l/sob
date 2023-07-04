@@ -201,7 +201,9 @@ public class Book implements Serializable {
   private final RangedFloat trimLinesHorizontalRatio = new RangedFloat("trim lines horizontal ratio", 0f, 0f, 0.5f);
   private final RangedFloat trimLinesVerticalRatio = new RangedFloat("trim lines vertical ratio", 0f, 0f, 0.5f);
   List<TransformSet> transformSets = new ArrayList<>();
+  List<TextGenerator> textGenerators = new ArrayList<>();
   Map<PageRef, List<Transform>> effectiveTransformsByPage = new HashMap<>();
+  Map<PageRef, List<TextGenerator>> textGeneratorsByPage = new HashMap<>();
   private String outputPath = null;
   private String signaturesOutputPath = null;
   private String name = null;
@@ -245,20 +247,19 @@ public class Book implements Serializable {
     trimLinesHorizontalRatio.copy(book.trimLinesHorizontalRatio);
     trimLinesVerticalRatio.copy(book.trimLinesVerticalRatio);
     transformSets = new ArrayList<>();
-    computeEffectiveTransformSets();
     for (TransformSet transformSet : book.transformSets) {
       if (transformSet != null) {
         transformSets.add(new TransformSet(transformSet));
       }
     }
-    effectiveTransformsByPage = new HashMap<>();
-    for (Map.Entry<PageRef, List<Transform>> transformsByPageEntry : book.effectiveTransformsByPage.entrySet() ) {
-      List<Transform> transforms = new ArrayList<>();
-      for (Transform transform : transformsByPageEntry.getValue()) {
-        transforms.add(new Transform(transform));
+    computeEffectiveTransformSetsByPage();
+    textGenerators = new ArrayList<>();
+    for (TextGenerator textGenerator : book.textGenerators) {
+      if (textGenerator != null) {
+        textGenerators.add(new TextGenerator(textGenerator));
       }
-      effectiveTransformsByPage.put(transformsByPageEntry.getKey(), transforms);
     }
+    computeTextGeneratorsByPage();
     outputPath = book.outputPath;
     signaturesOutputPath = book.signaturesOutputPath;
     name = book.name;
@@ -449,7 +450,7 @@ public class Book implements Serializable {
     sourceDocuments.remove(sourceDocument);
   }
 
-  public Collection<TransformSet> getTransformSets
+  public List<TransformSet> getTransformSets
   ()
   {
     if (transformSets == null) {
@@ -468,7 +469,7 @@ public class Book implements Serializable {
   public void upTransformSet
   (TransformSet transformSet)
   {
-    List<TransformSet> transformSets = (List<TransformSet>)getTransformSets();
+    List<TransformSet> transformSets = getTransformSets();
     int index = transformSets.indexOf(transformSet);
     if (index <= 0) {
       return;
@@ -480,7 +481,7 @@ public class Book implements Serializable {
   public void downTransformSet
   (TransformSet transformSet)
   {
-    List<TransformSet> transformSets = (List<TransformSet>)getTransformSets();
+    List<TransformSet> transformSets = getTransformSets();
     int index = transformSets.indexOf(transformSet);
     if (index >= transformSets.size() - 1) {
       return;
@@ -493,6 +494,52 @@ public class Book implements Serializable {
   (TransformSet transformSet)
   {
     transformSets.remove(transformSet);
+  }
+
+  public List<TextGenerator> getTextGenerators
+  ()
+  {
+    if (textGenerators == null) {
+      textGenerators = new ArrayList<>();
+    }
+    return textGenerators;
+  }
+
+  public void setTextGenerators
+  (Collection<TextGenerator> textGenerators)
+  {
+    this.textGenerators = new ArrayList<>();
+    this.textGenerators.addAll(textGenerators);
+  }
+
+  public void upTextGenerator
+  (TextGenerator textGenerator)
+  {
+    List<TextGenerator> textGenerators = getTextGenerators();
+    int index = textGenerators.indexOf(textGenerator);
+    if (index <= 0) {
+      return;
+    }
+    textGenerators.remove(textGenerator);
+    textGenerators.add(index - 1, textGenerator);
+  }
+
+  public void downTextGenerator
+  (TextGenerator textGenerator)
+  {
+    List<TextGenerator> textGenerators = getTextGenerators();
+    int index = textGenerators.indexOf(textGenerator);
+    if (index >= textGenerators.size() - 1) {
+      return;
+    }
+    textGenerators.remove(textGenerator);
+    textGenerators.add(index + 1, textGenerator);
+  }
+
+  public void removeTextGenerator
+  (TextGenerator textGenerator)
+  {
+    textGenerators.remove(textGenerator);
   }
 
   public String getOutputPath
@@ -554,7 +601,7 @@ public class Book implements Serializable {
     }
   }
 
-  public void computeEffectiveTransformSets
+  public void computeEffectiveTransformSetsByPage
   ()
   {
     try {
@@ -571,6 +618,30 @@ public class Book implements Serializable {
           List<Transform> pageTransforms =
               effectiveTransformsByPage.computeIfAbsent(transformPage, k -> new ArrayList<>());
           pageTransforms.addAll(transformSet.getTransforms());
+        }
+      }
+    } catch (Exception e) {
+      handleException(e);
+    }
+  }
+
+  public void computeTextGeneratorsByPage
+  ()
+  {
+    try {
+      generateSourceDocumentsById();
+      textGeneratorsByPage = new HashMap<>();
+      for (TextGenerator textGenerator : textGenerators) {
+        Set<PageRef> textGeneratorPages = new TreeSet<>();
+        if (textGenerator.getPageRanges() != null) {
+          for (PageRange pageRange : textGenerator.getPageRanges()) {
+            textGeneratorPages.addAll(pageRange.getPageRefs(getPages(), sourceDocumentsById));
+          }
+        }
+        for (PageRef textGeneratorPage : textGeneratorPages) {
+          List<TextGenerator> pageTextGenerators =
+            textGeneratorsByPage.computeIfAbsent(textGeneratorPage, k -> new ArrayList<>());
+          pageTextGenerators.add(textGenerator);
         }
       }
     } catch (Exception e) {
@@ -889,7 +960,7 @@ public class Book implements Serializable {
 
   }
 
-  private TransformedImage generatePageImage
+  private TransformedImage generateTransformedPageImage
   (PdfWriter writer, PageRef pageRef, Rectangle unitSize, boolean even)
   throws Exception
   {
@@ -1063,7 +1134,8 @@ public class Book implements Serializable {
   (OutputStream out, boolean usingMargins, boolean usingPageNumbering, Collection<PageRef> targetPages)
   {
     try {
-      computeEffectiveTransformSets();
+      computeEffectiveTransformSetsByPage();
+      computeTextGeneratorsByPage();
       Document document = new Document(pageSize.getRectangle(), 0, 0, 0, 0);
       PdfWriter writer = PdfWriter.getInstance(document, out);
       document.open();
@@ -1072,6 +1144,9 @@ public class Book implements Serializable {
       float pageWidth = pageSize.getRectangle().getWidth();
       float pageHeight = pageSize.getRectangle().getHeight();
       setProgressLabel(translate("documentGenerationColon"));
+      for (TextGenerator textGenerator : textGenerators) {
+        textGenerator.compile();
+      }
       for (int totalPageNumber = 1; totalPageNumber <= getPages().size(); totalPageNumber++) {
         PageRef pageRef = getPages().get(totalPageNumber - 1);
         if ((!pageRef.isBlankPage()) && ((targetPages != null) && !targetPages.contains(pageRef))) {
@@ -1082,7 +1157,7 @@ public class Book implements Serializable {
         if ((!pageRef.isBlankPage()) && (pageRef.getPdfReader() != null)) {
           AffineTransform affineTransform = null;
           TransformedImage transformedImage =
-            generatePageImage(writer, pageRef, pageSize.getRectangle(), totalPageNumber % 2 == 0);
+            generateTransformedPageImage(writer, pageRef, pageSize.getRectangle(), totalPageNumber % 2 == 0);
           if (transformedImage != null) {
             // First we add the image with the total transform:
             Image pageImage = transformedImage.image;
@@ -1162,6 +1237,38 @@ public class Book implements Serializable {
             // Next we invert any existing transform from the above, and possibly draw the margins and page numbers:
             if (transform != null) {
               cb.transform(transform.createInverse());
+            }
+          }
+          List<TextGenerator> pageTextGenerators = textGeneratorsByPage.get(pageRef);
+          cb.setColorFill(Color.BLACK);
+          cb.setColorStroke(Color.BLACK);
+          if (pageTextGenerators != null) {
+            for (TextGenerator textGenerator : pageTextGenerators) {
+              DefaultFontMapper fontMapper = new DefaultFontMapper();
+              BaseFont baseFont = fontMapper.awtToPdf(textGenerator.getFont());
+              float fontSize = textGenerator.getFont().getSize();
+              float lineHeight = textGenerator.getLineHeightFactor();
+              cb.setFontAndSize(baseFont, fontSize);
+              String content = textGenerator.getContent(pageRef, totalPageNumber);
+              String[] contentLines = StringUtils.toLines(content);
+              int contentLineCount = 0;
+              for (String contentLine : contentLines) {
+                float horizontalOffset = textGenerator.getHorizontalOffset() * pageSize.getRectangle().getWidth();
+                float verticalOffset = textGenerator.getVerticalOffset() * pageSize.getRectangle().getHeight();
+                float contentWidth = cb.getEffectiveStringWidth(contentLine, true);
+                switch (textGenerator.getAlignment()) {
+                  case CENTRE:
+                    horizontalOffset -= contentWidth / 2.0f;
+                    break;
+                  case RIGHT:
+                    horizontalOffset -= contentWidth;
+                    break;
+                }
+                cb.beginText();
+                cb.moveText(horizontalOffset, verticalOffset - (contentLineCount++ * lineHeight * fontSize));
+                cb.showText(contentLine);
+                cb.endText();
+              }
             }
           }
           float leftMarginX = leftMarginRatio.getValue() * pageSize.getRectangle().getWidth();
@@ -1372,7 +1479,7 @@ public class Book implements Serializable {
         float spineOffset = spineOffsetRatio.getValue() * halfSize.getWidth();
         float edgeOffset = edgeOffsetRatio.getValue() * halfSize.getWidth();
         float yOffset = halfSize.getHeight() * (1.0f - pageRatio) * 0.5f;
-        boolean usingTrimLines = !trimLinesType.equals(TrimLinesType.NONE);
+        boolean usingTrimLines = trimLinesType != null && !trimLinesType.equals(TrimLinesType.NONE);
         float horizontalTrimRatio = 0.0f;
         float verticalTrimRatio = 0.0f;
         float TRIM_FACTOR = 0.9f;
@@ -1393,9 +1500,6 @@ public class Book implements Serializable {
             boolean even = signatureSheetPageIndex % 2 == 0;
             if (even) {
               document.newPage();
-              if (addSpineImage) {
-                addSpineImage(cb);
-              }
             }
             int totalPageNumber = sheetSourcePageNumbers[signatureSheetPageIndex];
             if (totalPageNumber > 0) {
@@ -1419,8 +1523,13 @@ public class Book implements Serializable {
                 document.newPage();
               }
             }
-            if (even && usingTrimLines) {
-              addTrimLines(cb, halfSize, horizontalTrimRatio, verticalTrimRatio);
+            if (even) {
+              if (addSpineImage) {
+                addSpineImage(cb);
+              }
+              if (usingTrimLines) {
+                addTrimLines(cb, halfSize, horizontalTrimRatio, verticalTrimRatio);
+              }
             }
             setProgress(generatedPageCount, totalSignaturePageCount);
           }

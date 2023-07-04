@@ -13,6 +13,7 @@ buttonTooltipGenerateSignatures {
 buttonTooltipViewer { Show / hide live PDF viewer}
 buttonTooltipSignaturesViewer { Show / hide live PDF signatures viewer }
 buttonTooltipExit { Exit the application }
+chooseFont { Choose Font }
 chosenFile { Chosen file }
 chosenFileAtPath { Chosen file at path }
 comments { Comments }
@@ -29,6 +30,11 @@ edgeOffsetRatio { edge offset ratio }
 exit { Exit }
 file { File }
 fileMenu { File menu }
+fontAttributes { Attributes }
+fontBold { Bold }
+fontItalic { Italic }
+fontName { Font }
+fontSize { Size }
 generate { Generate }
 generated { Generated }
 generatedDocumentHas { Generated document has }
@@ -160,13 +166,39 @@ sourceDocumentUpButtonTooltip { Move this source document up by one position, to
 sourceDocumentDeleteButtonTooltip { Remove this source document from the project }
 sourceDocumentPageRangesTooltip {
 Set the page ranges to be used from this source document.
-See inine help for full syntax.
+See inline help for full syntax.
 }
 sourceDocumentPathTooltip { Set the (PDF) path of this source docuemnt }
 sourceDocumentPathButtonTooltip { Browse for the (PDF) path of this source docuemnt }
 sourceDocuments { Source Documents }
 sourceDocumentsComboTooltip { Select the current source document }
 successfullySaved { successfully saved }
+textGenerators { Text Generators }
+textGeneratorsAlign { Align }
+textGeneratorsAlignLeft { Left }
+textGeneratorsAlignRight { Right }
+textGeneratorsAlignCentre { Centre }
+textGeneratorsAlignJustify { Justify }
+textGeneratorsComboTooltip { Select the current text generator (listed in order of application) }
+textGeneratorsComments { Comment }
+textGeneratorsCommentsTooltip { Set a comment / description for this text generator }
+textGeneratorsContent { Content }
+textGeneratorsContentTooltip {
+Set the content of the text generator.
+See inline documentation for details of syntax
+}
+textGeneratorsHorizontalOffset { Hor. Offset }
+textGeneratorsLineHeight { Line Height }
+textGeneratorsVerticalOffset { Ver. Offset }
+textGeneratorsNewTooltip { Add a new text generator }
+textGeneratorsUpTooltip { Move this text generator up to the previous position of application }
+textGeneratorsDownTooltip { Move this text generator down to the next position of application }
+textGeneratorsDeleteTooltip { Delete this text generator }
+textGeneratorsEnableDisableTooltip { Enable / disable his text generator }
+textGeneratorsNewTooltip { Add a new text generator }
+textGeneratorsNameTooltip { Set the name of this text generator }
+textGeneratorsPageRanges { Page Ranges }
+textGeneratorsPageRangesTooltip { Set the page ranges to which this text generator applies }
 topColon { Top: }
 transformDescription_ROTATION_IN_DEGREES { Counterclockwise Rotation in Degrees }
 transformDescription_SCALE { Scale Ratio }
@@ -201,7 +233,7 @@ transformSetsNewTooltip { Add a new transform set }
 transformSetsUpTooltip { Move this transform set up to the previous position of application }
 transformSetsDownTooltip { Move this transform set down to the next position of application }
 transformSetsDeleteTooltip { Delete this transform set }
-transformSetsEnableDisableTooltip { Enable / disable his transform set }
+transformSetsEnableDisableTooltip { Enable / disable this transform set }
 transformSetsNewTooltip { Add a new transform set }
 transformSetsNewTooltip { Add a new transform set }
 transformTranslateX { Horizontal Translation }

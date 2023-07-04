@@ -93,7 +93,7 @@ public class TransformSet implements Serializable {
   }
 
   /**
-   * Moves the given transoform down (later, to a lower index) in the list of transforms.
+   * Moves the given transform down (later, to a lower index) in the list of transforms.
    */
   public void moveDown
   (Transform transform)

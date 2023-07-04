@@ -1,6 +1,7 @@
 package com.binderator.gui;
 
 
+import com.binderator.ext.gui.JFontChooser;
 import com.binderator.persistence.*;
 import com.binderator.engine.*;
 import com.binderator.util.*;
@@ -109,6 +110,7 @@ public class BinderatorFrame extends JFrame
   JPanel documentsAndPagesPanel;
   JPanel transformSetsPanel;
   JPanel transformsPanel;
+  JPanel textGeneratorsPanel;
   ImageIcon newIcon;
   ImageIcon deleteIcon;
   ImageIcon upIcon;
@@ -126,6 +128,8 @@ public class BinderatorFrame extends JFrame
   DefaultComboBoxModel<SourceDocument> sourceDocumentsComboBoxModel;
   JComboBox<TransformSet> transformSetsComboBox;
   DefaultComboBoxModel<TransformSet> transformSetComboBoxModel;
+  JComboBox<TextGenerator> textGeneratorsComboBox;
+  DefaultComboBoxModel<TextGenerator> textGeneratorsComboBoxModel;
   // Project Panel Widgets:
   JTextField projectNameTextField;
   JTextField projectOutputPathTextField;
@@ -151,10 +155,21 @@ public class BinderatorFrame extends JFrame
   final Color pageRangesApplyButtonDefaultColor = pageRangesApplyButton.getBackground();
 
   // Page Operations Panel Widgets:
+  private TransformSet selectedTransformSet = null;
   JTextField transformSetNameTextField = new JTextField(34);
   JTextField transformSetPageRangesTextField = new JTextField(34);
   JTextArea transformSetCommentTextArea = new JTextArea(5, 34);
-  private TransformSet selectedTransformSet = null;
+  private TextGenerator selectedTextGenerator = null;
+  JTextField textGeneratorNameTextField = new JTextField(34);
+  JTextField textGeneratorPageRangesTextField = new JTextField(34);
+  JTextArea textGeneratorCommentTextArea = new JTextArea(5, 34);
+  JTextField textGeneratorHorizontalOffsetField = new JTextField(6);
+  JTextField textGeneratorVerticalOffsetField = new JTextField(6);
+  JTextField textGeneratorLineHeightField = new JTextField(6);
+  JTextArea textGeneratorContentTextArea = new JTextArea(10, 34);
+  JComboBox<TextGenerator.Alignment> textGeneratorAlignmentComboBox;
+  DefaultComboBoxModel<TextGenerator.Alignment> textGeneratorAlignmentComboBoxModel;
+  JLabel textGeneratorFontLabel = new JLabel("");
   private SourceDocument selectedDocument = null;
   private JDialog optionsDialog = null;
   private JDialog inlineHelpDialog = null;
@@ -339,7 +354,9 @@ public class BinderatorFrame extends JFrame
     // Main tabbed pane:
     JTabbedPane mainTabs = new JTabbedPane();
     mainTabs.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-    // Project panel:
+
+    // ******************************************************************************************************
+    // Project tab:
     projectPanel = new JPanel();
     projectPanel.setLayout(new BoxLayout(projectPanel, BoxLayout.Y_AXIS));
     mainTabs.add(translate("project"), projectPanel);
@@ -395,7 +412,7 @@ public class BinderatorFrame extends JFrame
     projectScaleToFitCheckBox = new JCheckBox();
     projectScaleToFitCheckBox.setText(translate("initialScale"));
     projectScaleToFitCheckBox.addActionListener(e -> execute(() -> {
-      book.setScaleToFit(projectScaleToFitCheckBox.isSelected());
+      getBook().setScaleToFit(projectScaleToFitCheckBox.isSelected());
       registerUnsavedChange();
     }));
     projectScaleToFitCheckBox.setToolTipText(translate("projectScaleToFitTooltip"));
@@ -403,14 +420,14 @@ public class BinderatorFrame extends JFrame
     projectEnableMarginsCheckBox.setText(translate("margins"));
     projectEnableMarginsCheckBox.setToolTipText(translate("projectEnableMarginsTooltip"));
     projectEnableMarginsCheckBox.addActionListener(e -> execute(() -> {
-      book.setUsingMargins(projectEnableMarginsCheckBox.isSelected());
+      getBook().setUsingMargins(projectEnableMarginsCheckBox.isSelected());
       registerUnsavedChange();
     }));
     projectEnablePageNumberingCheckBox = new JCheckBox();
     projectEnablePageNumberingCheckBox.setText(translate("pageNumbers"));
     projectEnablePageNumberingCheckBox.setToolTipText(translate("pageNumbersTooltip"));
     projectEnablePageNumberingCheckBox.addActionListener(e -> execute(() -> {
-      book.setUsingPageNumbering(projectEnablePageNumberingCheckBox.isSelected());
+      getBook().setUsingPageNumbering(projectEnablePageNumberingCheckBox.isSelected());
       registerUnsavedChange();
     }));
     JPanel projectCheckboxPanel = new JPanel();
@@ -439,24 +456,28 @@ public class BinderatorFrame extends JFrame
     projectPanel.add(Box.createVerticalStrut(scale(5)));
     projectCommentTextArea = new JTextArea(scale(5), scale(34));
     projectCommentTextArea.getDocument().addDocumentListener(new DocumentListener() {
+
       @Override public void changedUpdate(DocumentEvent e) {
         execute(() -> {
-          book.setComments(projectCommentTextArea.getText());
+          getBook().setComments(projectCommentTextArea.getText());
           registerUnsavedChange();
         });
       }
+
       @Override public void removeUpdate(DocumentEvent e) {
         execute(() -> {
-          book.setComments(projectCommentTextArea.getText());
+          getBook().setComments(projectCommentTextArea.getText());
           registerUnsavedChange();
         });
       }
+
       @Override public void insertUpdate(DocumentEvent e) {
         execute(() -> {
-          book.setComments(projectCommentTextArea.getText());
+          getBook().setComments(projectCommentTextArea.getText());
           registerUnsavedChange();
         });
       }
+
     });
     projectCommentTextArea.setLineWrap(true);
     projectCommentTextArea.setWrapStyleWord(true);
@@ -473,7 +494,7 @@ public class BinderatorFrame extends JFrame
     marginControlsPanel.add(new JLabel(translate("leftColon")));
     marginControlsPanel.add(Box.createHorizontalStrut(scale(5)));
     leftMarginRatioField = createRangedFloatField(
-      book.getLeftMarginRatio(),
+      () -> { return getBook().getLeftMarginRatio(); },
       f -> {
         getBook().setLeftMarginRatio(validatedFloatFromString(f.getText(), "Left margin ratio", 0.0f, 0.5f));
       }
@@ -484,7 +505,7 @@ public class BinderatorFrame extends JFrame
     marginControlsPanel.add(new JLabel(translate("rightColon")));
     marginControlsPanel.add(Box.createHorizontalStrut(scale(5)));
     rightMarginRatioField = createRangedFloatField(
-      book.getRightMarginRatio(),
+      () -> { return getBook().getRightMarginRatio(); },
       f -> { getBook().setRightMarginRatio(validatedFloatFromString(f.getText(), "Right margin ratio", 0.0f, 0.5f)); }
     );
     rightMarginRatioField.setToolTipText(translate("marginsRightTooltip"));
@@ -493,7 +514,7 @@ public class BinderatorFrame extends JFrame
     marginControlsPanel.add(new JLabel(translate("bottomColon")));
     marginControlsPanel.add(Box.createHorizontalStrut(scale(5)));
     bottomMarginRatioField = createRangedFloatField(
-      book.getBottomMarginRatio(),
+      () -> { return getBook().getBottomMarginRatio(); },
       f -> { getBook().setBottomMarginRatio(validatedFloatFromString(f.getText(), "Bottom margin ratio", 0.0f, 0.5f)); }
     );
     bottomMarginRatioField.setToolTipText(translate("marginsBottomTooltip"));
@@ -502,7 +523,7 @@ public class BinderatorFrame extends JFrame
     marginControlsPanel.add(new JLabel(translate("topColon")));
     marginControlsPanel.add(Box.createHorizontalStrut(scale(5)));
     topMarginRatioField = createRangedFloatField(
-      book.getTopMarginRatio(),
+      () -> { return getBook().getTopMarginRatio(); },
       f -> { getBook().setTopMarginRatio(validatedFloatFromString(f.getText(), "Top margin ratio", 0.0f, 0.5f)); }
     );
     topMarginRatioField.setToolTipText(translate("marginsTopTooltip"));
@@ -510,7 +531,6 @@ public class BinderatorFrame extends JFrame
     marginControlsPanel.add(Box.createHorizontalStrut(scale(5)));
     projectControlsPanel.add(marginControlsPanel);
     projectControlsPanel.add(Box.createVerticalStrut(scale(5)));
-
     JPanel signatureControlsTopPanel = new JPanel();
     signatureControlsTopPanel.setLayout(new BoxLayout(signatureControlsTopPanel, BoxLayout.X_AXIS));
     signatureControlsTopPanel.add(Box.createHorizontalStrut(scale(5)));
@@ -556,7 +576,7 @@ public class BinderatorFrame extends JFrame
     signatureControlsTopPanel.add(new JLabel(translate("spineOffset")));
     signatureControlsTopPanel.add(Box.createHorizontalStrut(scale(5)));
     spineOffsetRatioField = createRangedFloatField(
-      getBook().getSpineOffsetRatio(),
+      () -> { return getBook().getSpineOffsetRatio(); },
       f -> { getBook().setSpineOffsetRatio(validatedFloatFromString(f.getText(), translate("spineOffsetRatio"), 0.0f, 0.9f));}
     );
     spineOffsetRatioField.setToolTipText(translate("signatureSpineOffsetTooltip"));
@@ -565,13 +585,12 @@ public class BinderatorFrame extends JFrame
     signatureControlsTopPanel.add(new JLabel(translate("edgeOffset")));
     signatureControlsTopPanel.add(Box.createHorizontalStrut(scale(5)));
     edgeOffsetRatioField = createRangedFloatField(
-      getBook().getEdgeOffsetRatio(),
+      () -> { return getBook().getEdgeOffsetRatio(); },
       f -> { getBook().setEdgeOffsetRatio(validatedFloatFromString(f.getText(), translate("edgeOffsetRatio"), 0.0f, 0.9f));}
     );
     edgeOffsetRatioField.setToolTipText(translate("signatureEdgeOffsetTooltip"));
     signatureControlsTopPanel.add(edgeOffsetRatioField);
     signatureControlsTopPanel.add(Box.createHorizontalStrut(scale(5)));
-
     JPanel signatureControlsBottomPanel = new JPanel();
     signatureControlsBottomPanel.setLayout(new BoxLayout(signatureControlsBottomPanel, BoxLayout.X_AXIS));
     signatureControlsBottomPanel.add(Box.createHorizontalStrut(scale(106)));
@@ -589,7 +608,7 @@ public class BinderatorFrame extends JFrame
     signatureTrimLinesHorizontalColonLabel.setVisible(false);
     signatureControlsBottomPanel.add(signatureTrimLinesHorizontalColonLabel);
     signatureTrimLinesHorizontalRatioField = createRangedFloatField(
-      getBook().getTrimLinesHorizontalRatio(),
+      () -> { return getBook().getTrimLinesHorizontalRatio(); },
       f -> { getBook().getTrimLinesHorizontalRatio().setValue(validatedFloatFromString(f.getText(), translate("trimLinesHorizontalRatio"), 0.0f, 0.5f));}
     );
     signatureControlsBottomPanel.add(signatureTrimLinesHorizontalRatioField);
@@ -598,7 +617,7 @@ public class BinderatorFrame extends JFrame
     signatureTrimLinesVerticalColonLabel.setVisible(false);
     signatureControlsBottomPanel.add(signatureTrimLinesVerticalColonLabel);
     signatureTrimLinesVerticalRatioField = createRangedFloatField(
-      getBook().getTrimLinesVerticalRatio(),
+      () -> { return getBook().getTrimLinesVerticalRatio(); },
       f -> { getBook().getTrimLinesVerticalRatio().setValue(validatedFloatFromString(f.getText(), translate("trimLinesVerticalRatio"), 0.0f, 0.5f));}
     );
     signatureControlsBottomPanel.add(signatureTrimLinesVerticalRatioField);
@@ -624,17 +643,17 @@ public class BinderatorFrame extends JFrame
     );
     signatureTrimLinesComboBox.setSelectedItem(getBook().getTrimLinesType());
     signatureControlsBottomPanel.add(Box.createHorizontalStrut(scale(5)));
-
     JPanel signatureControlsPanel = new JPanel();
     signatureControlsPanel.setLayout(new BoxLayout(signatureControlsPanel, BoxLayout.Y_AXIS));
     signatureControlsPanel.add(signatureControlsTopPanel);
     signatureControlsPanel.add(signatureControlsBottomPanel);
     projectControlsPanel.add(signatureControlsPanel);
     projectControlsPanel.add(Box.createVerticalGlue());
-
     updateProjectControlsPanel();
     projectPanel.add(Box.createVerticalGlue());
-    // Documents panel:
+
+    // ******************************************************************************************************
+    // Source Documents and page ranges tab:
     documentsPanel = new JPanel();
     JScrollPane documentsPane = new JScrollPane(documentsPanel);
     documentsPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -653,7 +672,6 @@ public class BinderatorFrame extends JFrame
     pageRangesPanel.add(pageRangesScrollPane);
     pageRangesApplyButton.setPreferredSize(new Dimension(34, Integer.MAX_VALUE));
     pageRangesApplyButton.setMaximumSize(new Dimension(34, Integer.MAX_VALUE));
-    // pageRangeApplyButon.setText(translate("apply"));
     pageRangesPanel.add(pageRangesApplyButton);
     pageRangesApplyButton.addActionListener(
       e -> execute(() -> {
@@ -679,8 +697,6 @@ public class BinderatorFrame extends JFrame
       }
     });
     pageRangesTextArea.setToolTipText(translate("pageRangesTooltip"));
-
-    // Combined documents and pages panel:
     documentsAndPagesPanel = new JPanel();
     documentsAndPagesPanel.setLayout(new BoxLayout(documentsAndPagesPanel, BoxLayout.Y_AXIS));
     documentsAndPagesPanel.add(documentsPane);
@@ -799,16 +815,22 @@ public class BinderatorFrame extends JFrame
     documentsPanel.add(createScaledLabeledWidgetPanel(documentCommentScrollPane, translate("comments"), 22, 70));
     documentCommentTextArea.getDocument().addDocumentListener(new DocumentListener() {
       @Override public void changedUpdate(DocumentEvent e) {
-        selectedDocument.setComment(documentCommentTextArea.getText());
-        registerUnsavedChange();
+        if (selectedDocument != null) {
+          selectedDocument.setComment(documentCommentTextArea.getText());
+          registerUnsavedChange();
+        }
       }
       @Override public void removeUpdate(DocumentEvent e) {
-        selectedDocument.setComment(documentCommentTextArea.getText());
-        registerUnsavedChange();
+        if (selectedDocument != null) {
+          selectedDocument.setComment(documentCommentTextArea.getText());
+          registerUnsavedChange();
+        }
       }
       @Override public void insertUpdate(DocumentEvent e) {
-        selectedDocument.setComment(documentCommentTextArea.getText());
-        registerUnsavedChange();
+        if (selectedDocument != null) {
+          selectedDocument.setComment(documentCommentTextArea.getText());
+          registerUnsavedChange();
+        }
       }
     });
     documentCommentTextArea.setToolTipText(translate("sourceDocumentCommentTooltip"));
@@ -816,7 +838,9 @@ public class BinderatorFrame extends JFrame
     documentsPanel.add(Box.createVerticalStrut(scale(5)));
     documentsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
     setEnabledSourceDocumentsWidgets(false);
-    // Transforms panel:
+
+    // ******************************************************************************************************
+    // Transforms tab:
     transformSetsPanel = new JPanel();
     JScrollPane transformSetsPane = new JScrollPane(transformSetsPanel);
     transformSetsPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -876,7 +900,7 @@ public class BinderatorFrame extends JFrame
     transformSetsPanel.add(Box.createVerticalStrut(5));
     transformSetsPanel.add(createScaledLabeledWidgetPanel(transformSetNameTextField, translate("name"), 22, 22));
     transformSetNameTextField.addActionListener(event -> {
-      if ( selectedTransformSet != null) {
+      if (selectedTransformSet != null) {
         try {
           selectedTransformSet.setName(transformSetNameTextField.getText());
           registerUnsavedChange();
@@ -891,7 +915,7 @@ public class BinderatorFrame extends JFrame
       transformSetPageRangesTextField, translate("transformSetPageRanges"), 22, 22
     ));
     transformSetPageRangesTextField.addActionListener(event -> {
-      if ( selectedTransformSet != null) {
+      if (selectedTransformSet != null) {
         try {
           selectedTransformSet.setPageRanges(PageRange.parsePageRanges(transformSetPageRangesTextField.getText(), false));
           registerUnsavedChange();
@@ -910,18 +934,27 @@ public class BinderatorFrame extends JFrame
       createScaledLabeledWidgetPanel(transformSetCommentScrollPane, translate("comments"), 22, 70)
     );
     transformSetCommentTextArea.getDocument().addDocumentListener(new DocumentListener() {
+
       @Override public void changedUpdate(DocumentEvent e) {
-        selectedTransformSet.setComment(transformSetCommentTextArea.getText());
-        registerUnsavedChange();
+        if (selectedTransformSet != null) {
+          selectedTransformSet.setComment(transformSetCommentTextArea.getText());
+          registerUnsavedChange();
+        }
       }
+
       @Override public void removeUpdate(DocumentEvent e) {
-        selectedTransformSet.setComment(transformSetCommentTextArea.getText());
-        registerUnsavedChange();
+        if (selectedTransformSet != null) {
+          selectedTransformSet.setComment(transformSetCommentTextArea.getText());
+          registerUnsavedChange();
+        }
       }
       @Override public void insertUpdate(DocumentEvent e) {
-        selectedTransformSet.setComment(transformSetCommentTextArea.getText());
-        registerUnsavedChange();
+        if (selectedTransformSet != null) {
+          selectedTransformSet.setComment(transformSetCommentTextArea.getText());
+          registerUnsavedChange();
+        }
       }
+
     });
     transformsPanel = new JPanel();
     transformsPanel.setLayout(new BoxLayout(transformsPanel, BoxLayout.Y_AXIS));
@@ -932,6 +965,273 @@ public class BinderatorFrame extends JFrame
     transformSetsPanel.add(Box.createVerticalStrut(scale(5)));
     transformSetsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
     setEnabledTransformsWidgets(false);
+
+    // ******************************************************************************************************
+    // Text Generators tab:
+    textGeneratorsPanel = new JPanel();
+    JScrollPane textGeneratorsPane = new JScrollPane(textGeneratorsPanel);
+    textGeneratorsPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+    textGeneratorsPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+    mainTabs.add(translate("textGenerators"), textGeneratorsPane);
+    textGeneratorsPanel.setLayout(new BoxLayout(textGeneratorsPanel, BoxLayout.Y_AXIS));
+    JPanel textGeneratorsNavPanel = new JPanel();
+    textGeneratorsNavPanel.setLayout(new BoxLayout(textGeneratorsNavPanel, BoxLayout.X_AXIS));
+    textGeneratorsNavPanel.add(Box.createHorizontalStrut(scale(5)));
+    textGeneratorsComboBox = new JComboBox<>();
+    populateTextGeneratorsComboBox();
+    textGeneratorsNavPanel.add(textGeneratorsComboBox);
+    textGeneratorsComboBox.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
+    textGeneratorsComboBox.setToolTipText(translate("textGeneratorsComboTooltip"));
+    textGeneratorsNavPanel.add(Box.createHorizontalStrut(scale(5)));
+    JButton newTextGeneratorButton = newNavAndControlButton("new.png", e -> newTextGenerator());
+    newTextGeneratorButton.setToolTipText(translate("textGeneratorsNewTooltip"));
+    textGeneratorsNavPanel.add(newTextGeneratorButton);
+    textGeneratorsNavPanel.add(Box.createHorizontalStrut(scale(5)));
+    JButton downTextGeneratorButton = newNavAndControlButton(
+      "down.png",
+      e -> {
+        if (textGeneratorsComboBox.getSelectedItem() != null) {
+          downTextGenerator((TextGenerator) textGeneratorsComboBox.getSelectedItem());
+        }
+      }
+    );
+    textGeneratorsNavPanel.add(downTextGeneratorButton);
+    downTextGeneratorButton.setToolTipText(translate("textGeneratorsDownTooltip"));
+    textGeneratorsNavPanel.add(Box.createHorizontalStrut(scale(5)));
+    JButton upTextGeneratorsButton = newNavAndControlButton(
+      "up.png",
+      e -> {
+        if (textGeneratorsComboBox.getSelectedItem() != null) {
+          upTextGenerator((TextGenerator) textGeneratorsComboBox.getSelectedItem());
+        }
+      }
+    );
+    textGeneratorsNavPanel.add(upTextGeneratorsButton);
+    upTextGeneratorsButton.setToolTipText(translate("textGeneratorsUpTooltip"));
+    textGeneratorsNavPanel.add(Box.createHorizontalStrut(scale(5)));
+    JButton deleteTextGeneratorsButton = newNavAndControlButton(
+      "delete.png",
+      e -> {
+        if (textGeneratorsComboBox.getSelectedItem() != null) {
+          deleteTextGenerator((TextGenerator) textGeneratorsComboBox.getSelectedItem());
+        }
+      }
+    );
+    textGeneratorsNavPanel.add(deleteTextGeneratorsButton);
+    deleteTextGeneratorsButton.setToolTipText(translate("textGeneratorsDeleteTooltip"));
+    textGeneratorsNavPanel.add(Box.createHorizontalStrut(scale(5)));
+    textGeneratorsNavPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
+    textGeneratorsNavPanel.setVisible(true);
+    textGeneratorsPanel.add(Box.createVerticalStrut(5));
+    textGeneratorsPanel.add(textGeneratorsNavPanel);
+    textGeneratorsPanel.add(Box.createVerticalStrut(5));
+    textGeneratorsPanel.add(createScaledLabeledWidgetPanel(textGeneratorNameTextField, translate("name"), 22, 22));
+    textGeneratorNameTextField.addActionListener(event -> {
+      if ( selectedTextGenerator != null) {
+        try {
+          selectedTextGenerator.setName(textGeneratorNameTextField.getText());
+          registerUnsavedChange();
+        } catch (Exception e) {
+          errorDialog(e);
+        }
+      }
+    });
+    textGeneratorNameTextField.setToolTipText(translate("textGeneratorsNameTooltip"));
+    GUIUtils.addBackgroundSetter(textGeneratorNameTextField);
+    textGeneratorsPanel.add(createScaledLabeledWidgetPanel(
+      textGeneratorPageRangesTextField, translate("textGeneratorsPageRanges"), 22, 22
+    ));
+    textGeneratorPageRangesTextField.addActionListener(event -> {
+      if ( selectedTextGenerator != null) {
+        try {
+          selectedTextGenerator.setPageRanges(PageRange.parsePageRanges(textGeneratorPageRangesTextField.getText(), false));
+          registerUnsavedChange();
+        } catch (Exception e) {
+          errorDialog(e);
+        }
+      }
+    });
+    textGeneratorPageRangesTextField.setToolTipText(translate("textGeneratorsPageRangesTooltip"));
+    GUIUtils.addBackgroundSetter(textGeneratorPageRangesTextField);
+    textGeneratorCommentTextArea.setLineWrap(true);
+    textGeneratorCommentTextArea.setWrapStyleWord(true);
+    textGeneratorCommentTextArea.setToolTipText(translate("textGeneratorsCommentsTooltip"));
+    JScrollPane textGeneratorCommentScrollPane = new JScrollPane(textGeneratorCommentTextArea);
+    textGeneratorsPanel.add(
+      createScaledLabeledWidgetPanel(textGeneratorCommentScrollPane, translate("textGeneratorsComments"), 22, 70)
+    );
+    textGeneratorCommentTextArea.getDocument().addDocumentListener(new DocumentListener() {
+
+      @Override public void changedUpdate(DocumentEvent e) {
+        if (selectedTextGenerator != null) {
+          selectedTextGenerator.setComment(textGeneratorCommentTextArea.getText());
+          registerUnsavedChange();
+        }
+      }
+
+      @Override public void removeUpdate(DocumentEvent e) {
+        if (selectedTextGenerator != null) {
+          selectedTextGenerator.setComment(textGeneratorCommentTextArea.getText());
+          registerUnsavedChange();
+        }
+      }
+
+      @Override public void insertUpdate(DocumentEvent e) {
+        if (selectedTextGenerator != null) {
+          selectedTextGenerator.setComment(textGeneratorCommentTextArea.getText());
+          registerUnsavedChange();
+        }
+      }
+
+    });
+    JPanel textGeneratorsXYAlignmentPanel = new JPanel();
+    textGeneratorsXYAlignmentPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
+    textGeneratorsXYAlignmentPanel.setLayout(new BoxLayout(textGeneratorsXYAlignmentPanel, BoxLayout.X_AXIS));
+    textGeneratorsXYAlignmentPanel.add(Box.createHorizontalStrut(scale(5)));
+    textGeneratorsXYAlignmentPanel.add(new JLabel(translate("textGeneratorsHorizontalOffset") + ":"));
+    textGeneratorsXYAlignmentPanel.add(Box.createHorizontalStrut(scale(5)));
+    textGeneratorHorizontalOffsetField.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
+    textGeneratorHorizontalOffsetField.addActionListener(event -> {
+      if ( selectedTextGenerator != null) {
+        try {
+          selectedTextGenerator.setHorizontalOffset(validatedFloatFromString(
+            textGeneratorHorizontalOffsetField.getText(), translate("textGeneratorsHorizontalOffset") + ":", 0.0f, 1.0f
+          ));
+          registerUnsavedChange();
+        } catch (Exception e) {
+          errorDialog(e);
+        }
+      }
+    });
+    GUIUtils.addBackgroundSetter(textGeneratorHorizontalOffsetField);
+    textGeneratorsXYAlignmentPanel.add(textGeneratorHorizontalOffsetField);
+    textGeneratorsXYAlignmentPanel.add(Box.createHorizontalStrut(scale(5)));
+    textGeneratorsXYAlignmentPanel.add(new JLabel(translate("textGeneratorsVerticalOffset") + ":"));
+    textGeneratorsXYAlignmentPanel.add(Box.createHorizontalStrut(scale(5)));
+    textGeneratorVerticalOffsetField.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
+    textGeneratorVerticalOffsetField.addActionListener(event -> {
+      if (selectedTextGenerator != null) {
+        try {
+          selectedTextGenerator.setVerticalOffset(validatedFloatFromString(
+            textGeneratorVerticalOffsetField.getText(), translate("textGeneratorsVerticalOffset") + ":", 0.0f, 1.0f
+          ));
+          registerUnsavedChange();
+        } catch (Exception e) {
+          errorDialog(e);
+        }
+      }
+    });
+    GUIUtils.addBackgroundSetter(textGeneratorVerticalOffsetField);
+    textGeneratorsXYAlignmentPanel.add(textGeneratorVerticalOffsetField);
+    textGeneratorsXYAlignmentPanel.add(Box.createHorizontalStrut(scale(5)));
+    textGeneratorsXYAlignmentPanel.add(new JLabel(translate("textGeneratorsAlign") + ":"));
+    textGeneratorsXYAlignmentPanel.add(Box.createHorizontalStrut(scale(5)));
+    textGeneratorAlignmentComboBox = new JComboBox<>();
+    textGeneratorAlignmentComboBox.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
+    textGeneratorAlignmentComboBoxModel = new DefaultComboBoxModel<>(TextGenerator.Alignment.values());
+    textGeneratorAlignmentComboBox.setModel(textGeneratorAlignmentComboBoxModel);
+    textGeneratorAlignmentComboBox.addActionListener(
+      e -> {
+        if (textGeneratorAlignmentComboBox.getSelectedItem() != null) {
+          if (selectedTextGenerator != null) {
+            selectedTextGenerator.setAlignment((TextGenerator.Alignment) textGeneratorAlignmentComboBox.getSelectedItem());
+          }
+          registerUnsavedChange();
+        }
+      }
+    );
+    textGeneratorsXYAlignmentPanel.add(textGeneratorAlignmentComboBox);
+    textGeneratorsXYAlignmentPanel.add(Box.createVerticalStrut(scale(5)));
+    textGeneratorsXYAlignmentPanel.add(Box.createHorizontalStrut(scale(5)));
+    textGeneratorsPanel.add(Box.createVerticalStrut(scale(5)));
+    textGeneratorsPanel.add(textGeneratorsXYAlignmentPanel);
+    textGeneratorsPanel.add(Box.createVerticalStrut(scale(5)));
+    JPanel textGeneratorsFontPanel = new JPanel();
+    textGeneratorsFontPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
+    textGeneratorsFontPanel.setLayout(new BoxLayout(textGeneratorsFontPanel, BoxLayout.X_AXIS));
+    JFontChooser fontChooser = new JFontChooser();
+    JButton fontChooserButton = new JButton(translate("chooseFont"));
+    fontChooserButton.addActionListener(
+      e -> execute(() -> {
+        if (selectedTextGenerator != null) {
+          java.awt.Font initialFont = selectedTextGenerator.getFont();
+          if (initialFont != null) {
+            fontChooser.setSelectedFont(initialFont);
+          }
+          fontChooser.showDialog(this);
+          java.awt.Font font = fontChooser.getSelectedFont();
+          if (!Objects.equals(initialFont, font)) {
+            selectedTextGenerator.setFont(font);
+            textGeneratorFontLabel.setText(font.getFontName() + " " + font.getSize());
+            registerUnsavedChange();
+          }
+        }
+      })
+    );
+    textGeneratorsFontPanel.add(Box.createHorizontalStrut(scale(5)));
+    textGeneratorsFontPanel.add(fontChooserButton);
+    textGeneratorsFontPanel.add(Box.createHorizontalStrut(scale(10)));
+    textGeneratorsFontPanel.add(textGeneratorFontLabel);
+    textGeneratorsFontPanel.add(Box.createHorizontalGlue());
+    textGeneratorsFontPanel.add(Box.createHorizontalStrut(scale(10)));
+    textGeneratorsFontPanel.add(new JLabel(translate("textGeneratorsLineHeight") + ":"));
+    textGeneratorsFontPanel.add(Box.createHorizontalStrut(scale(5)));
+    textGeneratorLineHeightField.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
+    textGeneratorLineHeightField.addActionListener(event -> {
+      if (selectedTextGenerator != null) {
+        try {
+          selectedTextGenerator.setLineHeightFactor(validatedFloatFromString(
+            textGeneratorLineHeightField.getText(), translate("textGeneratorsLineHeight") + ":", 0.5f, 5.0f
+          ));
+          registerUnsavedChange();
+        } catch (Exception e) {
+          errorDialog(e);
+        }
+      }
+    });
+    GUIUtils.addBackgroundSetter(textGeneratorLineHeightField);
+    textGeneratorsFontPanel.add(textGeneratorLineHeightField);
+    textGeneratorsFontPanel.add(Box.createHorizontalStrut(scale(5)));
+    textGeneratorsPanel.add(textGeneratorsFontPanel);
+    textGeneratorsPanel.add(Box.createVerticalStrut(scale(5)));
+    textGeneratorContentTextArea.setLineWrap(true);
+    textGeneratorContentTextArea.setWrapStyleWord(true);
+    textGeneratorContentTextArea.setToolTipText(translate("textGeneratorsContentTooltip"));
+    JScrollPane textGeneratorContentScrollPane = new JScrollPane(textGeneratorContentTextArea);
+    textGeneratorsPanel.add(
+      createScaledLabeledWidgetPanel(textGeneratorContentScrollPane, translate("textGeneratorsContent"), 22, 70)
+    );
+    textGeneratorContentTextArea.getDocument().addDocumentListener(new DocumentListener() {
+
+      @Override public void changedUpdate(DocumentEvent e) {
+        if (selectedTextGenerator != null) {
+          selectedTextGenerator.setContent(textGeneratorContentTextArea.getText());
+          registerUnsavedChange();
+        }
+      }
+
+      @Override public void removeUpdate(DocumentEvent e) {
+        if (selectedTextGenerator != null) {
+          selectedTextGenerator.setContent(textGeneratorContentTextArea.getText());
+          registerUnsavedChange();
+        }
+      }
+
+      @Override public void insertUpdate(DocumentEvent e) {
+        if (selectedTextGenerator != null) {
+          selectedTextGenerator.setContent(textGeneratorContentTextArea.getText());
+          registerUnsavedChange();
+        }
+      }
+
+    });
+    textGeneratorsPanel.add(Box.createVerticalGlue());
+    textGeneratorsPanel.add(Box.createVerticalStrut(scale(5)));
+    textGeneratorsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+    setEnabledTextGeneratorWidgets(false);
+
+    // ******************************************************************************************************
+    // Main panel:
     mainPanel.add(mainTabs);
     mainPanel.setVisible(true);
     // frameContainer.add(mainPanel);
@@ -1031,6 +1331,12 @@ public class BinderatorFrame extends JFrame
     documentPathTextField.setEnabled(enabled);
     documentPathButton.setEnabled(enabled);
     documentCommentTextArea.setEnabled(enabled);
+    if (!enabled) {
+      documentNameTextField.setText("");
+      documentIdentifierTextField.setText("");
+      documentPathTextField.setText("");
+      documentCommentTextArea.setText("");
+    }
   }
 
   private void setEnabledTransformsWidgets
@@ -1039,6 +1345,30 @@ public class BinderatorFrame extends JFrame
     transformSetNameTextField.setEnabled(enabled);
     transformSetPageRangesTextField.setEnabled(enabled);
     transformSetCommentTextArea.setEnabled(enabled);
+    if (!enabled) {
+      transformSetNameTextField.setText("");
+      transformSetPageRangesTextField.setText("");
+      transformSetCommentTextArea.setText("");
+    }
+  }
+
+  private void setEnabledTextGeneratorWidgets
+  (boolean enabled)
+  {
+    textGeneratorNameTextField.setEnabled(enabled);
+    textGeneratorPageRangesTextField.setEnabled(enabled);
+    textGeneratorCommentTextArea.setEnabled(enabled);
+    textGeneratorHorizontalOffsetField.setEnabled(enabled);
+    textGeneratorVerticalOffsetField.setEnabled(enabled);
+    textGeneratorContentTextArea.setEnabled(enabled);
+    if (!enabled) {
+      textGeneratorNameTextField.setText("");
+      textGeneratorPageRangesTextField.setText("");
+      textGeneratorCommentTextArea.setText("");
+      textGeneratorHorizontalOffsetField.setText("");
+      textGeneratorVerticalOffsetField.setText("");
+      textGeneratorContentTextArea.setText("");
+    }
   }
 
   private void setStatusMessage
@@ -1254,7 +1584,6 @@ public class BinderatorFrame extends JFrame
         book.getTransformSets().add(transformSet);
         registerUnsavedChange();
         populateTransformSetComboBox();
-        setEnabledTransformsWidgets(true);
         transformSetsComboBox.setSelectedItem(transformSet);
         selectedTransformSet = transformSet;
         populateTransformSetWidgets();
@@ -1305,9 +1634,72 @@ public class BinderatorFrame extends JFrame
         updateTransformControls(selectedTransformSet);
       } else {
         selectedTransformSet = null;
-        setEnabledTransformsWidgets(false);
         populateTransformSetWidgets();
         updateTransformControls(null);
+      }
+    });
+  }
+
+  private void newTextGenerator
+  ()
+  {
+    execute(() -> {
+      bookLock.lock();
+      try {
+        Book book = getBook();
+        TextGenerator textGenerator = new TextGenerator();
+        textGenerator.setName(translate("new"));
+        book.getTextGenerators().add(textGenerator);
+        registerUnsavedChange();
+        populateTextGeneratorsComboBox();
+        textGeneratorsComboBox.setSelectedItem(textGenerator);
+        selectedTextGenerator = textGenerator;
+        populateTextGeneratorWidgets();
+      } finally {
+        bookLock.unlock();
+      }
+    });
+  }
+
+  private void upTextGenerator
+  (TextGenerator textGenerator)
+  {
+    execute(() -> {
+      getBook().upTextGenerator(textGenerator);
+      registerUnsavedChange();
+      populateTextGeneratorsComboBox();
+      textGeneratorsComboBox.setSelectedItem(textGenerator);
+      selectedTextGenerator = textGenerator;
+    });
+  }
+
+  private void downTextGenerator
+  (TextGenerator textGenerator)
+  {
+    execute(() -> {
+      getBook().downTextGenerator(textGenerator);
+      registerUnsavedChange();
+      populateTextGeneratorsComboBox();
+      textGeneratorsComboBox.setSelectedItem(textGenerator);
+      selectedTextGenerator = textGenerator;
+    });
+  }
+
+  private void deleteTextGenerator
+  (TextGenerator textGenerator)
+  {
+    execute(() -> {
+      getBook().removeTextGenerator(textGenerator);
+      registerUnsavedChange();
+      populateTextGeneratorsComboBox();
+      if (textGeneratorsComboBox.getItemCount() > 0) {
+        textGeneratorsComboBox.setSelectedItem(0);
+        selectedTextGenerator = (TextGenerator) textGeneratorsComboBox.getSelectedItem();
+        populateTextGeneratorWidgets();
+      } else {
+        selectedTextGenerator = null;
+        setEnabledTextGeneratorWidgets(false);
+        populateTextGeneratorWidgets();
       }
     });
   }
@@ -1600,8 +1992,15 @@ public class BinderatorFrame extends JFrame
     System.exit(0);
   }
 
+  private interface RangedFloatAccessor {
+
+    RangedFloat get
+    ();
+
+  }
+
   private JTextField createRangedFloatField
-  (RangedFloat rangedFloat, ThrowingConsumer<JTextField, Exception> action)
+  (RangedFloatAccessor rangedFloatAccessor, ThrowingConsumer<JTextField, Exception> action)
   {
     JTextField field = new JTextField();
     GUIUtils.addBackgroundSetter(field);
@@ -1611,17 +2010,17 @@ public class BinderatorFrame extends JFrame
       public void keyReleased(KeyEvent ke) {
         String typed = field.getText();
         if (!typed.matches("-?\\d+(\\.\\d+)?") || typed.length() > 5) {
-          setStatusMessage(rangedFloat.getName() + " value \"" + typed +"\" is invalid");
+          setStatusMessage(rangedFloatAccessor.get().getName() + " value \"" + typed +"\" is invalid");
           field.setBackground(Color.PINK);
           return;
         }
         float value = Float.parseFloat(typed);
-        rangedFloat.setValue(value);
+        rangedFloatAccessor.get().setValue(value);
         resetStatusMessage();
       }
 
     });
-    field.setText("" + rangedFloat.getValue());
+    field.setText("" + rangedFloatAccessor.get().getValue());
     field.setMaximumSize(new Dimension(scale(100), scale(22)));
     field.addActionListener(e -> execute(() -> {
       try {
@@ -1650,6 +2049,7 @@ public class BinderatorFrame extends JFrame
         updateProjectControlsPanel();
         updateSourceDocumentsTab();
         updateTransformSetsTab();
+        updateTextGeneratorsTab();
         haveUnsavedChanges = false;
         notifyViewerBookChange();
       },
@@ -1658,6 +2058,7 @@ public class BinderatorFrame extends JFrame
   }
 
   Pattern floatPattern = Pattern.compile("-?\\d+(\\.\\d+)?([eE][+\\-]?\\d+)?");
+  Pattern intPattern = Pattern.compile("-?\\d+");
 
   private float validatedFloatFromString
   (String source, String name, float min, float max)
@@ -1665,6 +2066,19 @@ public class BinderatorFrame extends JFrame
   {
     if (floatPattern.matcher(source).matches()) {
       float value = Float.parseFloat(source);
+      if ((value >= min) && (value <= max)) {
+        return value;
+      }
+    }
+    throw new Exception(name + " value \"" + source + "\" is invalid.\nMust be a number between " + min + " and " + max);
+  }
+
+  private int validatedIntFromString
+  (String source, String name, int min, int max)
+  throws Exception
+  {
+    if (intPattern.matcher(source).matches()) {
+      int value = Integer.parseInt(source);
       if ((value >= min) && (value <= max)) {
         return value;
       }
@@ -1816,10 +2230,78 @@ public class BinderatorFrame extends JFrame
       transformSetCommentTextArea.setText(selectedTransformSet.getComment());
       updateTransformControls(selectedTransformSet);
       setEnabledTransformsWidgets(true);
+    } else {
+      setEnabledTransformsWidgets(false);
     }
   }
 
-  @SuppressWarnings("unchecked")
+  private void updateTextGeneratorsTab
+  ()
+  {
+    populateTextGeneratorsComboBox();
+    if (book.getTextGenerators().size() > 0) {
+      textGeneratorsComboBox.setSelectedIndex(-1);
+      textGeneratorsComboBox.setSelectedIndex(0);
+      setEnabledTextGeneratorWidgets(true);
+    } else {
+      textGeneratorNameTextField.setText("");
+      textGeneratorCommentTextArea.setText("");
+      textGeneratorContentTextArea.setText("");
+      textGeneratorPageRangesTextField.setText("");
+      textGeneratorHorizontalOffsetField.setText("");
+      textGeneratorVerticalOffsetField.setText("");
+      textGeneratorAlignmentComboBox.setSelectedIndex(0);
+      textGeneratorFontLabel.setText("");
+      setEnabledTextGeneratorWidgets(false);
+    }
+  }
+
+  private void populateTextGeneratorWidgets
+  ()
+  {
+    selectedTextGenerator = (TextGenerator)textGeneratorsComboBox.getSelectedItem();
+    if (selectedTextGenerator != null) {
+      textGeneratorNameTextField.setText(selectedTextGenerator.getName());
+      textGeneratorPageRangesTextField.setText(selectedTextGenerator.getPageRangesString());
+      textGeneratorCommentTextArea.setText(selectedTextGenerator.getComment());
+      Float horizontalOffset = selectedTextGenerator.getHorizontalOffset();
+      textGeneratorHorizontalOffsetField.setText("" + (horizontalOffset != null ? horizontalOffset : ""));
+      Float verticalOffset = selectedTextGenerator.getVerticalOffset();
+      textGeneratorVerticalOffsetField.setText("" + (verticalOffset != null ? verticalOffset : ""));
+      textGeneratorAlignmentComboBox.setSelectedItem(selectedTextGenerator.getAlignment());
+      textGeneratorContentTextArea.setText(selectedTextGenerator.getContent());
+      if (selectedTextGenerator.getFont() != null) {
+        textGeneratorFontLabel.setText(
+          selectedTextGenerator.getFont().getFontName() + " " + selectedTextGenerator.getFont().getSize()
+        );
+      } else {
+        textGeneratorFontLabel.setText("");
+      }
+      setEnabledTextGeneratorWidgets(true);
+    } else {
+      setEnabledTextGeneratorWidgets(false);
+    }
+  }
+
+  private void populateTextGeneratorsComboBox
+  ()
+  {
+    DefaultComboBoxModel<TextGenerator> model = new DefaultComboBoxModel<>();
+    Book book = getBook();
+    for (TextGenerator textGenerator : book.getTextGenerators()) {
+      model.addElement(textGenerator);
+    }
+    textGeneratorsComboBoxModel = model;
+    textGeneratorsComboBox.setModel(model);
+    textGeneratorsComboBox.addItemListener(e -> {
+      if (e.getStateChange() == ItemEvent.SELECTED) {
+        if (!Objects.equals(selectedTextGenerator, textGeneratorsComboBox.getSelectedItem())) {
+          populateTextGeneratorWidgets();
+        }
+      }
+    });
+  }
+
   private void populatePageSizesComboBox
   ()
   {
