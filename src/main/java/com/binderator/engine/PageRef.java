@@ -32,6 +32,13 @@ public class PageRef implements Comparable<PageRef>, Serializable {
     this.pageNumber = pageNumber;
   }
 
+  public PageRange getSinglePageRange
+  ()
+  throws Exception
+  {
+    return new PageRange(sourceDocument.getId(), pageNumber);
+  }
+
   public SourceDocument getSourceDocument
   ()
   {

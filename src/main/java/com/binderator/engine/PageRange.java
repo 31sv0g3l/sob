@@ -56,6 +56,27 @@ public class PageRange implements Comparable<PageRange>, Serializable {
   }
 
   public PageRange
+  (String docId, Integer pageNumber)
+  throws Exception
+  {
+    this(docId, pageNumber, pageNumber);
+  }
+
+  public PageRange
+  (String docId, Integer startPageNumber, Integer endPageNumber)
+  throws Exception
+  {
+    this(docId, startPageNumber, endPageNumber, null);
+  }
+
+  public PageRange
+  (String docId, Integer startPageNumber, Integer endPageNumber, Integer repetitions)
+  throws Exception
+  {
+    this(docId, startPageNumber, endPageNumber, repetitions, null);
+  }
+
+  public PageRange
   (String docId, Integer startPageNumber, Integer endPageNumber, Integer repetitions, Boolean even)
   throws Exception
   {

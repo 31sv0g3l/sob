@@ -60,6 +60,15 @@ public class TransformSet implements Serializable {
     this.pageRanges = pageRanges;
   }
 
+  public void addPageRange
+  (PageRange pageRange)
+  {
+    if (pageRanges == null) {
+      pageRanges = new ArrayList<>();
+    }
+    pageRanges.add(pageRange);
+  }
+
   public Collection<PageRange> getPageRanges
   ()
   {

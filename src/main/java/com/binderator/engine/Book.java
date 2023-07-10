@@ -459,6 +459,19 @@ public class Book implements Serializable {
     return transformSets;
   }
 
+  public TransformSet findTransformSet
+  (String name)
+  {
+    if (transformSets != null) {
+      for (TransformSet transformSet : transformSets) {
+        if (transformSet.getName().equals(name)) {
+          return transformSet;
+        }
+      }
+    }
+    return null;
+  }
+
   public void setTransformSets
   (Collection<TransformSet> transformSets)
   {
@@ -1545,6 +1558,17 @@ public class Book implements Serializable {
     } catch (Exception e) {
       handleException(e);
     }
+  }
+
+  public PageRef getPageRef
+  (int absolutePageNumber)
+  throws Exception
+  {
+    List<PageRef> pages = getPages();
+    if ((absolutePageNumber < 1) || (absolutePageNumber > pages.size())) {
+      throw new Exception("Invalid page number " + absolutePageNumber + " for book of " + pages.size() + " pages");
+    }
+    return pages.get(absolutePageNumber);
   }
 
   private void addTrimLines
