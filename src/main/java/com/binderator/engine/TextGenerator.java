@@ -148,9 +148,11 @@ public class TextGenerator implements Serializable {
   public void compile
   ()
   {
+    if ((content == null) || content.isEmpty()) {
+      return;
+    }
     List<Component> newComponents = new ArrayList<>();
     String contentCopy = content;
-    // id + offset?: "\\#\\s*([_a-zA-Z][_a-zA-Z0-9]*)?\\s*(([+-])\\s*([1-9][0-9]?[0-9]?[0-9]?))?\\s*\\#"
     Matcher idOffsetMatcher = idOffsetPattern.matcher(contentCopy);
     while (idOffsetMatcher.find()) {
       if (idOffsetMatcher.start() > 0) {

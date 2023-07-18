@@ -209,6 +209,9 @@ public class Book implements Serializable {
   private String name = null;
   private String comments = null;
   private String path = null;
+  private boolean pdfOutputIsValid = false;
+  private boolean pdfSignatureOutputIsValid = false;
+  private static FontMapper fontMapper = generateFontMapper();
 
   RangedFloat leftMarginRatio = new RangedFloat("left margin", 0.05f, 0.0f, 0.5f);
   RangedFloat rightMarginRatio = new RangedFloat("right margin", 0.05f, 0.0f, 0.5f);
@@ -276,6 +279,18 @@ public class Book implements Serializable {
       sourceDocument.setBook(this);
       sourceDocumentsById.put(sourceDocumentByIdEntry.getKey(), sourceDocument);
     }
+  }
+
+  private static FontMapper generateFontMapper
+  ()
+  {
+    try {
+      return new OSFontMapper();
+    } catch (Throwable t) {
+      System.err.println("Error generating font mapper: " + t.getMessage());
+      System.exit(1);
+    }
+    return null;
   }
 
   public boolean getScaleToFit
@@ -1257,7 +1272,7 @@ public class Book implements Serializable {
           cb.setColorStroke(Color.BLACK);
           if (pageTextGenerators != null) {
             for (TextGenerator textGenerator : pageTextGenerators) {
-              DefaultFontMapper fontMapper = new DefaultFontMapper();
+              // DefaultFontMapper fontMapper = new DefaultFontMapper();
               BaseFont baseFont = fontMapper.awtToPdf(textGenerator.getFont());
               float fontSize = textGenerator.getFont().getSize();
               float lineHeight = textGenerator.getLineHeightFactor();
@@ -1343,8 +1358,11 @@ public class Book implements Serializable {
       }
       document.close();
       printStatus(translate("generated") + " " + getPages().size() + " " + translate("pages") + ".");
+      pdfOutputIsValid = true;
     } catch (Exception e) {
       handleException(e);
+      pdfOutputIsValid = false;
+      pdfSignatureOutputIsValid = false;
     }
   }
 
@@ -1555,9 +1573,23 @@ public class Book implements Serializable {
         document.close();
       }
       printStatus(translate("generated") + " " + signatures.length + " " + translate("signatures") + ".");
+      pdfSignatureOutputIsValid = true;
     } catch (Exception e) {
       handleException(e);
+      pdfSignatureOutputIsValid = false;
     }
+  }
+
+  public boolean hasValidPDFOutput
+  ()
+  {
+    return pdfOutputIsValid;
+  }
+
+  public boolean hasValidPDFSignatureOutput
+  ()
+  {
+    return pdfSignatureOutputIsValid;
   }
 
   public PageRef getPageRef
