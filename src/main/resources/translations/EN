@@ -237,7 +237,7 @@ transformSetsDownTooltip { Move this transform set down to the next position of 
 transformSetsDeleteTooltip { Delete this transform set }
 transformSetsEnableDisableTooltip { Enable / disable this transform set }
 transformSetsNewTooltip { Add a new transform set }
-transformSetsNewForCurrentPageTooltip { Add a new transform set for the current page in the viewer }
+transformSetsNewForCurrentPageTooltip { Add (or revisit, if existing) a transform set for the current page in the viewer }
 transformTranslateX { Horizontal Translation }
 transformTranslateY { Vertical Translation }
 transforms { Transforms }

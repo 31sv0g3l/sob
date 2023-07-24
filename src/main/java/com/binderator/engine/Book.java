@@ -1518,8 +1518,10 @@ public class Book implements Serializable {
           horizontalTrimRatio = TRIM_FACTOR * edgeOffsetRatio.getValue();
           verticalTrimRatio = TRIM_FACTOR * (spineOffsetRatio.getValue() + edgeOffsetRatio.getValue()) / 2.0f;
         } else {
-          horizontalTrimRatio = trimLinesHorizontalRatio.getValue();
-          verticalTrimRatio = trimLinesVerticalRatio.getValue();
+          if ((trimLinesHorizontalRatio != null) && (trimLinesVerticalRatio != null)) {
+            horizontalTrimRatio = trimLinesHorizontalRatio.getValue();
+            verticalTrimRatio = trimLinesVerticalRatio.getValue();
+          }
         }
         for (int signatureSheetIndex = 0; signatureSheetIndex < signatureSheets; signatureSheetIndex++) {
           int[] sheetSourcePageNumbers = signatures[signatureIndex][signatureSheetIndex];
