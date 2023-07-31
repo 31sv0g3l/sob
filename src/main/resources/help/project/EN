@@ -78,6 +78,13 @@ or File->SaveAs.</b>
   the edge (i.e. the open edge of the book, or the far left and far right margins of a signature page in
   landscape), when printed in a signature.  A non-zero value will cause the page to be scaled (with retention of
   aspect ratio) to accommodate the offset.
+<li><b>Trim Lines</b></li> This drop-down allows the addition of "trim lines" to pages, which are guides for
+rough-cutting the signatures when a smaller page size than normal is desired.  Trimming is done prior to folding and
+precision-cutting, for example, with a book plough or a guillotine.  In most cases, a basic trim-lines setting
+("Default") will suffice, amounting to slightly smaller margins.  A user-defined setting can be used ("Custom"),
+which adds two fields for horizontal (fore-edges) and vertical (head and tail) trim lines.  The values are a ratio
+of page width, from 0.0 to 1.0, although any value greater than about 0.3 is better achieved by switching to a smaller
+paper size, for example, from A3 to A4.
 <li><b>Comments</b></li>
   This field allows you to note comments about the book project, any outstanding changes, results, etc.
 <li><b>Generate Button</b></li>

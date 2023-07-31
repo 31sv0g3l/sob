@@ -1273,29 +1273,31 @@ public class Book implements Serializable {
           if (pageTextGenerators != null) {
             for (TextGenerator textGenerator : pageTextGenerators) {
               // DefaultFontMapper fontMapper = new DefaultFontMapper();
-              BaseFont baseFont = fontMapper.awtToPdf(textGenerator.getFont());
-              float fontSize = textGenerator.getFont().getSize();
-              float lineHeight = textGenerator.getLineHeightFactor();
-              cb.setFontAndSize(baseFont, fontSize);
-              String content = textGenerator.getContent(pageRef, totalPageNumber);
-              String[] contentLines = StringUtils.toLines(content);
-              int contentLineCount = 0;
-              for (String contentLine : contentLines) {
-                float horizontalOffset = textGenerator.getHorizontalOffset() * pageSize.getRectangle().getWidth();
-                float verticalOffset = textGenerator.getVerticalOffset() * pageSize.getRectangle().getHeight();
-                float contentWidth = cb.getEffectiveStringWidth(contentLine, true);
-                switch (textGenerator.getAlignment()) {
-                  case CENTRE:
-                    horizontalOffset -= contentWidth / 2.0f;
-                    break;
-                  case RIGHT:
-                    horizontalOffset -= contentWidth;
-                    break;
+              if ((textGenerator.getHorizontalOffset() != null) && (textGenerator.getVerticalOffset() != null)) {
+                BaseFont baseFont = fontMapper.awtToPdf(textGenerator.getFont());
+                float fontSize = textGenerator.getFont().getSize();
+                float lineHeight = textGenerator.getLineHeightFactor();
+                cb.setFontAndSize(baseFont, fontSize);
+                String content = textGenerator.getContent(pageRef, totalPageNumber);
+                String[] contentLines = StringUtils.toLines(content);
+                int contentLineCount = 0;
+                for (String contentLine : contentLines) {
+                  float horizontalOffset = textGenerator.getHorizontalOffset() * pageSize.getRectangle().getWidth();
+                  float verticalOffset = textGenerator.getVerticalOffset() * pageSize.getRectangle().getHeight();
+                  float contentWidth = cb.getEffectiveStringWidth(contentLine, true);
+                  switch (textGenerator.getAlignment()) {
+                    case CENTRE:
+                      horizontalOffset -= contentWidth / 2.0f;
+                      break;
+                    case RIGHT:
+                      horizontalOffset -= contentWidth;
+                      break;
+                  }
+                  cb.beginText();
+                  cb.moveText(horizontalOffset, verticalOffset - (contentLineCount++ * lineHeight * fontSize));
+                  cb.showText(contentLine);
+                  cb.endText();
                 }
-                cb.beginText();
-                cb.moveText(horizontalOffset, verticalOffset - (contentLineCount++ * lineHeight * fontSize));
-                cb.showText(contentLine);
-                cb.endText();
               }
             }
           }

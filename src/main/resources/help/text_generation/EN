@@ -1,0 +1,56 @@
+<table width="100%">
+<tr>
+<td align="left">
+<a href="transformations">Previous</a>
+</td>
+<td align="center">
+<a href="main">home</a>
+</td>
+<td align="right">
+<a href="workflow">Next</a>
+</td>
+</tr>
+</table>
+
+<center>
+<h1>Text Generators</h1>
+</center>
+
+Text generators allow the additon of regular text blocks on a series of pages.  These can be applied to an entire
+project, or to arbitrary page ranges in a project.  For example, when combining multiple source document books into
+a single volume, it may be desirable to label the pages of each source book differently, with a title and a page
+number specific to the source book.
+<br>
+<br>
+A horizontal and vertical offset are required, which designate the origin of the text on each of the affected
+pages.  The horizontal value is a ratio of page width, offset from the left, so 0.01 is near the left edge
+and 0.95 is near the right edge.  The vertical offset is similarly given as a ratio of page height and is offset
+from the bottom of the page; 0.01 is near the bottom of the page and 0.97 is near the top.
+<br>
+<br>
+A text alignment drop-down allows the text to be 1) centered on the given point, 2) left justified against the given
+point or 3) right-justified against the given point.  If right-justitifed, for example, the text grows to the left
+of the given point.
+<br>
+<br>
+Page numbers can be included in the content of the text block, using the designator ##.  By default, this refers to the
+total (global) page number, and can have an offset, with the format +/- n.  For example, #-7# inserts the total page
+number minus 7, and #+200# inserts the global page number plus 200.
+<br>
+<br>
+Page numbers of a specific source document can be inserted by using the document id as a prefix, with a possible
+offset.  For example, #doc1# inserts the page number in source document "doc1", and #doc1+2# inserts the doc2 page
+number with an offset of 2.
+<br>
+<br>
+<center>
+<img src="/images/text_generation.png">
+</center>
+<br>
+<br>
+The above image shows an example with a book (5) inside a volume of books.  The odd numbered pages of
+"book 5" are labled at the bottom right of the page.  A similar text generator for the even numbered pages of
+"book 5" would then be generated using left generated text at the bottom left of the page and the same page
+number text.
+<br>
+<br>

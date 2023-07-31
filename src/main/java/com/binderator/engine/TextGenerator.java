@@ -35,7 +35,7 @@ public class TextGenerator implements Serializable {
   }
 
 
-  public interface Component {
+  public interface Component extends Serializable {
 
     String toString
     (PageRef pageRef, int absolutePageNumber);

@@ -43,5 +43,6 @@ plus some suggestions around workflow:
 <li><a href="project">Project Configuration</a></li> - General settings for an entire book project.
 <li><a href="sources">Source Files</a></li> - How to select an ordered list of source files and pages from them.
 <li><a href="transformations">Transformations</a></li> - How to transform the pages of a document.
+<li><a href="text_generation">Text Generators</a></li> - Add text such as headings and page numbers to a book.
 <li><a href="workflow">Workflow</a></li> - Suggestions for general use, both for document and signature generation.
 <ol>
