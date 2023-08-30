@@ -201,9 +201,9 @@ public class Book implements Serializable {
   private final RangedFloat trimLinesHorizontalRatio = new RangedFloat("trim lines horizontal ratio", 0f, 0f, 0.5f);
   private final RangedFloat trimLinesVerticalRatio = new RangedFloat("trim lines vertical ratio", 0f, 0f, 0.5f);
   List<TransformSet> transformSets = new ArrayList<>();
-  List<TextGenerator> textGenerators = new ArrayList<>();
+  List<ContentGenerator> contentGenerators = new ArrayList<>();
   Map<PageRef, List<Transform>> effectiveTransformsByPage = new HashMap<>();
-  Map<PageRef, List<TextGenerator>> textGeneratorsByPage = new HashMap<>();
+  Map<PageRef, List<ContentGenerator>> contentGeneratorsByPage = new HashMap<>();
   private String outputPath = null;
   private String signaturesOutputPath = null;
   private String name = null;
@@ -256,13 +256,13 @@ public class Book implements Serializable {
       }
     }
     computeEffectiveTransformSetsByPage();
-    textGenerators = new ArrayList<>();
-    for (TextGenerator textGenerator : book.textGenerators) {
-      if (textGenerator != null) {
-        textGenerators.add(new TextGenerator(textGenerator));
+    contentGenerators = new ArrayList<>();
+    for (ContentGenerator contentGenerator : book.contentGenerators) {
+      if (contentGenerator != null) {
+        contentGenerators.add(new ContentGenerator(contentGenerator));
       }
     }
-    computeTextGeneratorsByPage();
+    computeContentGeneratorsByPage();
     outputPath = book.outputPath;
     signaturesOutputPath = book.signaturesOutputPath;
     name = book.name;
@@ -524,50 +524,50 @@ public class Book implements Serializable {
     transformSets.remove(transformSet);
   }
 
-  public List<TextGenerator> getTextGenerators
+  public List<ContentGenerator> getContentGenerators
   ()
   {
-    if (textGenerators == null) {
-      textGenerators = new ArrayList<>();
+    if (contentGenerators == null) {
+      contentGenerators = new ArrayList<>();
     }
-    return textGenerators;
+    return contentGenerators;
   }
 
-  public void setTextGenerators
-  (Collection<TextGenerator> textGenerators)
+  public void setContentGenerators
+  (Collection<ContentGenerator> contentGenerators)
   {
-    this.textGenerators = new ArrayList<>();
-    this.textGenerators.addAll(textGenerators);
+    this.contentGenerators = new ArrayList<>();
+    this.contentGenerators.addAll(contentGenerators);
   }
 
-  public void upTextGenerator
-  (TextGenerator textGenerator)
+  public void upContentGenerator
+  (ContentGenerator contentGenerator)
   {
-    List<TextGenerator> textGenerators = getTextGenerators();
-    int index = textGenerators.indexOf(textGenerator);
+    List<ContentGenerator> contentGenerators = getContentGenerators();
+    int index = contentGenerators.indexOf(contentGenerator);
     if (index <= 0) {
       return;
     }
-    textGenerators.remove(textGenerator);
-    textGenerators.add(index - 1, textGenerator);
+    contentGenerators.remove(contentGenerator);
+    contentGenerators.add(index - 1, contentGenerator);
   }
 
-  public void downTextGenerator
-  (TextGenerator textGenerator)
+  public void downContentGenerator
+  (ContentGenerator contentGenerator)
   {
-    List<TextGenerator> textGenerators = getTextGenerators();
-    int index = textGenerators.indexOf(textGenerator);
-    if (index >= textGenerators.size() - 1) {
+    List<ContentGenerator> contentGenerators = getContentGenerators();
+    int index = contentGenerators.indexOf(contentGenerator);
+    if (index >= contentGenerators.size() - 1) {
       return;
     }
-    textGenerators.remove(textGenerator);
-    textGenerators.add(index + 1, textGenerator);
+    contentGenerators.remove(contentGenerator);
+    contentGenerators.add(index + 1, contentGenerator);
   }
 
-  public void removeTextGenerator
-  (TextGenerator textGenerator)
+  public void removeContentGenerator
+  (ContentGenerator contentGenerator)
   {
-    textGenerators.remove(textGenerator);
+    contentGenerators.remove(contentGenerator);
   }
 
   public String getOutputPath
@@ -653,23 +653,23 @@ public class Book implements Serializable {
     }
   }
 
-  public void computeTextGeneratorsByPage
+  public void computeContentGeneratorsByPage
   ()
   {
     try {
       generateSourceDocumentsById();
-      textGeneratorsByPage = new HashMap<>();
-      for (TextGenerator textGenerator : textGenerators) {
-        Set<PageRef> textGeneratorPages = new TreeSet<>();
-        if (textGenerator.getPageRanges() != null) {
-          for (PageRange pageRange : textGenerator.getPageRanges()) {
-            textGeneratorPages.addAll(pageRange.getPageRefs(getPages(), sourceDocumentsById));
+      contentGeneratorsByPage = new HashMap<>();
+      for (ContentGenerator contentGenerator : contentGenerators) {
+        Set<PageRef> contentGeneratorPages = new TreeSet<>();
+        if (contentGenerator.getPageRanges() != null) {
+          for (PageRange pageRange : contentGenerator.getPageRanges()) {
+            contentGeneratorPages.addAll(pageRange.getPageRefs(getPages(), sourceDocumentsById));
           }
         }
-        for (PageRef textGeneratorPage : textGeneratorPages) {
-          List<TextGenerator> pageTextGenerators =
-            textGeneratorsByPage.computeIfAbsent(textGeneratorPage, k -> new ArrayList<>());
-          pageTextGenerators.add(textGenerator);
+        for (PageRef contentGeneratorPage : contentGeneratorPages) {
+          List<ContentGenerator> pageContentGenerators =
+            contentGeneratorsByPage.computeIfAbsent(contentGeneratorPage, k -> new ArrayList<>());
+          pageContentGenerators.add(contentGenerator);
         }
       }
     } catch (Exception e) {
@@ -1163,7 +1163,7 @@ public class Book implements Serializable {
   {
     try {
       computeEffectiveTransformSetsByPage();
-      computeTextGeneratorsByPage();
+      computeContentGeneratorsByPage();
       Document document = new Document(pageSize.getRectangle(), 0, 0, 0, 0);
       PdfWriter writer = PdfWriter.getInstance(document, out);
       document.open();
@@ -1172,8 +1172,8 @@ public class Book implements Serializable {
       float pageWidth = pageSize.getRectangle().getWidth();
       float pageHeight = pageSize.getRectangle().getHeight();
       setProgressLabel(translate("documentGenerationColon"));
-      for (TextGenerator textGenerator : textGenerators) {
-        textGenerator.compile();
+      for (ContentGenerator contentGenerator : contentGenerators) {
+        contentGenerator.compile();
       }
       for (int totalPageNumber = 1; totalPageNumber <= getPages().size(); totalPageNumber++) {
         PageRef pageRef = getPages().get(totalPageNumber - 1);
@@ -1267,25 +1267,25 @@ public class Book implements Serializable {
               cb.transform(transform.createInverse());
             }
           }
-          List<TextGenerator> pageTextGenerators = textGeneratorsByPage.get(pageRef);
+          List<ContentGenerator> pageContentGenerators = contentGeneratorsByPage.get(pageRef);
           cb.setColorFill(Color.BLACK);
           cb.setColorStroke(Color.BLACK);
-          if (pageTextGenerators != null) {
-            for (TextGenerator textGenerator : pageTextGenerators) {
+          if (pageContentGenerators != null) {
+            for (ContentGenerator contentGenerator : pageContentGenerators) {
               // DefaultFontMapper fontMapper = new DefaultFontMapper();
-              if ((textGenerator.getHorizontalOffset() != null) && (textGenerator.getVerticalOffset() != null)) {
-                BaseFont baseFont = fontMapper.awtToPdf(textGenerator.getFont());
-                float fontSize = textGenerator.getFont().getSize();
-                float lineHeight = textGenerator.getLineHeightFactor();
+              if ((contentGenerator.getHorizontalOffset() != null) && (contentGenerator.getVerticalOffset() != null)) {
+                BaseFont baseFont = fontMapper.awtToPdf(contentGenerator.getFont());
+                float fontSize = contentGenerator.getFont().getSize();
+                float lineHeight = contentGenerator.getLineHeightFactor();
                 cb.setFontAndSize(baseFont, fontSize);
-                String content = textGenerator.getContent(pageRef, totalPageNumber);
+                String content = contentGenerator.getContent(pageRef, totalPageNumber);
                 String[] contentLines = StringUtils.toLines(content);
                 int contentLineCount = 0;
                 for (String contentLine : contentLines) {
-                  float horizontalOffset = textGenerator.getHorizontalOffset() * pageSize.getRectangle().getWidth();
-                  float verticalOffset = textGenerator.getVerticalOffset() * pageSize.getRectangle().getHeight();
+                  float horizontalOffset = contentGenerator.getHorizontalOffset() * pageSize.getRectangle().getWidth();
+                  float verticalOffset = contentGenerator.getVerticalOffset() * pageSize.getRectangle().getHeight();
                   float contentWidth = cb.getEffectiveStringWidth(contentLine, true);
-                  switch (textGenerator.getAlignment()) {
+                  switch (contentGenerator.getAlignment()) {
                     case CENTRE:
                       horizontalOffset -= contentWidth / 2.0f;
                       break;

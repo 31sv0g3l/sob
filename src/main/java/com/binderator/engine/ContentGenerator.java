@@ -5,18 +5,19 @@ import java.io.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.awt.Color;
 
 
 import static com.binderator.util.Translations.translate;
 
 
-public class TextGenerator implements Serializable {
+public class ContentGenerator implements Serializable {
 
   public enum Alignment {
 
-    CENTRE(translate("textGeneratorsAlignCentre")),
-    LEFT(translate("textGeneratorsAlignLeft")),
-    RIGHT(translate("textGeneratorsAlignRight"));
+    CENTRE(translate("contentGeneratorsAlignCentre")),
+    LEFT(translate("contentGeneratorsAlignLeft")),
+    RIGHT(translate("contentGeneratorsAlignRight"));
 
     private final String name;
 
@@ -35,7 +36,7 @@ public class TextGenerator implements Serializable {
   }
 
 
-  public interface Component extends Serializable {
+  public interface TextComponent extends Serializable {
 
     String toString
     (PageRef pageRef, int absolutePageNumber);
@@ -43,11 +44,11 @@ public class TextGenerator implements Serializable {
   }
 
 
-  public class StringComponent implements Component {
+  public class StringTextComponent implements TextComponent {
 
     final String content;
 
-    public StringComponent
+    public StringTextComponent
     (String content)
     {
       this.content = content;
@@ -63,19 +64,19 @@ public class TextGenerator implements Serializable {
   }
 
 
-  public class PageRefComponent implements Component {
+  public class PageRefTextComponent implements TextComponent {
 
     final String docId;
 
     final int offset;
 
-    public PageRefComponent
+    public PageRefTextComponent
     (int offset)
     {
       this(null, offset);
     }
 
-    public PageRefComponent
+    public PageRefTextComponent
     (String docId, int offset)
     {
       this.docId = docId;
@@ -119,26 +120,40 @@ public class TextGenerator implements Serializable {
   private Alignment alignment = Alignment.CENTRE;
   private Float lineHeightFactor = null;
   private Integer columns = null;
-  private List<Component> components = null;
+  private List<TextComponent> textComponents = null;
+  private boolean useFrame = false;
+  private Float width = null;
+  private Float height = null;
+  private Float borderWidth = null;
+  private Color backgroundColor = null;
+  private Color textColor = null;
+  private Color borderColor = null;
 
-  public TextGenerator
+  public ContentGenerator
   ()
   {}
 
-  public TextGenerator
-  (TextGenerator textGenerator)
+  public ContentGenerator
+  (ContentGenerator contentGenerator)
   {
-    name = textGenerator.name;
-    comment = textGenerator.comment;
+    name = contentGenerator.name;
+    comment = contentGenerator.comment;
     pageRanges = new ArrayList<>();
-    pageRanges.addAll(textGenerator.getPageRanges());
-    initialContent = textGenerator.initialContent;
-    content = textGenerator.content;
-    horizontalOffset = textGenerator.horizontalOffset;
-    verticalOffset = textGenerator.verticalOffset;
-    alignment = textGenerator.alignment;
-    lineHeightFactor = textGenerator.lineHeightFactor;
-    font = textGenerator.font;
+    pageRanges.addAll(contentGenerator.getPageRanges());
+    initialContent = contentGenerator.initialContent;
+    content = contentGenerator.content;
+    horizontalOffset = contentGenerator.horizontalOffset;
+    verticalOffset = contentGenerator.verticalOffset;
+    alignment = contentGenerator.alignment;
+    lineHeightFactor = contentGenerator.lineHeightFactor;
+    font = contentGenerator.font;
+    useFrame = contentGenerator.useFrame;
+    width = contentGenerator.width;
+    height = contentGenerator.height;
+    borderWidth = contentGenerator.borderWidth;
+    backgroundColor = contentGenerator.backgroundColor;
+    textColor = contentGenerator.textColor;
+    borderColor = contentGenerator.borderColor;
   }
 
   static Pattern idOffsetPattern = Pattern.compile(
@@ -151,12 +166,12 @@ public class TextGenerator implements Serializable {
     if ((content == null) || content.isEmpty()) {
       return;
     }
-    List<Component> newComponents = new ArrayList<>();
+    List<TextComponent> newTextComponents = new ArrayList<>();
     String contentCopy = content;
     Matcher idOffsetMatcher = idOffsetPattern.matcher(contentCopy);
     while (idOffsetMatcher.find()) {
       if (idOffsetMatcher.start() > 0) {
-        newComponents.add(new StringComponent(contentCopy.substring(0, idOffsetMatcher.start())));
+        newTextComponents.add(new StringTextComponent(contentCopy.substring(0, idOffsetMatcher.start())));
       }
       String docId = idOffsetMatcher.group(1);
       if ((docId != null) && (docId.length() == 0)) {
@@ -166,14 +181,14 @@ public class TextGenerator implements Serializable {
       plusMinus = plusMinus != null ? plusMinus : "";
       String offsetSource = idOffsetMatcher.group(4);
       int offset = plusMinus.length() > 0 ? Integer.parseInt(plusMinus + offsetSource) : 0;
-      newComponents.add(new PageRefComponent(docId, offset));
+      newTextComponents.add(new PageRefTextComponent(docId, offset));
       contentCopy = contentCopy.substring(idOffsetMatcher.end());
       idOffsetMatcher = idOffsetPattern.matcher(contentCopy);
     }
     if (contentCopy.length() > 0) {
-      newComponents.add(new StringComponent(contentCopy));
+      newTextComponents.add(new StringTextComponent(contentCopy));
     }
-    components = newComponents;
+    textComponents = newTextComponents;
   }
 
   public String getName
@@ -240,8 +255,8 @@ public class TextGenerator implements Serializable {
   (PageRef pageRef, int absolutePageNumber)
   {
     StringBuilder builder = new StringBuilder();
-    for (Component component : components) {
-      builder.append(component.toString(pageRef, absolutePageNumber));
+    for (TextComponent textComponent : textComponents) {
+      builder.append(textComponent.toString(pageRef, absolutePageNumber));
     }
     return builder.toString();
   }

@@ -114,7 +114,7 @@ public class BinderatorFrame extends JFrame
   JPanel documentsAndPagesPanel;
   JPanel transformSetsPanel;
   JPanel transformsPanel;
-  JPanel textGeneratorsPanel;
+  JPanel contentGeneratorsPanel;
   ImageIcon newIcon;
   ImageIcon deleteIcon;
   ImageIcon upIcon;
@@ -132,8 +132,8 @@ public class BinderatorFrame extends JFrame
   DefaultComboBoxModel<SourceDocument> sourceDocumentsComboBoxModel;
   JComboBox<TransformSet> transformSetsComboBox;
   DefaultComboBoxModel<TransformSet> transformSetComboBoxModel;
-  JComboBox<TextGenerator> textGeneratorsComboBox;
-  DefaultComboBoxModel<TextGenerator> textGeneratorsComboBoxModel;
+  JComboBox<ContentGenerator> contentGeneratorsComboBox;
+  DefaultComboBoxModel<ContentGenerator> contentGeneratorsComboBoxModel;
   // Project Panel Widgets:
   JTextField projectNameTextField;
   JTextField projectOutputPathTextField;
@@ -163,17 +163,25 @@ public class BinderatorFrame extends JFrame
   JTextField transformSetNameTextField = new JTextField(34);
   JTextField transformSetPageRangesTextField = new JTextField(34);
   JTextArea transformSetCommentTextArea = new JTextArea(5, 34);
-  private TextGenerator selectedTextGenerator = null;
-  JTextField textGeneratorNameTextField = new JTextField(34);
-  JTextField textGeneratorPageRangesTextField = new JTextField(34);
-  JTextArea textGeneratorCommentTextArea = new JTextArea(5, 34);
-  JTextField textGeneratorHorizontalOffsetField = new JTextField(6);
-  JTextField textGeneratorVerticalOffsetField = new JTextField(6);
-  JTextField textGeneratorLineHeightField = new JTextField(6);
-  JTextArea textGeneratorContentTextArea = new JTextArea(10, 34);
-  JComboBox<TextGenerator.Alignment> textGeneratorAlignmentComboBox;
-  DefaultComboBoxModel<TextGenerator.Alignment> textGeneratorAlignmentComboBoxModel;
-  JLabel textGeneratorFontLabel = new JLabel("");
+  private ContentGenerator selectedContentGenerator = null;
+  JTextField contentGeneratorNameTextField = new JTextField(34);
+  JTextField contentGeneratorPageRangesTextField = new JTextField(34);
+  JTextArea contentGeneratorCommentTextArea = new JTextArea(5, 34);
+  JTextField contentGeneratorHorizontalOffsetField = new JTextField(6);
+  JTextField contentGeneratorVerticalOffsetField = new JTextField(6);
+  JTextField contentGeneratorLineHeightField = new JTextField(6);
+  JTextArea contentGeneratorContentTextArea = new JTextArea(10, 34);
+  JComboBox<ContentGenerator.Alignment> contentGeneratorAlignmentComboBox;
+  DefaultComboBoxModel<ContentGenerator.Alignment> contentGeneratorAlignmentComboBoxModel;
+  JLabel contentGeneratorFontLabel = new JLabel("");
+  JCheckBox contentGeneratorFrameCheckbox = new JCheckBox("");
+  JTextField contentGeneratorFrameWidthField = new JTextField(6);
+  JTextField contentGeneratorFrameHeightField = new JTextField(6);
+  JTextField contentGeneratorFrameBorderWidthField = new JTextField(6);
+  Color backgroundColor = Color.WHITE;
+  Color textColor = Color.BLACK;
+  Color BorderColor = Color.BLACK;
+
   private SourceDocument selectedDocument = null;
   private JDialog optionsDialog = null;
   private JDialog inlineHelpDialog = null;
@@ -976,134 +984,134 @@ public class BinderatorFrame extends JFrame
 
     // ******************************************************************************************************
     // Text Generators tab:
-    textGeneratorsPanel = new JPanel();
-    JScrollPane textGeneratorsPane = new JScrollPane(textGeneratorsPanel);
-    textGeneratorsPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-    textGeneratorsPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
-    mainTabs.add(translate("textGenerators"), textGeneratorsPane);
-    textGeneratorsPanel.setLayout(new BoxLayout(textGeneratorsPanel, BoxLayout.Y_AXIS));
-    JPanel textGeneratorsNavPanel = new JPanel();
-    textGeneratorsNavPanel.setLayout(new BoxLayout(textGeneratorsNavPanel, BoxLayout.X_AXIS));
-    textGeneratorsNavPanel.add(Box.createHorizontalStrut(scale(5)));
-    textGeneratorsComboBox = new JComboBox<>();
-    populateTextGeneratorsComboBox();
-    textGeneratorsNavPanel.add(textGeneratorsComboBox);
-    textGeneratorsComboBox.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
-    textGeneratorsComboBox.setToolTipText(translate("textGeneratorsComboTooltip"));
-    textGeneratorsNavPanel.add(Box.createHorizontalStrut(scale(5)));
-    JButton newTextGeneratorButton = newNavAndControlButton("new.png", e -> newTextGenerator());
-    newTextGeneratorButton.setToolTipText(translate("textGeneratorsNewTooltip"));
-    textGeneratorsNavPanel.add(newTextGeneratorButton);
-    textGeneratorsNavPanel.add(Box.createHorizontalStrut(scale(5)));
-    JButton downTextGeneratorButton = newNavAndControlButton(
+    contentGeneratorsPanel = new JPanel();
+    JScrollPane contentGeneratorsPane = new JScrollPane(contentGeneratorsPanel);
+    contentGeneratorsPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+    contentGeneratorsPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
+    mainTabs.add(translate("contentGenerators"), contentGeneratorsPane);
+    contentGeneratorsPanel.setLayout(new BoxLayout(contentGeneratorsPanel, BoxLayout.Y_AXIS));
+    JPanel contentGeneratorsNavPanel = new JPanel();
+    contentGeneratorsNavPanel.setLayout(new BoxLayout(contentGeneratorsNavPanel, BoxLayout.X_AXIS));
+    contentGeneratorsNavPanel.add(Box.createHorizontalStrut(scale(5)));
+    contentGeneratorsComboBox = new JComboBox<>();
+    populateContentGeneratorsComboBox();
+    contentGeneratorsNavPanel.add(contentGeneratorsComboBox);
+    contentGeneratorsComboBox.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
+    contentGeneratorsComboBox.setToolTipText(translate("contentGeneratorsComboTooltip"));
+    contentGeneratorsNavPanel.add(Box.createHorizontalStrut(scale(5)));
+    JButton newContentGeneratorButton = newNavAndControlButton("new.png", e -> newContentGenerator());
+    newContentGeneratorButton.setToolTipText(translate("contentGeneratorsNewTooltip"));
+    contentGeneratorsNavPanel.add(newContentGeneratorButton);
+    contentGeneratorsNavPanel.add(Box.createHorizontalStrut(scale(5)));
+    JButton downContentGeneratorButton = newNavAndControlButton(
       "down.png",
       e -> {
-        if (textGeneratorsComboBox.getSelectedItem() != null) {
-          downTextGenerator((TextGenerator) textGeneratorsComboBox.getSelectedItem());
+        if (contentGeneratorsComboBox.getSelectedItem() != null) {
+          downContentGenerator((ContentGenerator) contentGeneratorsComboBox.getSelectedItem());
         }
       }
     );
-    textGeneratorsNavPanel.add(downTextGeneratorButton);
-    downTextGeneratorButton.setToolTipText(translate("textGeneratorsDownTooltip"));
-    textGeneratorsNavPanel.add(Box.createHorizontalStrut(scale(5)));
-    JButton upTextGeneratorsButton = newNavAndControlButton(
+    contentGeneratorsNavPanel.add(downContentGeneratorButton);
+    downContentGeneratorButton.setToolTipText(translate("contentGeneratorsDownTooltip"));
+    contentGeneratorsNavPanel.add(Box.createHorizontalStrut(scale(5)));
+    JButton upContentGeneratorsButton = newNavAndControlButton(
       "up.png",
       e -> {
-        if (textGeneratorsComboBox.getSelectedItem() != null) {
-          upTextGenerator((TextGenerator) textGeneratorsComboBox.getSelectedItem());
+        if (contentGeneratorsComboBox.getSelectedItem() != null) {
+          upContentGenerator((ContentGenerator) contentGeneratorsComboBox.getSelectedItem());
         }
       }
     );
-    textGeneratorsNavPanel.add(upTextGeneratorsButton);
-    upTextGeneratorsButton.setToolTipText(translate("textGeneratorsUpTooltip"));
-    textGeneratorsNavPanel.add(Box.createHorizontalStrut(scale(5)));
-    JButton deleteTextGeneratorsButton = newNavAndControlButton(
+    contentGeneratorsNavPanel.add(upContentGeneratorsButton);
+    upContentGeneratorsButton.setToolTipText(translate("contentGeneratorsUpTooltip"));
+    contentGeneratorsNavPanel.add(Box.createHorizontalStrut(scale(5)));
+    JButton deleteContentGeneratorsButton = newNavAndControlButton(
       "delete.png",
       e -> {
-        if (textGeneratorsComboBox.getSelectedItem() != null) {
-          deleteTextGenerator((TextGenerator) textGeneratorsComboBox.getSelectedItem());
+        if (contentGeneratorsComboBox.getSelectedItem() != null) {
+          deleteContentGenerator((ContentGenerator) contentGeneratorsComboBox.getSelectedItem());
         }
       }
     );
-    textGeneratorsNavPanel.add(deleteTextGeneratorsButton);
-    deleteTextGeneratorsButton.setToolTipText(translate("textGeneratorsDeleteTooltip"));
-    textGeneratorsNavPanel.add(Box.createHorizontalStrut(scale(5)));
-    textGeneratorsNavPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
-    textGeneratorsNavPanel.setVisible(true);
-    textGeneratorsPanel.add(Box.createVerticalStrut(5));
-    textGeneratorsPanel.add(textGeneratorsNavPanel);
-    textGeneratorsPanel.add(Box.createVerticalStrut(5));
-    textGeneratorsPanel.add(createScaledLabeledWidgetPanel(textGeneratorNameTextField, translate("name"), 22, 22));
-    textGeneratorNameTextField.addActionListener(event -> {
-      if ( selectedTextGenerator != null) {
+    contentGeneratorsNavPanel.add(deleteContentGeneratorsButton);
+    deleteContentGeneratorsButton.setToolTipText(translate("contentGeneratorsDeleteTooltip"));
+    contentGeneratorsNavPanel.add(Box.createHorizontalStrut(scale(5)));
+    contentGeneratorsNavPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
+    contentGeneratorsNavPanel.setVisible(true);
+    contentGeneratorsPanel.add(Box.createVerticalStrut(5));
+    contentGeneratorsPanel.add(contentGeneratorsNavPanel);
+    contentGeneratorsPanel.add(Box.createVerticalStrut(5));
+    contentGeneratorsPanel.add(createScaledLabeledWidgetPanel(contentGeneratorNameTextField, translate("name"), 22, 22));
+    contentGeneratorNameTextField.addActionListener(event -> {
+      if ( selectedContentGenerator != null) {
         try {
-          selectedTextGenerator.setName(textGeneratorNameTextField.getText());
+          selectedContentGenerator.setName(contentGeneratorNameTextField.getText());
           registerUnsavedChange();
         } catch (Exception e) {
           errorDialog(e);
         }
       }
     });
-    textGeneratorNameTextField.setToolTipText(translate("textGeneratorsNameTooltip"));
-    GUIUtils.addBackgroundSetter(textGeneratorNameTextField);
-    textGeneratorsPanel.add(createScaledLabeledWidgetPanel(
-      textGeneratorPageRangesTextField, translate("textGeneratorsPageRanges"), 22, 22
+    contentGeneratorNameTextField.setToolTipText(translate("contentGeneratorsNameTooltip"));
+    GUIUtils.addBackgroundSetter(contentGeneratorNameTextField);
+    contentGeneratorsPanel.add(createScaledLabeledWidgetPanel(
+      contentGeneratorPageRangesTextField, translate("contentGeneratorsPageRanges"), 22, 22
     ));
-    textGeneratorPageRangesTextField.addActionListener(event -> {
-      if ( selectedTextGenerator != null) {
+    contentGeneratorPageRangesTextField.addActionListener(event -> {
+      if ( selectedContentGenerator != null) {
         try {
-          selectedTextGenerator.setPageRanges(PageRange.parsePageRanges(textGeneratorPageRangesTextField.getText(), false));
+          selectedContentGenerator.setPageRanges(PageRange.parsePageRanges(contentGeneratorPageRangesTextField.getText(), false));
           registerUnsavedChange();
         } catch (Exception e) {
           errorDialog(e);
         }
       }
     });
-    textGeneratorPageRangesTextField.setToolTipText(translate("textGeneratorsPageRangesTooltip"));
-    GUIUtils.addBackgroundSetter(textGeneratorPageRangesTextField);
-    textGeneratorCommentTextArea.setLineWrap(true);
-    textGeneratorCommentTextArea.setWrapStyleWord(true);
-    textGeneratorCommentTextArea.setToolTipText(translate("textGeneratorsCommentsTooltip"));
-    JScrollPane textGeneratorCommentScrollPane = new JScrollPane(textGeneratorCommentTextArea);
-    textGeneratorsPanel.add(
-      createScaledLabeledWidgetPanel(textGeneratorCommentScrollPane, translate("textGeneratorsComments"), 22, 70)
+    contentGeneratorPageRangesTextField.setToolTipText(translate("contentGeneratorsPageRangesTooltip"));
+    GUIUtils.addBackgroundSetter(contentGeneratorPageRangesTextField);
+    contentGeneratorCommentTextArea.setLineWrap(true);
+    contentGeneratorCommentTextArea.setWrapStyleWord(true);
+    contentGeneratorCommentTextArea.setToolTipText(translate("contentGeneratorsCommentsTooltip"));
+    JScrollPane contentGeneratorCommentScrollPane = new JScrollPane(contentGeneratorCommentTextArea);
+    contentGeneratorsPanel.add(
+      createScaledLabeledWidgetPanel(contentGeneratorCommentScrollPane, translate("contentGeneratorsComments"), 22, 70)
     );
-    textGeneratorCommentTextArea.getDocument().addDocumentListener(new DocumentListener() {
+    contentGeneratorCommentTextArea.getDocument().addDocumentListener(new DocumentListener() {
 
       @Override public void changedUpdate(DocumentEvent e) {
-        if (selectedTextGenerator != null) {
-          selectedTextGenerator.setComment(textGeneratorCommentTextArea.getText());
+        if (selectedContentGenerator != null) {
+          selectedContentGenerator.setComment(contentGeneratorCommentTextArea.getText());
           registerUnsavedChange();
         }
       }
 
       @Override public void removeUpdate(DocumentEvent e) {
-        if (selectedTextGenerator != null) {
-          selectedTextGenerator.setComment(textGeneratorCommentTextArea.getText());
+        if (selectedContentGenerator != null) {
+          selectedContentGenerator.setComment(contentGeneratorCommentTextArea.getText());
           registerUnsavedChange();
         }
       }
 
       @Override public void insertUpdate(DocumentEvent e) {
-        if (selectedTextGenerator != null) {
-          selectedTextGenerator.setComment(textGeneratorCommentTextArea.getText());
+        if (selectedContentGenerator != null) {
+          selectedContentGenerator.setComment(contentGeneratorCommentTextArea.getText());
           registerUnsavedChange();
         }
       }
 
     });
-    JPanel textGeneratorsXYAlignmentPanel = new JPanel();
-    textGeneratorsXYAlignmentPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
-    textGeneratorsXYAlignmentPanel.setLayout(new BoxLayout(textGeneratorsXYAlignmentPanel, BoxLayout.X_AXIS));
-    textGeneratorsXYAlignmentPanel.add(Box.createHorizontalStrut(scale(5)));
-    textGeneratorsXYAlignmentPanel.add(new JLabel(translate("textGeneratorsHorizontalOffset") + ":"));
-    textGeneratorsXYAlignmentPanel.add(Box.createHorizontalStrut(scale(5)));
-    textGeneratorHorizontalOffsetField.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
-    textGeneratorHorizontalOffsetField.addActionListener(event -> {
-      if ( selectedTextGenerator != null) {
+    JPanel contentGeneratorsXYAlignmentPanel = new JPanel();
+    contentGeneratorsXYAlignmentPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
+    contentGeneratorsXYAlignmentPanel.setLayout(new BoxLayout(contentGeneratorsXYAlignmentPanel, BoxLayout.X_AXIS));
+    contentGeneratorsXYAlignmentPanel.add(Box.createHorizontalStrut(scale(5)));
+    contentGeneratorsXYAlignmentPanel.add(new JLabel(translate("contentGeneratorsHorizontalOffset") + ":"));
+    contentGeneratorsXYAlignmentPanel.add(Box.createHorizontalStrut(scale(5)));
+    contentGeneratorHorizontalOffsetField.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
+    contentGeneratorHorizontalOffsetField.addActionListener(event -> {
+      if ( selectedContentGenerator != null) {
         try {
-          selectedTextGenerator.setHorizontalOffset(validatedFloatFromString(
-            textGeneratorHorizontalOffsetField.getText(), translate("textGeneratorsHorizontalOffset") + ":", 0.0f, 1.0f
+          selectedContentGenerator.setHorizontalOffset(validatedFloatFromString(
+            contentGeneratorHorizontalOffsetField.getText(), translate("contentGeneratorsHorizontalOffset") + ":", 0.0f, 1.0f
           ));
           registerUnsavedChange();
         } catch (Exception e) {
@@ -1111,17 +1119,17 @@ public class BinderatorFrame extends JFrame
         }
       }
     });
-    GUIUtils.addBackgroundSetter(textGeneratorHorizontalOffsetField);
-    textGeneratorsXYAlignmentPanel.add(textGeneratorHorizontalOffsetField);
-    textGeneratorsXYAlignmentPanel.add(Box.createHorizontalStrut(scale(5)));
-    textGeneratorsXYAlignmentPanel.add(new JLabel(translate("textGeneratorsVerticalOffset") + ":"));
-    textGeneratorsXYAlignmentPanel.add(Box.createHorizontalStrut(scale(5)));
-    textGeneratorVerticalOffsetField.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
-    textGeneratorVerticalOffsetField.addActionListener(event -> {
-      if (selectedTextGenerator != null) {
+    GUIUtils.addBackgroundSetter(contentGeneratorHorizontalOffsetField);
+    contentGeneratorsXYAlignmentPanel.add(contentGeneratorHorizontalOffsetField);
+    contentGeneratorsXYAlignmentPanel.add(Box.createHorizontalStrut(scale(5)));
+    contentGeneratorsXYAlignmentPanel.add(new JLabel(translate("contentGeneratorsVerticalOffset") + ":"));
+    contentGeneratorsXYAlignmentPanel.add(Box.createHorizontalStrut(scale(5)));
+    contentGeneratorVerticalOffsetField.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
+    contentGeneratorVerticalOffsetField.addActionListener(event -> {
+      if (selectedContentGenerator != null) {
         try {
-          selectedTextGenerator.setVerticalOffset(validatedFloatFromString(
-            textGeneratorVerticalOffsetField.getText(), translate("textGeneratorsVerticalOffset") + ":", 0.0f, 1.0f
+          selectedContentGenerator.setVerticalOffset(validatedFloatFromString(
+            contentGeneratorVerticalOffsetField.getText(), translate("contentGeneratorsVerticalOffset") + ":", 0.0f, 1.0f
           ));
           registerUnsavedChange();
         } catch (Exception e) {
@@ -1129,67 +1137,67 @@ public class BinderatorFrame extends JFrame
         }
       }
     });
-    GUIUtils.addBackgroundSetter(textGeneratorVerticalOffsetField);
-    textGeneratorsXYAlignmentPanel.add(textGeneratorVerticalOffsetField);
-    textGeneratorsXYAlignmentPanel.add(Box.createHorizontalStrut(scale(5)));
-    textGeneratorsXYAlignmentPanel.add(new JLabel(translate("textGeneratorsAlign") + ":"));
-    textGeneratorsXYAlignmentPanel.add(Box.createHorizontalStrut(scale(5)));
-    textGeneratorAlignmentComboBox = new JComboBox<>();
-    textGeneratorAlignmentComboBox.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
-    textGeneratorAlignmentComboBoxModel = new DefaultComboBoxModel<>(TextGenerator.Alignment.values());
-    textGeneratorAlignmentComboBox.setModel(textGeneratorAlignmentComboBoxModel);
-    textGeneratorAlignmentComboBox.addActionListener(
+    GUIUtils.addBackgroundSetter(contentGeneratorVerticalOffsetField);
+    contentGeneratorsXYAlignmentPanel.add(contentGeneratorVerticalOffsetField);
+    contentGeneratorsXYAlignmentPanel.add(Box.createHorizontalStrut(scale(5)));
+    contentGeneratorsXYAlignmentPanel.add(new JLabel(translate("contentGeneratorsAlign") + ":"));
+    contentGeneratorsXYAlignmentPanel.add(Box.createHorizontalStrut(scale(5)));
+    contentGeneratorAlignmentComboBox = new JComboBox<>();
+    contentGeneratorAlignmentComboBox.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
+    contentGeneratorAlignmentComboBoxModel = new DefaultComboBoxModel<>(ContentGenerator.Alignment.values());
+    contentGeneratorAlignmentComboBox.setModel(contentGeneratorAlignmentComboBoxModel);
+    contentGeneratorAlignmentComboBox.addActionListener(
       e -> {
-        if (textGeneratorAlignmentComboBox.getSelectedItem() != null) {
-          if (selectedTextGenerator != null) {
-            selectedTextGenerator.setAlignment((TextGenerator.Alignment) textGeneratorAlignmentComboBox.getSelectedItem());
+        if (contentGeneratorAlignmentComboBox.getSelectedItem() != null) {
+          if (selectedContentGenerator != null) {
+            selectedContentGenerator.setAlignment((ContentGenerator.Alignment) contentGeneratorAlignmentComboBox.getSelectedItem());
           }
           registerUnsavedChange();
         }
       }
     );
-    textGeneratorsXYAlignmentPanel.add(textGeneratorAlignmentComboBox);
-    textGeneratorsXYAlignmentPanel.add(Box.createVerticalStrut(scale(5)));
-    textGeneratorsXYAlignmentPanel.add(Box.createHorizontalStrut(scale(5)));
-    textGeneratorsPanel.add(Box.createVerticalStrut(scale(5)));
-    textGeneratorsPanel.add(textGeneratorsXYAlignmentPanel);
-    textGeneratorsPanel.add(Box.createVerticalStrut(scale(5)));
-    JPanel textGeneratorsFontPanel = new JPanel();
-    textGeneratorsFontPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
-    textGeneratorsFontPanel.setLayout(new BoxLayout(textGeneratorsFontPanel, BoxLayout.X_AXIS));
+    contentGeneratorsXYAlignmentPanel.add(contentGeneratorAlignmentComboBox);
+    contentGeneratorsXYAlignmentPanel.add(Box.createVerticalStrut(scale(5)));
+    contentGeneratorsXYAlignmentPanel.add(Box.createHorizontalStrut(scale(5)));
+    contentGeneratorsPanel.add(Box.createVerticalStrut(scale(5)));
+    contentGeneratorsPanel.add(contentGeneratorsXYAlignmentPanel);
+    contentGeneratorsPanel.add(Box.createVerticalStrut(scale(5)));
+    JPanel contentGeneratorsFontPanel = new JPanel();
+    contentGeneratorsFontPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
+    contentGeneratorsFontPanel.setLayout(new BoxLayout(contentGeneratorsFontPanel, BoxLayout.X_AXIS));
     JFontChooser fontChooser = new JFontChooser();
     JButton fontChooserButton = new JButton(translate("chooseFont"));
     fontChooserButton.addActionListener(
       e -> execute(() -> {
-        if (selectedTextGenerator != null) {
-          java.awt.Font initialFont = selectedTextGenerator.getFont();
+        if (selectedContentGenerator != null) {
+          java.awt.Font initialFont = selectedContentGenerator.getFont();
           if (initialFont != null) {
             fontChooser.setSelectedFont(initialFont);
           }
           fontChooser.showDialog(this);
           java.awt.Font font = fontChooser.getSelectedFont();
           if (!Objects.equals(initialFont, font)) {
-            selectedTextGenerator.setFont(font);
-            textGeneratorFontLabel.setText(font.getFontName() + " " + font.getSize());
+            selectedContentGenerator.setFont(font);
+            contentGeneratorFontLabel.setText(font.getFontName() + " " + font.getSize());
             registerUnsavedChange();
           }
         }
       })
     );
-    textGeneratorsFontPanel.add(Box.createHorizontalStrut(scale(5)));
-    textGeneratorsFontPanel.add(fontChooserButton);
-    textGeneratorsFontPanel.add(Box.createHorizontalStrut(scale(10)));
-    textGeneratorsFontPanel.add(textGeneratorFontLabel);
-    textGeneratorsFontPanel.add(Box.createHorizontalGlue());
-    textGeneratorsFontPanel.add(Box.createHorizontalStrut(scale(10)));
-    textGeneratorsFontPanel.add(new JLabel(translate("textGeneratorsLineHeight") + ":"));
-    textGeneratorsFontPanel.add(Box.createHorizontalStrut(scale(5)));
-    textGeneratorLineHeightField.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
-    textGeneratorLineHeightField.addActionListener(event -> {
-      if (selectedTextGenerator != null) {
+    contentGeneratorsFontPanel.add(Box.createHorizontalStrut(scale(5)));
+    contentGeneratorsFontPanel.add(fontChooserButton);
+    contentGeneratorsFontPanel.add(Box.createHorizontalStrut(scale(10)));
+    contentGeneratorsFontPanel.add(contentGeneratorFontLabel);
+    contentGeneratorsFontPanel.add(Box.createHorizontalGlue());
+    contentGeneratorsFontPanel.add(Box.createHorizontalStrut(scale(10)));
+    contentGeneratorsFontPanel.add(new JLabel(translate("contentGeneratorsLineHeight") + ":"));
+    contentGeneratorsFontPanel.add(Box.createHorizontalStrut(scale(5)));
+    contentGeneratorLineHeightField.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
+    contentGeneratorLineHeightField.addActionListener(event -> {
+      if (selectedContentGenerator != null) {
         try {
-          selectedTextGenerator.setLineHeightFactor(validatedFloatFromString(
-            textGeneratorLineHeightField.getText(), translate("textGeneratorsLineHeight") + ":", 0.5f, 5.0f
+          selectedContentGenerator.setLineHeightFactor(validatedFloatFromString(
+            contentGeneratorLineHeightField.getText(), translate("contentGeneratorsLineHeight") + ":", 0.5f, 5.0f
           ));
           registerUnsavedChange();
         } catch (Exception e) {
@@ -1197,46 +1205,46 @@ public class BinderatorFrame extends JFrame
         }
       }
     });
-    GUIUtils.addBackgroundSetter(textGeneratorLineHeightField);
-    textGeneratorsFontPanel.add(textGeneratorLineHeightField);
-    textGeneratorsFontPanel.add(Box.createHorizontalStrut(scale(5)));
-    textGeneratorsPanel.add(textGeneratorsFontPanel);
-    textGeneratorsPanel.add(Box.createVerticalStrut(scale(5)));
-    textGeneratorContentTextArea.setLineWrap(true);
-    textGeneratorContentTextArea.setWrapStyleWord(true);
-    textGeneratorContentTextArea.setToolTipText(translate("textGeneratorsContentTooltip"));
-    JScrollPane textGeneratorContentScrollPane = new JScrollPane(textGeneratorContentTextArea);
-    textGeneratorsPanel.add(
-      createScaledLabeledWidgetPanel(textGeneratorContentScrollPane, translate("textGeneratorsContent"), 22, 70)
+    GUIUtils.addBackgroundSetter(contentGeneratorLineHeightField);
+    contentGeneratorsFontPanel.add(contentGeneratorLineHeightField);
+    contentGeneratorsFontPanel.add(Box.createHorizontalStrut(scale(5)));
+    contentGeneratorsPanel.add(contentGeneratorsFontPanel);
+    contentGeneratorsPanel.add(Box.createVerticalStrut(scale(5)));
+    contentGeneratorContentTextArea.setLineWrap(true);
+    contentGeneratorContentTextArea.setWrapStyleWord(true);
+    contentGeneratorContentTextArea.setToolTipText(translate("contentGeneratorsContentTooltip"));
+    JScrollPane contentGeneratorContentScrollPane = new JScrollPane(contentGeneratorContentTextArea);
+    contentGeneratorsPanel.add(
+      createScaledLabeledWidgetPanel(contentGeneratorContentScrollPane, translate("contentGeneratorsContent"), 22, 70)
     );
-    textGeneratorContentTextArea.getDocument().addDocumentListener(new DocumentListener() {
+    contentGeneratorContentTextArea.getDocument().addDocumentListener(new DocumentListener() {
 
       @Override public void changedUpdate(DocumentEvent e) {
-        if (selectedTextGenerator != null) {
-          selectedTextGenerator.setContent(textGeneratorContentTextArea.getText());
+        if (selectedContentGenerator != null) {
+          selectedContentGenerator.setContent(contentGeneratorContentTextArea.getText());
           registerUnsavedChange();
         }
       }
 
       @Override public void removeUpdate(DocumentEvent e) {
-        if (selectedTextGenerator != null) {
-          selectedTextGenerator.setContent(textGeneratorContentTextArea.getText());
+        if (selectedContentGenerator != null) {
+          selectedContentGenerator.setContent(contentGeneratorContentTextArea.getText());
           registerUnsavedChange();
         }
       }
 
       @Override public void insertUpdate(DocumentEvent e) {
-        if (selectedTextGenerator != null) {
-          selectedTextGenerator.setContent(textGeneratorContentTextArea.getText());
+        if (selectedContentGenerator != null) {
+          selectedContentGenerator.setContent(contentGeneratorContentTextArea.getText());
           registerUnsavedChange();
         }
       }
 
     });
-    textGeneratorsPanel.add(Box.createVerticalGlue());
-    textGeneratorsPanel.add(Box.createVerticalStrut(scale(5)));
-    textGeneratorsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
-    setEnabledTextGeneratorWidgets(false);
+    contentGeneratorsPanel.add(Box.createVerticalGlue());
+    contentGeneratorsPanel.add(Box.createVerticalStrut(scale(5)));
+    contentGeneratorsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+    setEnabledContentGeneratorWidgets(false);
 
     // ******************************************************************************************************
     // Main panel:
@@ -1360,22 +1368,22 @@ public class BinderatorFrame extends JFrame
     }
   }
 
-  private void setEnabledTextGeneratorWidgets
+  private void setEnabledContentGeneratorWidgets
   (boolean enabled)
   {
-    textGeneratorNameTextField.setEnabled(enabled);
-    textGeneratorPageRangesTextField.setEnabled(enabled);
-    textGeneratorCommentTextArea.setEnabled(enabled);
-    textGeneratorHorizontalOffsetField.setEnabled(enabled);
-    textGeneratorVerticalOffsetField.setEnabled(enabled);
-    textGeneratorContentTextArea.setEnabled(enabled);
+    contentGeneratorNameTextField.setEnabled(enabled);
+    contentGeneratorPageRangesTextField.setEnabled(enabled);
+    contentGeneratorCommentTextArea.setEnabled(enabled);
+    contentGeneratorHorizontalOffsetField.setEnabled(enabled);
+    contentGeneratorVerticalOffsetField.setEnabled(enabled);
+    contentGeneratorContentTextArea.setEnabled(enabled);
     if (!enabled) {
-      textGeneratorNameTextField.setText("");
-      textGeneratorPageRangesTextField.setText("");
-      textGeneratorCommentTextArea.setText("");
-      textGeneratorHorizontalOffsetField.setText("");
-      textGeneratorVerticalOffsetField.setText("");
-      textGeneratorContentTextArea.setText("");
+      contentGeneratorNameTextField.setText("");
+      contentGeneratorPageRangesTextField.setText("");
+      contentGeneratorCommentTextArea.setText("");
+      contentGeneratorHorizontalOffsetField.setText("");
+      contentGeneratorVerticalOffsetField.setText("");
+      contentGeneratorContentTextArea.setText("");
     }
   }
 
@@ -1682,66 +1690,66 @@ public class BinderatorFrame extends JFrame
     });
   }
 
-  private void newTextGenerator
+  private void newContentGenerator
   ()
   {
     execute(() -> {
       bookLock.lock();
       try {
         Book book = getBook();
-        TextGenerator textGenerator = new TextGenerator();
-        textGenerator.setName(translate("new"));
-        book.getTextGenerators().add(textGenerator);
+        ContentGenerator contentGenerator = new ContentGenerator();
+        contentGenerator.setName(translate("new"));
+        book.getContentGenerators().add(contentGenerator);
         registerUnsavedChange();
-        populateTextGeneratorsComboBox();
-        textGeneratorsComboBox.setSelectedItem(textGenerator);
-        selectedTextGenerator = textGenerator;
-        populateTextGeneratorWidgets();
+        populateContentGeneratorsComboBox();
+        contentGeneratorsComboBox.setSelectedItem(contentGenerator);
+        selectedContentGenerator = contentGenerator;
+        populateContentGeneratorWidgets();
       } finally {
         bookLock.unlock();
       }
     });
   }
 
-  private void upTextGenerator
-  (TextGenerator textGenerator)
+  private void upContentGenerator
+  (ContentGenerator contentGenerator)
   {
     execute(() -> {
-      getBook().upTextGenerator(textGenerator);
+      getBook().upContentGenerator(contentGenerator);
       registerUnsavedChange();
-      populateTextGeneratorsComboBox();
-      textGeneratorsComboBox.setSelectedItem(textGenerator);
-      selectedTextGenerator = textGenerator;
+      populateContentGeneratorsComboBox();
+      contentGeneratorsComboBox.setSelectedItem(contentGenerator);
+      selectedContentGenerator = contentGenerator;
     });
   }
 
-  private void downTextGenerator
-  (TextGenerator textGenerator)
+  private void downContentGenerator
+  (ContentGenerator contentGenerator)
   {
     execute(() -> {
-      getBook().downTextGenerator(textGenerator);
+      getBook().downContentGenerator(contentGenerator);
       registerUnsavedChange();
-      populateTextGeneratorsComboBox();
-      textGeneratorsComboBox.setSelectedItem(textGenerator);
-      selectedTextGenerator = textGenerator;
+      populateContentGeneratorsComboBox();
+      contentGeneratorsComboBox.setSelectedItem(contentGenerator);
+      selectedContentGenerator = contentGenerator;
     });
   }
 
-  private void deleteTextGenerator
-  (TextGenerator textGenerator)
+  private void deleteContentGenerator
+  (ContentGenerator contentGenerator)
   {
     execute(() -> {
-      getBook().removeTextGenerator(textGenerator);
+      getBook().removeContentGenerator(contentGenerator);
       registerUnsavedChange();
-      populateTextGeneratorsComboBox();
-      if (textGeneratorsComboBox.getItemCount() > 0) {
-        textGeneratorsComboBox.setSelectedItem(0);
-        selectedTextGenerator = (TextGenerator) textGeneratorsComboBox.getSelectedItem();
-        populateTextGeneratorWidgets();
+      populateContentGeneratorsComboBox();
+      if (contentGeneratorsComboBox.getItemCount() > 0) {
+        contentGeneratorsComboBox.setSelectedItem(0);
+        selectedContentGenerator = (ContentGenerator) contentGeneratorsComboBox.getSelectedItem();
+        populateContentGeneratorWidgets();
       } else {
-        selectedTextGenerator = null;
-        setEnabledTextGeneratorWidgets(false);
-        populateTextGeneratorWidgets();
+        selectedContentGenerator = null;
+        setEnabledContentGeneratorWidgets(false);
+        populateContentGeneratorWidgets();
       }
     });
   }
@@ -2091,7 +2099,7 @@ public class BinderatorFrame extends JFrame
         updateProjectControlsPanel();
         updateSourceDocumentsTab();
         updateTransformSetsTab();
-        updateTextGeneratorsTab();
+        updateContentGeneratorsTab();
         haveUnsavedChanges = false;
         notifyViewerBookChange();
       },
@@ -2277,68 +2285,68 @@ public class BinderatorFrame extends JFrame
     }
   }
 
-  private void updateTextGeneratorsTab
+  private void updateContentGeneratorsTab
   ()
   {
-    populateTextGeneratorsComboBox();
-    if (book.getTextGenerators().size() > 0) {
-      textGeneratorsComboBox.setSelectedIndex(-1);
-      textGeneratorsComboBox.setSelectedIndex(0);
-      setEnabledTextGeneratorWidgets(true);
+    populateContentGeneratorsComboBox();
+    if (book.getContentGenerators().size() > 0) {
+      contentGeneratorsComboBox.setSelectedIndex(-1);
+      contentGeneratorsComboBox.setSelectedIndex(0);
+      setEnabledContentGeneratorWidgets(true);
     } else {
-      textGeneratorNameTextField.setText("");
-      textGeneratorCommentTextArea.setText("");
-      textGeneratorContentTextArea.setText("");
-      textGeneratorPageRangesTextField.setText("");
-      textGeneratorHorizontalOffsetField.setText("");
-      textGeneratorVerticalOffsetField.setText("");
-      textGeneratorAlignmentComboBox.setSelectedIndex(0);
-      textGeneratorFontLabel.setText("");
-      setEnabledTextGeneratorWidgets(false);
+      contentGeneratorNameTextField.setText("");
+      contentGeneratorCommentTextArea.setText("");
+      contentGeneratorContentTextArea.setText("");
+      contentGeneratorPageRangesTextField.setText("");
+      contentGeneratorHorizontalOffsetField.setText("");
+      contentGeneratorVerticalOffsetField.setText("");
+      contentGeneratorAlignmentComboBox.setSelectedIndex(0);
+      contentGeneratorFontLabel.setText("");
+      setEnabledContentGeneratorWidgets(false);
     }
   }
 
-  private void populateTextGeneratorWidgets
+  private void populateContentGeneratorWidgets
   ()
   {
-    selectedTextGenerator = (TextGenerator)textGeneratorsComboBox.getSelectedItem();
-    if (selectedTextGenerator != null) {
-      textGeneratorNameTextField.setText(selectedTextGenerator.getName());
-      textGeneratorPageRangesTextField.setText(selectedTextGenerator.getPageRangesString());
-      textGeneratorCommentTextArea.setText(selectedTextGenerator.getComment());
-      Float horizontalOffset = selectedTextGenerator.getHorizontalOffset();
-      textGeneratorHorizontalOffsetField.setText("" + (horizontalOffset != null ? horizontalOffset : ""));
-      Float verticalOffset = selectedTextGenerator.getVerticalOffset();
-      textGeneratorVerticalOffsetField.setText("" + (verticalOffset != null ? verticalOffset : ""));
-      textGeneratorAlignmentComboBox.setSelectedItem(selectedTextGenerator.getAlignment());
-      textGeneratorContentTextArea.setText(selectedTextGenerator.getContent());
-      if (selectedTextGenerator.getFont() != null) {
-        textGeneratorFontLabel.setText(
-          selectedTextGenerator.getFont().getFontName() + " " + selectedTextGenerator.getFont().getSize()
+    selectedContentGenerator = (ContentGenerator)contentGeneratorsComboBox.getSelectedItem();
+    if (selectedContentGenerator != null) {
+      contentGeneratorNameTextField.setText(selectedContentGenerator.getName());
+      contentGeneratorPageRangesTextField.setText(selectedContentGenerator.getPageRangesString());
+      contentGeneratorCommentTextArea.setText(selectedContentGenerator.getComment());
+      Float horizontalOffset = selectedContentGenerator.getHorizontalOffset();
+      contentGeneratorHorizontalOffsetField.setText("" + (horizontalOffset != null ? horizontalOffset : ""));
+      Float verticalOffset = selectedContentGenerator.getVerticalOffset();
+      contentGeneratorVerticalOffsetField.setText("" + (verticalOffset != null ? verticalOffset : ""));
+      contentGeneratorAlignmentComboBox.setSelectedItem(selectedContentGenerator.getAlignment());
+      contentGeneratorContentTextArea.setText(selectedContentGenerator.getContent());
+      if (selectedContentGenerator.getFont() != null) {
+        contentGeneratorFontLabel.setText(
+          selectedContentGenerator.getFont().getFontName() + " " + selectedContentGenerator.getFont().getSize()
         );
       } else {
-        textGeneratorFontLabel.setText("");
+        contentGeneratorFontLabel.setText("");
       }
-      setEnabledTextGeneratorWidgets(true);
+      setEnabledContentGeneratorWidgets(true);
     } else {
-      setEnabledTextGeneratorWidgets(false);
+      setEnabledContentGeneratorWidgets(false);
     }
   }
 
-  private void populateTextGeneratorsComboBox
+  private void populateContentGeneratorsComboBox
   ()
   {
-    DefaultComboBoxModel<TextGenerator> model = new DefaultComboBoxModel<>();
+    DefaultComboBoxModel<ContentGenerator> model = new DefaultComboBoxModel<>();
     Book book = getBook();
-    for (TextGenerator textGenerator : book.getTextGenerators()) {
-      model.addElement(textGenerator);
+    for (ContentGenerator contentGenerator : book.getContentGenerators()) {
+      model.addElement(contentGenerator);
     }
-    textGeneratorsComboBoxModel = model;
-    textGeneratorsComboBox.setModel(model);
-    textGeneratorsComboBox.addItemListener(e -> {
+    contentGeneratorsComboBoxModel = model;
+    contentGeneratorsComboBox.setModel(model);
+    contentGeneratorsComboBox.addItemListener(e -> {
       if (e.getStateChange() == ItemEvent.SELECTED) {
-        if (!Objects.equals(selectedTextGenerator, textGeneratorsComboBox.getSelectedItem())) {
-          populateTextGeneratorWidgets();
+        if (!Objects.equals(selectedContentGenerator, contentGeneratorsComboBox.getSelectedItem())) {
+          populateContentGeneratorWidgets();
         }
       }
     });

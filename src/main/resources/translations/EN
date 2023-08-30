@@ -175,32 +175,32 @@ sourceDocumentPathButtonTooltip { Browse for the (PDF) path of this source docue
 sourceDocuments { Source Documents }
 sourceDocumentsComboTooltip { Select the current source document }
 successfullySaved { successfully saved }
-textGenerators { Text Generators }
-textGeneratorsAlign { Align }
-textGeneratorsAlignLeft { Left }
-textGeneratorsAlignRight { Right }
-textGeneratorsAlignCentre { Centre }
-textGeneratorsAlignJustify { Justify }
-textGeneratorsComboTooltip { Select the current text generator (listed in order of application) }
-textGeneratorsComments { Comment }
-textGeneratorsCommentsTooltip { Set a comment / description for this text generator }
-textGeneratorsContent { Content }
-textGeneratorsContentTooltip {
+contentGenerators { Content Generators }
+contentGeneratorsAlign { Align }
+contentGeneratorsAlignLeft { Left }
+contentGeneratorsAlignRight { Right }
+contentGeneratorsAlignCentre { Centre }
+contentGeneratorsAlignJustify { Justify }
+contentGeneratorsComboTooltip { Select the current text generator (listed in order of application) }
+contentGeneratorsComments { Comment }
+contentGeneratorsCommentsTooltip { Set a comment / description for this text generator }
+contentGeneratorsContent { Content }
+contentGeneratorsContentTooltip {
 Set the content of the text generator.
 See inline documentation for details of syntax
 }
-textGeneratorsHorizontalOffset { Hor. Offset }
-textGeneratorsLineHeight { Line Height }
-textGeneratorsVerticalOffset { Ver. Offset }
-textGeneratorsNewTooltip { Add a new text generator }
-textGeneratorsUpTooltip { Move this text generator up to the previous position of application }
-textGeneratorsDownTooltip { Move this text generator down to the next position of application }
-textGeneratorsDeleteTooltip { Delete this text generator }
-textGeneratorsEnableDisableTooltip { Enable / disable his text generator }
-textGeneratorsNewTooltip { Add a new text generator }
-textGeneratorsNameTooltip { Set the name of this text generator }
-textGeneratorsPageRanges { Page Ranges }
-textGeneratorsPageRangesTooltip { Set the page ranges to which this text generator applies }
+contentGeneratorsHorizontalOffset { Hor. Offset }
+contentGeneratorsLineHeight { Line Height }
+contentGeneratorsVerticalOffset { Ver. Offset }
+contentGeneratorsNewTooltip { Add a new text generator }
+contentGeneratorsUpTooltip { Move this text generator up to the previous position of application }
+contentGeneratorsDownTooltip { Move this text generator down to the next position of application }
+contentGeneratorsDeleteTooltip { Delete this text generator }
+contentGeneratorsEnableDisableTooltip { Enable / disable his text generator }
+contentGeneratorsNewTooltip { Add a new text generator }
+contentGeneratorsNameTooltip { Set the name of this text generator }
+contentGeneratorsPageRanges { Page Ranges }
+contentGeneratorsPageRangesTooltip { Set the page ranges to which this text generator applies }
 topColon { Top: }
 transformDescription_ROTATION_IN_DEGREES { Counterclockwise Rotation in Degrees }
 transformDescription_SCALE { Scale Ratio }
