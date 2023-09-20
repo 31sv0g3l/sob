@@ -44,7 +44,9 @@ public class ContentGenerator implements Serializable {
   }
 
 
-  public class StringTextComponent implements TextComponent {
+  public static class StringTextComponent implements TextComponent {
+
+    private static final long serialVersionUID = -8091184665938914725L;
 
     final String content;
 
@@ -64,7 +66,9 @@ public class ContentGenerator implements Serializable {
   }
 
 
-  public class PageRefTextComponent implements TextComponent {
+  public static class PageRefTextComponent implements TextComponent {
+
+    private static final long serialVersionUID = 7504405027534443051L;
 
     final String docId;
 
@@ -119,15 +123,20 @@ public class ContentGenerator implements Serializable {
   private java.awt.Font font = null;
   private Alignment alignment = Alignment.CENTRE;
   private Float lineHeightFactor = null;
+  private Float lineOffsetFactor = null;
   private Integer columns = null;
   private List<TextComponent> textComponents = null;
   private boolean useFrame = false;
   private Float width = null;
-  private Float height = null;
+  private Float xyRatio = null;
+  private boolean useBorder = false;
   private Float borderWidth = null;
-  private Color backgroundColor = null;
-  private Color textColor = null;
   private Color borderColor = null;
+  public enum BackgroundType { NONE, COLOR, IMAGE }
+  private BackgroundType backgroundType;
+  private Color backgroundColor = null;
+  private String backgroundImagePath = null;
+  private Color textColor = null;
 
   public ContentGenerator
   ()
@@ -146,14 +155,18 @@ public class ContentGenerator implements Serializable {
     verticalOffset = contentGenerator.verticalOffset;
     alignment = contentGenerator.alignment;
     lineHeightFactor = contentGenerator.lineHeightFactor;
+    lineOffsetFactor = contentGenerator.lineOffsetFactor;
     font = contentGenerator.font;
     useFrame = contentGenerator.useFrame;
     width = contentGenerator.width;
-    height = contentGenerator.height;
+    xyRatio = contentGenerator.xyRatio;
+    useBorder = contentGenerator.useBorder;
     borderWidth = contentGenerator.borderWidth;
-    backgroundColor = contentGenerator.backgroundColor;
-    textColor = contentGenerator.textColor;
     borderColor = contentGenerator.borderColor;
+    backgroundType = contentGenerator.backgroundType;
+    backgroundColor = contentGenerator.backgroundColor;
+    backgroundImagePath = contentGenerator.backgroundImagePath;
+    textColor = contentGenerator.textColor;
   }
 
   static Pattern idOffsetPattern = Pattern.compile(
@@ -270,7 +283,7 @@ public class ContentGenerator implements Serializable {
   public Float getHorizontalOffset
   ()
   {
-    return horizontalOffset;
+    return horizontalOffset != null ? horizontalOffset : 0.0f;
   }
 
   public void setHorizontalOffset
@@ -282,7 +295,7 @@ public class ContentGenerator implements Serializable {
   public Float getVerticalOffset
   ()
   {
-    return verticalOffset;
+    return verticalOffset != null ? verticalOffset : 0.0f;
   }
 
   public void setVerticalOffset
@@ -303,6 +316,18 @@ public class ContentGenerator implements Serializable {
     this.font = font;
   }
 
+  public java.awt.Color getTextColor
+  ()
+  {
+    return textColor;
+  }
+
+  public void setTextColor
+  (java.awt.Color color)
+  {
+    textColor = color;
+  }
+
   public Alignment getAlignment
   ()
   {
@@ -313,6 +338,78 @@ public class ContentGenerator implements Serializable {
   (Alignment alignment)
   {
     this.alignment = alignment;
+  }
+
+  public void setUsingFrame
+  (boolean useFrame)
+  {
+    this.useFrame = useFrame;
+  }
+
+  public boolean isUsingFrame
+  ()
+  {
+    return useFrame;
+  }
+
+  public Float getWidth
+  ()
+  {
+    return width != null ? width : 0.0f;
+  }
+
+  public void setWidth
+  (Float width)
+  {
+    this.width = width;
+  }
+
+  public Float getXYRatio
+  ()
+  {
+    return xyRatio != null ? xyRatio : 1.0f;
+  }
+
+  public void setXYRatio
+  (Float xyRatio)
+  {
+    this.xyRatio = xyRatio;
+  }
+
+  public void setUsingBorder
+  (boolean usingBorder)
+  {
+    this.useBorder = usingBorder;
+  }
+
+  public boolean isUsingBorder
+  ()
+  {
+    return useBorder;
+  }
+
+  public void setBorderWidth
+  (Float borderWidth)
+  {
+    this.borderWidth = borderWidth;
+  }
+
+  public Float getBorderWidth
+  ()
+  {
+    return borderWidth != null ? borderWidth : 0.0f;
+  }
+
+  public void setBorderColor
+  (Color color)
+  {
+    this.borderColor = color;
+  }
+
+  public Color getBorderColor
+  ()
+  {
+    return borderColor;
   }
 
   public float getLineHeightFactor
@@ -327,6 +424,18 @@ public class ContentGenerator implements Serializable {
     this.lineHeightFactor = lineHeightFactor;
   }
 
+  public float getLineOffsetFactor
+  ()
+  {
+    return lineOffsetFactor != null ? lineOffsetFactor : 0.0f;
+  }
+
+  public void setLineOffsetFactor
+  (Float lineOffsetFactor)
+  {
+    this.lineOffsetFactor = lineOffsetFactor;
+  }
+
   public Integer getColumns
   ()
   {
@@ -337,6 +446,42 @@ public class ContentGenerator implements Serializable {
   (Integer columns)
   {
     this.columns = columns;
+  }
+
+  public void setBackgroundType
+  (BackgroundType backgroundType)
+  {
+    this.backgroundType = backgroundType;
+  }
+
+  public BackgroundType getBackgroundType
+  ()
+  {
+    return backgroundType != null ? backgroundType : BackgroundType.NONE;
+  }
+
+  public void setBackgroundColor
+  (Color backgroundColor)
+  {
+    this.backgroundColor = backgroundColor;
+  }
+
+  public Color getBackgroundColor
+  ()
+  {
+    return backgroundColor;
+  }
+
+  public void setBackgroundImagePath
+  (String path)
+  {
+    this.backgroundImagePath = path;
+  }
+
+  public String getBackgroundImagePath
+  ()
+  {
+    return backgroundImagePath;
   }
 
   @Override

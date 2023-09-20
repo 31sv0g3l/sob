@@ -1,7 +1,7 @@
 package com.binderator.gui;
 
 
-import com.binderator.ext.gui.JFontChooser;
+import com.binderator.ext.gui.*;
 import com.binderator.persistence.*;
 import com.binderator.engine.*;
 import com.binderator.util.*;
@@ -11,17 +11,19 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.*;
 import java.util.concurrent.locks.*;
-import java.util.regex.Pattern;
+import java.util.function.*;
+import java.util.regex.*;
 import javax.swing.*;
+import javax.swing.border.*;
 import javax.swing.event.*;
 import javax.swing.filechooser.*;
-import javax.swing.filechooser.FileFilter;
 import javax.swing.plaf.*;
 import javax.swing.text.*;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Rectangle;
 
 
+import static com.binderator.gui.GUIUtils.addBackgroundSetter;
 import static com.binderator.util.Translations.translate;
 import static com.binderator.gui.GUIUtils.scale;
 
@@ -87,9 +89,9 @@ public class BinderatorFrame extends JFrame
   public static final String VERSION = "0.3.0";
   private static BinderatorFrame singletonInstance = null;
   private boolean haveUnsavedChanges = false;
-  private static final FileFilter binderatorFileFilter =
+  private static final javax.swing.filechooser.FileFilter binderatorFileFilter =
     new FileNameExtensionFilter("Son of Binderator files","sob", "SOB", "bdr");
-  private static final FileFilter pdfFileFilter =
+  private static final javax.swing.filechooser.FileFilter pdfFileFilter =
     new FileNameExtensionFilter("PDF files","pdf", "PDF");
 
   private ViewerRenderingThread viewerRenderingThread = null;
@@ -153,10 +155,11 @@ public class BinderatorFrame extends JFrame
   JTextField documentPathTextField = new JTextField(34);
   JButton documentPathButton;
   JTextArea documentCommentTextArea = new JTextArea(5, 34);
-  JTextArea pageRangesTextArea = new JTextArea(7, 34);
+  JTextArea pageRangesTextArea = new JTextArea(10, 34);
   boolean pageRangesTextValid = false;
   JButton pageRangesApplyButton = new JButton();
   final Color pageRangesApplyButtonDefaultColor = pageRangesApplyButton.getBackground();
+  private static final int NUMERIC_FIELD_WIDTH = 5;
 
   // Page Operations Panel Widgets:
   private TransformSet selectedTransformSet = null;
@@ -167,21 +170,29 @@ public class BinderatorFrame extends JFrame
   JTextField contentGeneratorNameTextField = new JTextField(34);
   JTextField contentGeneratorPageRangesTextField = new JTextField(34);
   JTextArea contentGeneratorCommentTextArea = new JTextArea(5, 34);
-  JTextField contentGeneratorHorizontalOffsetField = new JTextField(6);
-  JTextField contentGeneratorVerticalOffsetField = new JTextField(6);
-  JTextField contentGeneratorLineHeightField = new JTextField(6);
+  JTextField contentGeneratorHorizontalOffsetField = new JTextField(NUMERIC_FIELD_WIDTH);
+  JTextField contentGeneratorVerticalOffsetField = new JTextField(NUMERIC_FIELD_WIDTH);
+  JTextField contentGeneratorLineHeightField = new JTextField(NUMERIC_FIELD_WIDTH);
+  JTextField contentGeneratorLineOffsetField = new JTextField(NUMERIC_FIELD_WIDTH);
   JTextArea contentGeneratorContentTextArea = new JTextArea(10, 34);
   JComboBox<ContentGenerator.Alignment> contentGeneratorAlignmentComboBox;
   DefaultComboBoxModel<ContentGenerator.Alignment> contentGeneratorAlignmentComboBoxModel;
   JLabel contentGeneratorFontLabel = new JLabel("");
   JCheckBox contentGeneratorFrameCheckbox = new JCheckBox("");
-  JTextField contentGeneratorFrameWidthField = new JTextField(6);
-  JTextField contentGeneratorFrameHeightField = new JTextField(6);
-  JTextField contentGeneratorFrameBorderWidthField = new JTextField(6);
-  Color backgroundColor = Color.WHITE;
-  Color textColor = Color.BLACK;
-  Color BorderColor = Color.BLACK;
-
+  JTextField contentGeneratorFrameWidthField = new JTextField(NUMERIC_FIELD_WIDTH);
+  JTextField contentGeneratorFrameXYRatioField = new JTextField(NUMERIC_FIELD_WIDTH);
+  JTextField contentGeneratorFrameBorderWidthField = new JTextField(NUMERIC_FIELD_WIDTH);
+  ButtonGroup contentGeneratorBackgroundButtonGroup = new ButtonGroup();
+  JRadioButton contentGeneratorNoBackgroundButton = new JRadioButton();
+  JRadioButton contentGeneratorColorBackgroundButton = new JRadioButton();
+  JRadioButton contentGeneratorImageBackgroundButton = new JRadioButton();
+  JTextField contentGeneratorImagePathField;
+  JButton contentGeneratorImagePathButton;
+  JCheckBox contentGeneratorFrameBorderCheckbox = new JCheckBox("");
+  JButton contentGeneratorBorderColorButton;
+  JButton contentGeneratorBackgroundColorButton;
+  JButton contentGeneratorFontColorButton;
+  JButton contentGeneratorFontChooserButton;
   private SourceDocument selectedDocument = null;
   private JDialog optionsDialog = null;
   private JDialog inlineHelpDialog = null;
@@ -271,12 +282,14 @@ public class BinderatorFrame extends JFrame
   {
     // Top horizontal panel for the label, left justified:
     JPanel labelPanel = new JPanel();
-    labelPanel.setLayout(new BoxLayout(labelPanel, BoxLayout.X_AXIS));
-    labelPanel.add(Box.createHorizontalStrut(scale(5)));
-    JLabel label = new JLabel(name);
-    label.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(labelHeight)));
-    labelPanel.add(Box.createHorizontalStrut(scale(5)));
-    labelPanel.add(label);
+    if (name != null) {
+      labelPanel.setLayout(new BoxLayout(labelPanel, BoxLayout.X_AXIS));
+      labelPanel.add(Box.createHorizontalStrut(scale(5)));
+      JLabel label = new JLabel(name);
+      label.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(labelHeight)));
+      labelPanel.add(Box.createHorizontalStrut(scale(5)));
+      labelPanel.add(label);
+    }
     // Bottom horizontal panel for the widget, left justified:
     JPanel entryPanel = null;
     if (entryWidget != null) {
@@ -293,7 +306,9 @@ public class BinderatorFrame extends JFrame
     // Combined Panel:
     JPanel combinedPanel = new JPanel();
     combinedPanel.setLayout(new BoxLayout(combinedPanel, BoxLayout.Y_AXIS));
-    combinedPanel.add(labelPanel);
+    if (name != null) {
+      combinedPanel.add(labelPanel);
+    }
     if (entryWidget != null) {
       combinedPanel.add(entryPanel);
     }
@@ -545,6 +560,7 @@ public class BinderatorFrame extends JFrame
     projectControlsPanel.add(Box.createVerticalStrut(scale(5)));
     JPanel signatureControlsTopPanel = new JPanel();
     signatureControlsTopPanel.setLayout(new BoxLayout(signatureControlsTopPanel, BoxLayout.X_AXIS));
+    signatureControlsTopPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
     signatureControlsTopPanel.add(Box.createHorizontalStrut(scale(5)));
     signatureControlsTopPanel.add(new JLabel(translate("signaturesColon")));
     signatureControlsTopPanel.add(Box.createHorizontalStrut(scale(5)));
@@ -605,6 +621,7 @@ public class BinderatorFrame extends JFrame
     signatureControlsTopPanel.add(Box.createHorizontalStrut(scale(5)));
     JPanel signatureControlsBottomPanel = new JPanel();
     signatureControlsBottomPanel.setLayout(new BoxLayout(signatureControlsBottomPanel, BoxLayout.X_AXIS));
+    signatureControlsBottomPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
     signatureControlsBottomPanel.add(Box.createHorizontalStrut(scale(106)));
     signatureTrimLinesComboBox = new JComboBox<>();
     signatureTrimLinesComboBox.addItem(Book.TrimLinesType.NONE);
@@ -659,10 +676,13 @@ public class BinderatorFrame extends JFrame
     signatureControlsPanel.setLayout(new BoxLayout(signatureControlsPanel, BoxLayout.Y_AXIS));
     signatureControlsPanel.add(signatureControlsTopPanel);
     signatureControlsPanel.add(signatureControlsBottomPanel);
+    signatureControlsPanel.setPreferredSize(new Dimension(scale(Integer.MAX_VALUE), 0));
     projectControlsPanel.add(signatureControlsPanel);
-    projectControlsPanel.add(Box.createVerticalGlue());
+    // projectControlsPanel.add(Box.createVerticalGlue());
     updateProjectControlsPanel();
     projectPanel.add(Box.createVerticalGlue());
+    projectPanel.add(Box.createVerticalStrut(scale(5)));
+    projectPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
 
     // ******************************************************************************************************
     // Source Documents and page ranges tab:
@@ -680,7 +700,8 @@ public class BinderatorFrame extends JFrame
     pageRangesScrollPane.setVerticalScrollBarPolicy(JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED);
     JPanel pageRangesPanel = new JPanel();
     pageRangesPanel.setLayout(new BoxLayout(pageRangesPanel, BoxLayout.X_AXIS));
-    pageRangesPanel.setPreferredSize(new Dimension(Integer.MAX_VALUE, 100));
+    pageRangesPanel.setPreferredSize(new Dimension(Integer.MAX_VALUE, 200));
+    pageRangesPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, 200));
     pageRangesPanel.add(pageRangesScrollPane);
     pageRangesApplyButton.setPreferredSize(new Dimension(34, Integer.MAX_VALUE));
     pageRangesApplyButton.setMaximumSize(new Dimension(34, Integer.MAX_VALUE));
@@ -696,7 +717,8 @@ public class BinderatorFrame extends JFrame
         }
       })
     );
-    pagesPanel.add(createScaledLabeledWidgetPanel(pageRangesPanel, translate("pageRanges"), 22, 94));
+    pagesPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(220)));
+    pagesPanel.add(createScaledLabeledWidgetPanel(pageRangesPanel, translate("pageRanges"), 22, 150));
     pageRangesTextArea.getDocument().addDocumentListener(new DocumentListener() {
       @Override public void changedUpdate(DocumentEvent e) {
         handlePageRangesChange(pageRangesTextArea.getText());
@@ -716,6 +738,11 @@ public class BinderatorFrame extends JFrame
     documentsAndPagesSeparator.setForeground(Color.BLACK);
     documentsAndPagesPanel.add(documentsAndPagesSeparator);
     documentsAndPagesPanel.add(pagesPanel);
+    documentsAndPagesPanel.add(Box.createVerticalGlue());
+    JPanel documentsFillerPanel = new JPanel();
+    documentsFillerPanel.setLayout(new BoxLayout(documentsFillerPanel, BoxLayout.X_AXIS));
+    documentsFillerPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+    documentsAndPagesPanel.add(documentsFillerPanel);
     mainTabs.add(translate("sourceDocuments"), documentsAndPagesPanel);
     documentsPanel.setLayout(new BoxLayout(documentsPanel, BoxLayout.Y_AXIS));
     JPanel documentsNavPanel = new JPanel();
@@ -767,13 +794,18 @@ public class BinderatorFrame extends JFrame
     );
     deleteSourceDocumentButton.setToolTipText(translate("sourceDocumentDeleteButtonTooltip"));
     documentsNavPanel.add(deleteSourceDocumentButton);
+    int documentsPanelHeight = 0;
     documentsNavPanel.add(Box.createHorizontalStrut(scale(5)));
     documentsNavPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
     documentsNavPanel.setVisible(true);
-    documentsPanel.add(Box.createVerticalStrut(5));
+    documentsPanel.add(Box.createVerticalStrut(scale(5)));
+    documentsPanelHeight += scale(5);
     documentsPanel.add(documentsNavPanel);
-    documentsPanel.add(Box.createVerticalStrut(5));
+    documentsPanelHeight += scale(22);
+    documentsPanel.add(Box.createVerticalStrut(scale(5)));
+    documentsPanelHeight += scale(5);
     documentsPanel.add(createScaledLabeledWidgetPanel(documentNameTextField, translate("name"), 22, 22));
+    documentsPanelHeight += scale(22);
     documentNameTextField.addActionListener(event -> {
       if (selectedDocument != null) {
         try {
@@ -787,7 +819,9 @@ public class BinderatorFrame extends JFrame
     documentNameTextField.setToolTipText(translate("sourceDocumentNameTooltip"));
     GUIUtils.addBackgroundSetter(documentNameTextField);
     documentsPanel.add(Box.createVerticalStrut(scale(5)));
+    documentsPanelHeight += scale(5);
     documentsPanel.add(createScaledLabeledWidgetPanel(documentIdentifierTextField, translate("documentId"), 22, 22));
+    documentsPanelHeight += scale(22);
     documentIdentifierTextField.addActionListener(event -> {
       if (selectedDocument != null) {
         try {
@@ -802,11 +836,13 @@ public class BinderatorFrame extends JFrame
     documentIdentifierTextField.setMaximumSize(new Dimension(scale(130), scale(22)));
     GUIUtils.addBackgroundSetter(documentIdentifierTextField);
     documentsPanel.add(Box.createVerticalStrut(scale(5)));
+    documentsPanelHeight += scale(5);
     Pair<JPanel, JButton> documentPathPanelAndButton = createScaledLabeledPathSelectionWidgetPanel(
       documentPathTextField, translate("path"), 22, 22, false
     );
     documentPathTextField.setToolTipText(translate("sourceDocumentPathTooltip"));
     documentsPanel.add(documentPathPanelAndButton.getFirst());
+    documentsPanelHeight += scale(22);
     documentPathButton = documentPathPanelAndButton.getSecond();
     documentPathButton.setToolTipText(translate("sourceDocumentPathButtonTooltip"));
     documentPathTextField.addActionListener(event -> {
@@ -821,10 +857,12 @@ public class BinderatorFrame extends JFrame
     });
     GUIUtils.addBackgroundSetter(documentPathTextField);
     documentsPanel.add(Box.createVerticalStrut(scale(5)));
+    documentsPanelHeight += scale(5);
     documentCommentTextArea.setLineWrap(true);
     documentCommentTextArea.setWrapStyleWord(true);
     JScrollPane documentCommentScrollPane = new JScrollPane(documentCommentTextArea);
     documentsPanel.add(createScaledLabeledWidgetPanel(documentCommentScrollPane, translate("comments"), 22, 70));
+    documentsPanelHeight += scale(70);
     documentCommentTextArea.getDocument().addDocumentListener(new DocumentListener() {
       @Override public void changedUpdate(DocumentEvent e) {
         if (selectedDocument != null) {
@@ -846,9 +884,10 @@ public class BinderatorFrame extends JFrame
       }
     });
     documentCommentTextArea.setToolTipText(translate("sourceDocumentCommentTooltip"));
-    documentsPanel.add(Box.createGlue());
+    // documentsPanel.add(Box.createGlue());
     documentsPanel.add(Box.createVerticalStrut(scale(5)));
-    documentsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+    documentsPanelHeight += scale(5);
+    documentsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, documentsPanelHeight));
     setEnabledSourceDocumentsWidgets(false);
 
     // ******************************************************************************************************
@@ -983,7 +1022,7 @@ public class BinderatorFrame extends JFrame
     setEnabledTransformsWidgets(false);
 
     // ******************************************************************************************************
-    // Text Generators tab:
+    // Content Generators tab:
     contentGeneratorsPanel = new JPanel();
     JScrollPane contentGeneratorsPane = new JScrollPane(contentGeneratorsPanel);
     contentGeneratorsPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -1100,6 +1139,232 @@ public class BinderatorFrame extends JFrame
       }
 
     });
+
+    JPanel contentGeneratorsFrameCheckboxPanel = new JPanel();
+    contentGeneratorsFrameCheckboxPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
+    contentGeneratorsFrameCheckboxPanel.setLayout(new BoxLayout(contentGeneratorsFrameCheckboxPanel, BoxLayout.X_AXIS));
+    contentGeneratorsFrameCheckboxPanel.add(Box.createHorizontalStrut(scale(5)));
+    contentGeneratorFrameCheckbox = new JCheckBox();
+    contentGeneratorFrameCheckbox.setText(translate("contentGeneratorsUseFrame"));
+    contentGeneratorsFrameCheckboxPanel.add(contentGeneratorFrameCheckbox);
+    contentGeneratorsFrameCheckboxPanel.add(Box.createHorizontalGlue());
+    contentGeneratorsFrameCheckboxPanel.add(Box.createHorizontalStrut(scale(5)));
+    contentGeneratorsPanel.add(contentGeneratorsFrameCheckboxPanel);
+    contentGeneratorsPanel.add(Box.createVerticalStrut(scale(5)));
+
+    JPanel contentGeneratorsFrameRowPanel = new JPanel();
+    contentGeneratorsFrameRowPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
+    contentGeneratorsFrameRowPanel.setLayout(new BoxLayout(contentGeneratorsFrameRowPanel, BoxLayout.X_AXIS));
+    contentGeneratorsFrameRowPanel.add(Box.createHorizontalStrut(scale(5)));
+    JPanel contentGeneratorsFramePanel = new JPanel();
+    contentGeneratorsFramePanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+    contentGeneratorsFramePanel.setLayout(new BoxLayout(contentGeneratorsFramePanel, BoxLayout.Y_AXIS));
+    contentGeneratorsFramePanel.setBorder(new LineBorder(Color.BLACK, 1));
+    contentGeneratorsFramePanel.add(Box.createHorizontalStrut(scale(5)));
+
+    JPanel contentGeneratorsFrameDimensionsPanel = new JPanel();
+    contentGeneratorsFrameDimensionsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
+    contentGeneratorsFrameDimensionsPanel.setLayout(new BoxLayout(contentGeneratorsFrameDimensionsPanel, BoxLayout.X_AXIS));
+
+    contentGeneratorsFrameDimensionsPanel.add(Box.createHorizontalStrut(scale(5)));
+    contentGeneratorsFrameDimensionsPanel.add(new JLabel(translate("contentGeneratorsWidth") + ": "));
+    contentGeneratorFrameWidthField = new JTextField(NUMERIC_FIELD_WIDTH);
+    contentGeneratorFrameWidthField.setMaximumSize(new Dimension(scale(202), scale(22)));
+    addBackgroundSetter(contentGeneratorFrameWidthField);
+    contentGeneratorsFrameDimensionsPanel.add(contentGeneratorFrameWidthField);
+    contentGeneratorFrameWidthField.addActionListener(event -> {
+      if (selectedContentGenerator != null) {
+        try {
+          selectedContentGenerator.setWidth(validatedFloatFromString(
+            contentGeneratorFrameWidthField.getText(), translate("contentGeneratorsWidth"), 0.0f, 1.0f
+          ));
+          registerUnsavedChange();
+        } catch (Exception e) {
+          errorDialog(e);
+        }
+      }
+    });
+
+    contentGeneratorsFrameDimensionsPanel.add(Box.createHorizontalStrut(scale(5)));
+    contentGeneratorsFrameDimensionsPanel.add(new JLabel(translate("contentGeneratorsXYRatio") + ": "));
+    contentGeneratorFrameXYRatioField = new JTextField(NUMERIC_FIELD_WIDTH);
+    contentGeneratorFrameXYRatioField.setMaximumSize(new Dimension(scale(202), scale(22)));
+    addBackgroundSetter(contentGeneratorFrameXYRatioField);
+    contentGeneratorsFrameDimensionsPanel.add(contentGeneratorFrameXYRatioField);
+    contentGeneratorFrameXYRatioField.addActionListener(event -> {
+      if (selectedContentGenerator != null) {
+        try {
+          selectedContentGenerator.setXYRatio(validatedFloatFromString(
+            contentGeneratorFrameXYRatioField.getText(), translate("contentGeneratorsXYRatio"), 0.0f, 10.0f
+          ));
+          registerUnsavedChange();
+        } catch (Exception e) {
+          errorDialog(e);
+        }
+      }
+    });
+
+    contentGeneratorsFrameDimensionsPanel.add(Box.createHorizontalGlue());
+    contentGeneratorsFrameDimensionsPanel.add(Box.createHorizontalStrut(scale(5)));
+
+    JPanel contentGeneratorsBorderPanel = new JPanel();
+    contentGeneratorsBorderPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
+    contentGeneratorsBorderPanel.setLayout(new BoxLayout(contentGeneratorsBorderPanel, BoxLayout.X_AXIS));
+
+    contentGeneratorFrameBorderCheckbox = new JCheckBox();
+    contentGeneratorFrameBorderCheckbox.setText(translate("contentGeneratorUseBorder") + ": ");
+    contentGeneratorsBorderPanel.add(Box.createHorizontalStrut(scale(5)));
+    contentGeneratorsBorderPanel.add(contentGeneratorFrameBorderCheckbox);
+    contentGeneratorsBorderPanel.add(Box.createHorizontalStrut(scale(5)));
+    contentGeneratorsBorderPanel.add(new JLabel(translate("contentGeneratorsBorderWidth") + ": "));
+    contentGeneratorFrameBorderWidthField = new JTextField(NUMERIC_FIELD_WIDTH);
+    contentGeneratorFrameBorderWidthField.setMaximumSize(new Dimension(scale(202), scale(22)));
+    addBackgroundSetter(contentGeneratorFrameBorderWidthField);
+    contentGeneratorFrameBorderWidthField.addActionListener(event -> {
+      if (selectedContentGenerator != null) {
+        try {
+          selectedContentGenerator.setBorderWidth(validatedFloatFromString(
+            contentGeneratorFrameBorderWidthField.getText(), translate("contentGeneratorsBorderWidth"), 0.0f, 50.0f
+          ));
+          registerUnsavedChange();
+        } catch (Exception e) {
+          errorDialog(e);
+        }
+      }
+    });
+    contentGeneratorsBorderPanel.add(contentGeneratorFrameBorderWidthField);
+
+    contentGeneratorsBorderPanel.add(Box.createHorizontalStrut(scale(5)));
+    contentGeneratorsBorderPanel.add(new JLabel(translate("contentGeneratorsBorderColour") + ": "));
+    contentGeneratorsBorderPanel.add(Box.createHorizontalStrut(scale(5)));
+    contentGeneratorBorderColorButton = createColourChooserButton(
+      Color.BLACK, color -> {
+        if (selectedContentGenerator != null) {
+          try {
+            selectedContentGenerator.setBorderColor(color);
+            registerUnsavedChange();
+          } catch (Exception e) {
+            errorDialog(e);
+          }
+        }
+      }
+    );
+    contentGeneratorsBorderPanel.add(contentGeneratorBorderColorButton);
+    contentGeneratorFrameBorderCheckbox.addActionListener(event -> {
+      if (selectedContentGenerator != null) {
+        try {
+          boolean usingBorder = contentGeneratorFrameBorderCheckbox.isSelected();
+          selectedContentGenerator.setUsingBorder(usingBorder);
+          contentGeneratorFrameBorderWidthField.setEnabled(usingBorder);
+          contentGeneratorBorderColorButton.setEnabled(usingBorder);
+          registerUnsavedChange();
+        } catch (Exception e) {
+          errorDialog(e);
+        }
+      }
+    });
+    contentGeneratorsBorderPanel.add(Box.createHorizontalStrut(scale(5)));
+
+    contentGeneratorsFrameDimensionsPanel.add(Box.createHorizontalStrut(scale(5)));
+    contentGeneratorsFrameDimensionsPanel.add(contentGeneratorsBorderPanel);
+
+    contentGeneratorsFramePanel.add(Box.createVerticalStrut(scale(5)));
+    contentGeneratorsFramePanel.add(contentGeneratorsFrameDimensionsPanel);
+
+    JPanel contentGeneratorsBackgroundPanel = new JPanel();
+    contentGeneratorsBackgroundPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
+    contentGeneratorsBackgroundPanel.setLayout(new BoxLayout(contentGeneratorsBackgroundPanel, BoxLayout.X_AXIS));
+
+    contentGeneratorsBackgroundPanel.add(Box.createHorizontalStrut(scale(5)));
+    contentGeneratorsBackgroundPanel.add(new JLabel(translate("contentGeneratorUseBackground") + ": "));
+    contentGeneratorNoBackgroundButton.setText(translate("contentGeneratorNoBackground"));
+    contentGeneratorNoBackgroundButton.addActionListener(event -> {
+      if (selectedContentGenerator != null) {
+        try {
+          selectedContentGenerator.setBackgroundType(ContentGenerator.BackgroundType.NONE);
+          registerUnsavedChange();
+        } catch (Exception e) {
+          errorDialog(e);
+        }
+      }
+    });
+    contentGeneratorBackgroundButtonGroup.add(contentGeneratorNoBackgroundButton);
+    contentGeneratorsBackgroundPanel.add(contentGeneratorNoBackgroundButton);
+    contentGeneratorsBackgroundPanel.add(Box.createHorizontalStrut(scale(5)));
+    contentGeneratorColorBackgroundButton.setText(translate("contentGeneratorColorBackground") + ": ");
+    contentGeneratorColorBackgroundButton.addActionListener(event -> {
+      if (selectedContentGenerator != null) {
+        try {
+          selectedContentGenerator.setBackgroundType(ContentGenerator.BackgroundType.COLOR);
+          registerUnsavedChange();
+        } catch (Exception e) {
+          errorDialog(e);
+        }
+      }
+    });
+    contentGeneratorBackgroundButtonGroup.add(contentGeneratorColorBackgroundButton);
+    contentGeneratorsBackgroundPanel.add(contentGeneratorColorBackgroundButton);
+    contentGeneratorsBackgroundPanel.add(Box.createHorizontalStrut(scale(5)));
+    contentGeneratorBackgroundColorButton = createColourChooserButton(
+      Color.WHITE, color -> {
+        if (selectedContentGenerator != null) {
+          try {
+            selectedContentGenerator.setBackgroundColor(color);
+            registerUnsavedChange();
+          } catch (Exception e) {
+            errorDialog(e);
+          }
+        }
+      }
+    );
+    contentGeneratorsBackgroundPanel.add(contentGeneratorBackgroundColorButton);
+    contentGeneratorsBackgroundPanel.add(Box.createHorizontalStrut(scale(5)));
+    contentGeneratorImageBackgroundButton.setText(translate("contentGeneratorImageBackground") + ": ");
+    contentGeneratorImageBackgroundButton.addActionListener(event -> {
+      if (selectedContentGenerator != null) {
+        try {
+          selectedContentGenerator.setBackgroundType(ContentGenerator.BackgroundType.IMAGE);
+          registerUnsavedChange();
+        } catch (Exception e) {
+          errorDialog(e);
+        }
+      }
+    });
+    contentGeneratorBackgroundButtonGroup.add(contentGeneratorImageBackgroundButton);
+    contentGeneratorsBackgroundPanel.add(contentGeneratorImageBackgroundButton);
+    contentGeneratorsBackgroundPanel.add(Box.createHorizontalStrut(scale(5)));
+
+    contentGeneratorImagePathField = new JTextField(scale(34));
+    contentGeneratorImagePathField.addActionListener(event -> {
+      if (selectedContentGenerator != null) {
+        try {
+          selectedContentGenerator.setBackgroundImagePath(contentGeneratorImagePathField.getText());
+          registerUnsavedChange();
+        } catch (Exception e) {
+          errorDialog(e);
+        }
+      }
+    });
+    addBackgroundSetter(contentGeneratorImagePathField);
+    Pair<JPanel, JButton> contentGeneratorsImagePathFieldAndButton = createScaledLabeledPathSelectionWidgetPanel(
+      contentGeneratorImagePathField, null, 22, 22, false
+    );
+    contentGeneratorsBackgroundPanel.add(contentGeneratorsImagePathFieldAndButton.getFirst());
+    contentGeneratorImagePathField.setToolTipText(translate("contentGeneratorImagePathTooltip"));
+    contentGeneratorImagePathButton = contentGeneratorsImagePathFieldAndButton.getSecond();
+    contentGeneratorImagePathButton.setToolTipText(translate("contentGeneratorImagePathTooltip"));
+    contentGeneratorsBackgroundPanel.add(contentGeneratorImagePathButton);
+    contentGeneratorsBackgroundPanel.add(Box.createHorizontalStrut(scale(5)));
+
+    contentGeneratorsFramePanel.add(Box.createVerticalStrut(scale(5)));
+    contentGeneratorsFramePanel.add(contentGeneratorsBackgroundPanel);
+
+    contentGeneratorsFramePanel.add(Box.createVerticalStrut(scale(5)));
+    contentGeneratorsFrameRowPanel.add(contentGeneratorsFramePanel);
+    contentGeneratorsFrameRowPanel.add(Box.createHorizontalStrut(scale(5)));
+    contentGeneratorsPanel.add(contentGeneratorsFrameRowPanel);
+
+
     JPanel contentGeneratorsXYAlignmentPanel = new JPanel();
     contentGeneratorsXYAlignmentPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
     contentGeneratorsXYAlignmentPanel.setLayout(new BoxLayout(contentGeneratorsXYAlignmentPanel, BoxLayout.X_AXIS));
@@ -1108,7 +1373,7 @@ public class BinderatorFrame extends JFrame
     contentGeneratorsXYAlignmentPanel.add(Box.createHorizontalStrut(scale(5)));
     contentGeneratorHorizontalOffsetField.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
     contentGeneratorHorizontalOffsetField.addActionListener(event -> {
-      if ( selectedContentGenerator != null) {
+      if (selectedContentGenerator != null) {
         try {
           selectedContentGenerator.setHorizontalOffset(validatedFloatFromString(
             contentGeneratorHorizontalOffsetField.getText(), translate("contentGeneratorsHorizontalOffset") + ":", 0.0f, 1.0f
@@ -1166,8 +1431,8 @@ public class BinderatorFrame extends JFrame
     contentGeneratorsFontPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
     contentGeneratorsFontPanel.setLayout(new BoxLayout(contentGeneratorsFontPanel, BoxLayout.X_AXIS));
     JFontChooser fontChooser = new JFontChooser();
-    JButton fontChooserButton = new JButton(translate("chooseFont"));
-    fontChooserButton.addActionListener(
+    contentGeneratorFontChooserButton = new JButton(translate("chooseFont"));
+    contentGeneratorFontChooserButton.addActionListener(
       e -> execute(() -> {
         if (selectedContentGenerator != null) {
           java.awt.Font initialFont = selectedContentGenerator.getFont();
@@ -1185,11 +1450,11 @@ public class BinderatorFrame extends JFrame
       })
     );
     contentGeneratorsFontPanel.add(Box.createHorizontalStrut(scale(5)));
-    contentGeneratorsFontPanel.add(fontChooserButton);
+    contentGeneratorsFontPanel.add(contentGeneratorFontChooserButton);
     contentGeneratorsFontPanel.add(Box.createHorizontalStrut(scale(10)));
     contentGeneratorsFontPanel.add(contentGeneratorFontLabel);
-    contentGeneratorsFontPanel.add(Box.createHorizontalGlue());
     contentGeneratorsFontPanel.add(Box.createHorizontalStrut(scale(10)));
+    contentGeneratorsFontPanel.add(Box.createHorizontalGlue());
     contentGeneratorsFontPanel.add(new JLabel(translate("contentGeneratorsLineHeight") + ":"));
     contentGeneratorsFontPanel.add(Box.createHorizontalStrut(scale(5)));
     contentGeneratorLineHeightField.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
@@ -1207,7 +1472,49 @@ public class BinderatorFrame extends JFrame
     });
     GUIUtils.addBackgroundSetter(contentGeneratorLineHeightField);
     contentGeneratorsFontPanel.add(contentGeneratorLineHeightField);
+    contentGeneratorLineHeightField.setMaximumSize(new Dimension(202, 22));
+    contentGeneratorsFontPanel.add(Box.createHorizontalStrut(scale(10)));
+    contentGeneratorsFontPanel.add(Box.createHorizontalGlue());
+
+    contentGeneratorsFontPanel.add(new JLabel(translate("contentGeneratorsLineOffset") + ":"));
     contentGeneratorsFontPanel.add(Box.createHorizontalStrut(scale(5)));
+    contentGeneratorLineOffsetField.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
+    contentGeneratorLineOffsetField.addActionListener(event -> {
+      if (selectedContentGenerator != null) {
+        try {
+          selectedContentGenerator.setLineOffsetFactor(validatedFloatFromString(
+            contentGeneratorLineOffsetField.getText(), translate("contentGeneratorsLineOffset") + ":", -10.0f, 10.0f
+          ));
+          registerUnsavedChange();
+        } catch (Exception e) {
+          errorDialog(e);
+        }
+      }
+    });
+    GUIUtils.addBackgroundSetter(contentGeneratorLineOffsetField);
+    contentGeneratorsFontPanel.add(contentGeneratorLineOffsetField);
+    contentGeneratorLineOffsetField.setMaximumSize(new Dimension(202, 22));
+
+    contentGeneratorsFontPanel.add(Box.createHorizontalStrut(scale(5)));
+    contentGeneratorsFontPanel.add(Box.createHorizontalGlue());
+    contentGeneratorsFontPanel.add(new JLabel(translate("contentGeneratorFontColor") + ": "));
+    contentGeneratorsFontPanel.add(Box.createHorizontalStrut(scale(5)));
+    // contentGeneratorsFontPanel.add(Box.createHorizontalGlue());
+    contentGeneratorFontColorButton = createColourChooserButton(
+      Color.BLACK, color -> {
+        try {
+          if (selectedContentGenerator != null) {
+            selectedContentGenerator.setTextColor(color);
+          }
+          registerUnsavedChange();
+        } catch (Throwable t) {
+          errorDialog(t);
+        }
+      }
+    );
+    contentGeneratorsFontPanel.add(contentGeneratorFontColorButton);
+    contentGeneratorsFontPanel.add(Box.createHorizontalStrut(scale(5)));
+
     contentGeneratorsPanel.add(contentGeneratorsFontPanel);
     contentGeneratorsPanel.add(Box.createVerticalStrut(scale(5)));
     contentGeneratorContentTextArea.setLineWrap(true);
@@ -1241,9 +1548,21 @@ public class BinderatorFrame extends JFrame
       }
 
     });
+
     contentGeneratorsPanel.add(Box.createVerticalGlue());
     contentGeneratorsPanel.add(Box.createVerticalStrut(scale(5)));
     contentGeneratorsPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, Integer.MAX_VALUE));
+    contentGeneratorFrameCheckbox.addActionListener(event -> {
+      if (selectedContentGenerator != null) {
+        try {
+          selectedContentGenerator.setUsingFrame(contentGeneratorFrameCheckbox.isSelected());
+          setEnabledContentGeneratorFrameWidgets(contentGeneratorFrameCheckbox.isSelected());
+          registerUnsavedChange();
+        } catch (Exception e) {
+          errorDialog(e);
+        }
+      }
+    });
     setEnabledContentGeneratorWidgets(false);
 
     // ******************************************************************************************************
@@ -1333,10 +1652,36 @@ public class BinderatorFrame extends JFrame
       }
 
     });
-    setMinimumSize(new Dimension(scale(610), scale(510)));
-    setPreferredSize(new Dimension(scale(610), scale(510)));
+    setMinimumSize(new Dimension(scale(610), scale(580)));
+    setPreferredSize(new Dimension(scale(610), scale(580)));
     setBackground(new Color(230, 255, 230));
     setStatusMessage(translate("welcomeToSonOfBinderator"));
+  }
+
+  private JButton createColourChooserButton
+  (Color defaultColor, Consumer<Color> colorHandler)
+  {
+    JColorChooser chooser = new JColorChooser();
+    JButton button = new JButton();
+    chooser.setColor(defaultColor);
+    button.setBackground(defaultColor);
+    chooser.getSelectionModel().addChangeListener(event -> {
+      Color color = chooser.getColor();
+      try {
+        colorHandler.accept(color);
+        button.setBackground(color);
+      } catch (Exception e) {
+        errorDialog(e);
+      }
+    });
+    button.setMaximumSize(new Dimension(22, 22));
+    button.setPreferredSize(new Dimension(22, 22));
+    button.addActionListener(e -> {
+      JDialog dialog = JColorChooser.createDialog(null, "Color Chooser",
+        true, chooser, null, null);
+      dialog.setVisible(true);  chooser.setVisible(true);
+    });
+    return button;
   }
 
   private void setEnabledSourceDocumentsWidgets
@@ -1377,6 +1722,12 @@ public class BinderatorFrame extends JFrame
     contentGeneratorHorizontalOffsetField.setEnabled(enabled);
     contentGeneratorVerticalOffsetField.setEnabled(enabled);
     contentGeneratorContentTextArea.setEnabled(enabled);
+    contentGeneratorFrameCheckbox.setEnabled(enabled);
+    contentGeneratorAlignmentComboBox.setEnabled(enabled);
+    contentGeneratorFontChooserButton.setEnabled(enabled);
+    contentGeneratorLineHeightField.setEnabled(enabled);
+    contentGeneratorFontColorButton.setEnabled(enabled);
+    contentGeneratorLineOffsetField.setEnabled(enabled);
     if (!enabled) {
       contentGeneratorNameTextField.setText("");
       contentGeneratorPageRangesTextField.setText("");
@@ -1384,6 +1735,37 @@ public class BinderatorFrame extends JFrame
       contentGeneratorHorizontalOffsetField.setText("");
       contentGeneratorVerticalOffsetField.setText("");
       contentGeneratorContentTextArea.setText("");
+      contentGeneratorLineHeightField.setText("");
+      contentGeneratorLineOffsetField.setText("");
+      contentGeneratorFontLabel.setText("");
+    }
+    setEnabledContentGeneratorFrameWidgets(enabled && contentGeneratorFrameCheckbox.isSelected(), true);
+  }
+
+  private void setEnabledContentGeneratorFrameWidgets
+  (boolean enabled)
+  {
+    setEnabledContentGeneratorFrameWidgets(enabled, false);
+  }
+  private void setEnabledContentGeneratorFrameWidgets
+  (boolean enabled, boolean clearFields)
+  {
+    contentGeneratorFrameWidthField.setEnabled(enabled);
+    contentGeneratorFrameXYRatioField.setEnabled(enabled);
+    contentGeneratorFrameBorderCheckbox.setEnabled(enabled);
+    contentGeneratorFrameBorderWidthField.setEnabled(enabled);
+    contentGeneratorNoBackgroundButton.setEnabled(enabled);
+    contentGeneratorColorBackgroundButton.setEnabled(enabled);
+    contentGeneratorImageBackgroundButton.setEnabled(enabled);
+    contentGeneratorImagePathField.setEnabled(enabled);
+    contentGeneratorImagePathButton.setEnabled(enabled);
+    contentGeneratorBorderColorButton.setEnabled(enabled);
+    contentGeneratorBackgroundColorButton.setEnabled(enabled);
+    if (clearFields) {
+      contentGeneratorFrameWidthField.setText("");
+      contentGeneratorFrameXYRatioField.setText("");
+      contentGeneratorFrameBorderWidthField.setText("");
+      contentGeneratorImagePathField.setText("");
     }
   }
 
@@ -2327,7 +2709,31 @@ public class BinderatorFrame extends JFrame
       } else {
         contentGeneratorFontLabel.setText("");
       }
+      contentGeneratorFrameCheckbox.setSelected(selectedContentGenerator.isUsingFrame());
+      contentGeneratorFrameBorderCheckbox.setSelected(selectedContentGenerator.isUsingBorder());
+      contentGeneratorFrameWidthField.setText("" + selectedContentGenerator.getWidth());
+      contentGeneratorFrameXYRatioField.setText("" + selectedContentGenerator.getXYRatio());
+      contentGeneratorLineHeightField.setText("" + selectedContentGenerator.getLineHeightFactor());
+      contentGeneratorLineOffsetField.setText("" + selectedContentGenerator.getLineOffsetFactor());
+      contentGeneratorFrameBorderWidthField.setText("" + selectedContentGenerator.getBorderWidth());
+      contentGeneratorBorderColorButton.setBackground(selectedContentGenerator.getBorderColor());
+      contentGeneratorFontColorButton.setBackground(selectedContentGenerator.getTextColor());
+      contentGeneratorBackgroundColorButton.setBackground(selectedContentGenerator.getBackgroundColor());
+      contentGeneratorImagePathField.setText(selectedContentGenerator.getBackgroundImagePath());
       setEnabledContentGeneratorWidgets(true);
+      if (selectedContentGenerator != null) {
+        switch (selectedContentGenerator.getBackgroundType()) {
+          case NONE -> {
+            contentGeneratorNoBackgroundButton.setSelected(true);
+          }
+          case COLOR -> {
+            contentGeneratorColorBackgroundButton.setSelected(true);
+          }
+          case IMAGE -> {
+            contentGeneratorImageBackgroundButton.setSelected(true);
+          }
+        }
+      }
     } else {
       setEnabledContentGeneratorWidgets(false);
     }

@@ -1274,16 +1274,52 @@ public class Book implements Serializable {
             for (ContentGenerator contentGenerator : pageContentGenerators) {
               // DefaultFontMapper fontMapper = new DefaultFontMapper();
               if ((contentGenerator.getHorizontalOffset() != null) && (contentGenerator.getVerticalOffset() != null)) {
+                float horizontalOffset = contentGenerator.getHorizontalOffset() * pageSize.getRectangle().getWidth();
+                float verticalOffset = contentGenerator.getVerticalOffset() * pageSize.getRectangle().getHeight();
+                Rectangle frameRectangle = null;
+                if (contentGenerator.isUsingFrame() &&
+                    (contentGenerator.getWidth() != null) && (contentGenerator.getXYRatio() != null)) {
+                  float frameWidth = contentGenerator.getWidth() * pageWidth;
+                  float frameHeight = frameWidth / contentGenerator.getXYRatio();
+                  frameRectangle = new Rectangle(
+                    horizontalOffset  - (frameWidth / 2.0f), verticalOffset - (frameHeight / 2.0f),
+                    horizontalOffset + (frameWidth / 2.0f), verticalOffset + (frameHeight / 2.0f)
+                  );
+                  if (contentGenerator.isUsingBorder() && (contentGenerator.getBorderWidth() != null)) {
+                    float frameBorderWidth = contentGenerator.getBorderWidth();
+                    if (frameBorderWidth > 0.0f) {
+                      frameRectangle.setBorder(Rectangle.BOTTOM | Rectangle.TOP | Rectangle.LEFT | Rectangle.RIGHT);
+                      frameRectangle.setBorderWidth(frameBorderWidth);
+                      frameRectangle.setBorderColor(contentGenerator.getBorderColor());
+                    } else {
+                      frameRectangle.setBorder(Rectangle.NO_BORDER);
+                    }
+                  }
+                  if (contentGenerator.getBackgroundType() == ContentGenerator.BackgroundType.COLOR) {
+                    frameRectangle.setBackgroundColor(contentGenerator.getBackgroundColor());
+                  } else if (contentGenerator.getBackgroundType() == ContentGenerator.BackgroundType.IMAGE) {
+                    Image backgroundImage = Image.getInstance(contentGenerator.getBackgroundImagePath());
+                    backgroundImage.setAbsolutePosition(horizontalOffset  - (frameWidth / 2.0f), verticalOffset - (frameHeight / 2.0f));
+                    backgroundImage.scaleAbsolute(frameRectangle.getWidth(), frameRectangle.getHeight());
+                    cb.addImage(backgroundImage);
+                  }
+                  cb.rectangle(frameRectangle);
+                }
                 BaseFont baseFont = fontMapper.awtToPdf(contentGenerator.getFont());
                 float fontSize = contentGenerator.getFont().getSize();
                 float lineHeight = contentGenerator.getLineHeightFactor();
+                float lineOffset = contentGenerator.getLineOffsetFactor();
+                Color fontColor = contentGenerator.getTextColor();
+                if (fontColor == null) {
+                  fontColor = Color.BLACK;
+                }
                 cb.setFontAndSize(baseFont, fontSize);
+                cb.setColorFill(fontColor);
+                cb.setColorStroke(fontColor);
                 String content = contentGenerator.getContent(pageRef, totalPageNumber);
                 String[] contentLines = StringUtils.toLines(content);
                 int contentLineCount = 0;
                 for (String contentLine : contentLines) {
-                  float horizontalOffset = contentGenerator.getHorizontalOffset() * pageSize.getRectangle().getWidth();
-                  float verticalOffset = contentGenerator.getVerticalOffset() * pageSize.getRectangle().getHeight();
                   float contentWidth = cb.getEffectiveStringWidth(contentLine, true);
                   switch (contentGenerator.getAlignment()) {
                     case CENTRE:
@@ -1294,10 +1330,14 @@ public class Book implements Serializable {
                       break;
                   }
                   cb.beginText();
-                  cb.moveText(horizontalOffset, verticalOffset - (contentLineCount++ * lineHeight * fontSize));
+                  cb.moveText(
+                    horizontalOffset,
+                    verticalOffset - ((lineOffset + contentLineCount++) * lineHeight * fontSize)
+                  );
                   cb.showText(contentLine);
                   cb.endText();
                 }
+                cb.stroke();
               }
             }
           }
@@ -1631,7 +1671,9 @@ public class Book implements Serializable {
   (PdfContentByte cb)
   {
     int nLines = 34;
-    float pointsWidth = 106f;
+    // An approximation based on observation with a standard library case
+    // binding and "Double-A" 80gsm paper:
+    float pointsWidth = 34f + 68f * (((float)pages.size()) / 750f);
     float signatureMidX = signaturePageSize.getRectangle().getHeight() / 2.0f;
     float signatureHeight = signaturePageSize.getRectangle().getWidth();
     float lineWidth = pointsWidth/(float)nLines;
