@@ -1,11 +1,12 @@
 package com.binderator.engine;
 
 
+import javax.swing.*;
+import java.awt.*;
 import java.io.*;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.awt.Color;
+import java.util.List;
+import java.util.regex.*;
 
 
 import static com.binderator.util.Translations.translate;
@@ -261,15 +262,17 @@ public class ContentGenerator implements Serializable {
   public String getContent
   ()
   {
-    return content;
+    return content != null ? content: "";
   }
 
   public String getContent
   (PageRef pageRef, int absolutePageNumber)
   {
     StringBuilder builder = new StringBuilder();
-    for (TextComponent textComponent : textComponents) {
-      builder.append(textComponent.toString(pageRef, absolutePageNumber));
+    if (textComponents != null) {
+      for (TextComponent textComponent : textComponents) {
+        builder.append(textComponent.toString(pageRef, absolutePageNumber));
+      }
     }
     return builder.toString();
   }
@@ -307,7 +310,7 @@ public class ContentGenerator implements Serializable {
   public java.awt.Font getFont
   ()
   {
-    return font;
+    return font != null ? font : new JLabel().getFont();
   }
 
   public void setFont
@@ -319,7 +322,7 @@ public class ContentGenerator implements Serializable {
   public java.awt.Color getTextColor
   ()
   {
-    return textColor;
+    return textColor !=  null ? textColor : Color.BLACK;
   }
 
   public void setTextColor

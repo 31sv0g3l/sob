@@ -1298,21 +1298,22 @@ public class Book implements Serializable {
                   if (contentGenerator.getBackgroundType() == ContentGenerator.BackgroundType.COLOR) {
                     frameRectangle.setBackgroundColor(contentGenerator.getBackgroundColor());
                   } else if (contentGenerator.getBackgroundType() == ContentGenerator.BackgroundType.IMAGE) {
-                    Image backgroundImage = Image.getInstance(contentGenerator.getBackgroundImagePath());
-                    backgroundImage.setAbsolutePosition(horizontalOffset  - (frameWidth / 2.0f), verticalOffset - (frameHeight / 2.0f));
-                    backgroundImage.scaleAbsolute(frameRectangle.getWidth(), frameRectangle.getHeight());
-                    cb.addImage(backgroundImage);
+                    String imagePath = contentGenerator.getBackgroundImagePath();
+                    if ((imagePath != null) && !imagePath.isBlank()) {
+                      Image backgroundImage = Image.getInstance(contentGenerator.getBackgroundImagePath());
+                      backgroundImage.setAbsolutePosition(horizontalOffset - (frameWidth / 2.0f), verticalOffset - (frameHeight / 2.0f));
+                      backgroundImage.scaleAbsolute(frameRectangle.getWidth(), frameRectangle.getHeight());
+                      cb.addImage(backgroundImage);
+                    }
                   }
                   cb.rectangle(frameRectangle);
+                  cb.stroke();
                 }
                 BaseFont baseFont = fontMapper.awtToPdf(contentGenerator.getFont());
                 float fontSize = contentGenerator.getFont().getSize();
                 float lineHeight = contentGenerator.getLineHeightFactor();
                 float lineOffset = contentGenerator.getLineOffsetFactor();
                 Color fontColor = contentGenerator.getTextColor();
-                if (fontColor == null) {
-                  fontColor = Color.BLACK;
-                }
                 cb.setFontAndSize(baseFont, fontSize);
                 cb.setColorFill(fontColor);
                 cb.setColorStroke(fontColor);

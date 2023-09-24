@@ -42,6 +42,7 @@ public class BinderatorFrame extends JFrame
         try {
           if (book.getPageCount() > 0) {
             Book book = new Book(getBook());
+            book.setStatusListener(BinderatorFrame.this);
             bookLock.unlock();
             if (viewerActive) {
               ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
@@ -242,6 +243,18 @@ public class BinderatorFrame extends JFrame
   private Pair<JPanel, JButton> createScaledLabeledPathSelectionWidgetPanel
   (JTextField entryWidget, String name, int labelHeight, int widgetHeight, boolean isDirectory)
   {
+    return createScaledLabeledPathSelectionWidgetPanel(
+      entryWidget, name, labelHeight, widgetHeight, isDirectory,
+      translate("pdfFiles"), "pdf", "PDF"
+    );
+  }
+
+  private Pair<JPanel, JButton> createScaledLabeledPathSelectionWidgetPanel
+  (
+    JTextField entryWidget, String name, int labelHeight, int widgetHeight, boolean isDirectory,
+    String description, String ... extensions
+  )
+  {
     JPanel panel = new JPanel();
     panel.setMinimumSize(new Dimension(0, scale(widgetHeight)));
     panel.setPreferredSize(new Dimension(-1, scale(widgetHeight)));
@@ -254,7 +267,7 @@ public class BinderatorFrame extends JFrame
       e -> {
         File file = new File(entryWidget.getText());
         JFileChooser fileChooser = new JFileChooser(file);
-        fileChooser.setFileFilter(new FileNameExtensionFilter("PDF files", "pdf", "PDF"));
+        fileChooser.setFileFilter(new FileNameExtensionFilter(description, extensions));
         String existingPath = entryWidget.getText();
         if (existingPath != null && !existingPath.isEmpty()) {
           File existingFile = new File(existingPath);
@@ -1347,7 +1360,9 @@ public class BinderatorFrame extends JFrame
     });
     addBackgroundSetter(contentGeneratorImagePathField);
     Pair<JPanel, JButton> contentGeneratorsImagePathFieldAndButton = createScaledLabeledPathSelectionWidgetPanel(
-      contentGeneratorImagePathField, null, 22, 22, false
+      contentGeneratorImagePathField, null, 22, 22, false,
+      translate("imageFiles"), "bmp", "BMP", "png", "PNG", "gif", "GIF", "jpg", "JPG",
+      "jpeg", "JPEG"
     );
     contentGeneratorsBackgroundPanel.add(contentGeneratorsImagePathFieldAndButton.getFirst());
     contentGeneratorImagePathField.setToolTipText(translate("contentGeneratorImagePathTooltip"));
@@ -1966,6 +1981,7 @@ public class BinderatorFrame extends JFrame
   {
     if (book == null) {
       book = new Book();
+      book.setStatusListener(this);
     }
     return book;
   }
