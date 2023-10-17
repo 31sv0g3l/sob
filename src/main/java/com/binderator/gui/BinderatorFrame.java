@@ -1754,7 +1754,7 @@ public class BinderatorFrame extends JFrame
       contentGeneratorLineOffsetField.setText("");
       contentGeneratorFontLabel.setText("");
     }
-    setEnabledContentGeneratorFrameWidgets(enabled && contentGeneratorFrameCheckbox.isSelected(), true);
+    setEnabledContentGeneratorFrameWidgets(enabled && contentGeneratorFrameCheckbox.isSelected(), !enabled);
   }
 
   private void setEnabledContentGeneratorFrameWidgets
