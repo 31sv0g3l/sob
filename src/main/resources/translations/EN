@@ -30,6 +30,8 @@ done { Done }
 edgeOffset { Edge Offset: }
 edgeOffsetRatio { edge offset ratio }
 exit { Exit }
+extDirectoryViewerTooltip { Open system directory viewer }
+extFileViewerTooltip { Open system file viewer }
 file { File }
 fileMenu { File menu }
 fontAttributes { Attributes }

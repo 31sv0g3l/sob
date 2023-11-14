@@ -237,21 +237,36 @@ public class BinderatorFrame extends JFrame
   private Pair<JPanel, JButton> createScaledLabeledPathSelectionWidgetPanel
   (JTextField entryWidget, String name, boolean isDirectory)
   {
-    return createScaledLabeledPathSelectionWidgetPanel(entryWidget, name, 0, 0, isDirectory);
+    return createScaledLabeledPathSelectionWidgetPanel(entryWidget, name, 0, 0, isDirectory, false);
+  }
+
+  private Pair<JPanel, JButton> createScaledLabeledPathSelectionWidgetPanel
+  (JTextField entryWidget, String name, boolean isDirectory, boolean withViewButton)
+  {
+    return createScaledLabeledPathSelectionWidgetPanel(entryWidget, name, 0, 0, isDirectory, withViewButton);
   }
 
   private Pair<JPanel, JButton> createScaledLabeledPathSelectionWidgetPanel
   (JTextField entryWidget, String name, int labelHeight, int widgetHeight, boolean isDirectory)
   {
     return createScaledLabeledPathSelectionWidgetPanel(
-      entryWidget, name, labelHeight, widgetHeight, isDirectory,
+      entryWidget, name, labelHeight, widgetHeight, isDirectory, false,
+      translate("pdfFiles"), "pdf", "PDF"
+    );
+  }
+
+  private Pair<JPanel, JButton> createScaledLabeledPathSelectionWidgetPanel
+  (JTextField entryWidget, String name, int labelHeight, int widgetHeight, boolean isDirectory, boolean withViewButton)
+  {
+    return createScaledLabeledPathSelectionWidgetPanel(
+      entryWidget, name, labelHeight, widgetHeight, isDirectory, withViewButton,
       translate("pdfFiles"), "pdf", "PDF"
     );
   }
 
   private Pair<JPanel, JButton> createScaledLabeledPathSelectionWidgetPanel
   (
-    JTextField entryWidget, String name, int labelHeight, int widgetHeight, boolean isDirectory,
+    JTextField entryWidget, String name, int labelHeight, int widgetHeight, boolean isDirectory, boolean withViewButton,
     String description, String ... extensions
   )
   {
@@ -287,6 +302,25 @@ public class BinderatorFrame extends JFrame
       }
     );
     panel.add(pathButton);
+    if (withViewButton) {
+      panel.add(Box.createHorizontalStrut(scale(5)));
+      JButton viewButton = newNavAndControlButton(
+        "ext.png",
+        e -> {
+          File file = new File(entryWidget.getText());
+          if (Desktop.isDesktopSupported()) {
+            try {
+              Desktop.getDesktop().open(file);
+            } catch (Throwable t) {
+              System.err.println("Caught exception opening external path viewer: " + t.getMessage());
+              t.printStackTrace(System.err);
+            }
+          }
+        }
+      );
+      viewButton.setToolTipText(translate(isDirectory ? "extDirectoryViewerTooltip" : "extFileViewerTooltip"));
+      panel.add(viewButton);
+    }
     return new Pair<>(createScaledLabeledWidgetPanel(panel, name, labelHeight, widgetHeight), pathButton);
   }
 
@@ -425,7 +459,7 @@ public class BinderatorFrame extends JFrame
     });
     GUIUtils.addBackgroundSetter(projectOutputPathTextField);
     Pair<JPanel, JButton> projectOutputPanelAndButton = createScaledLabeledPathSelectionWidgetPanel(
-        projectOutputPathTextField, translate("outputPath"), 22, 22, false
+        projectOutputPathTextField, translate("outputPath"), 22, 22, false, true
     );
     projectPanel.add(projectOutputPanelAndButton.getFirst());
     projectOutputPathTextField.setToolTipText(translate("projectOutputPathTooltip"));
@@ -444,7 +478,7 @@ public class BinderatorFrame extends JFrame
     projectSignaturesOutputPathTextField.setToolTipText(translate("projectSignaturesOutputPathTooltip"));
     GUIUtils.addBackgroundSetter(projectSignaturesOutputPathTextField);
     Pair<JPanel, JButton> projectSignaturesPathAndButton = createScaledLabeledPathSelectionWidgetPanel(
-      projectSignaturesOutputPathTextField, translate("signaturesOutputDirectory"), 22, 22, true
+      projectSignaturesOutputPathTextField, translate("signaturesOutputDirectory"), 22, 22, true, true
     );
     projectPanel.add(projectSignaturesPathAndButton.getFirst());
     projectSignaturesOutputPathButton = projectSignaturesPathAndButton.getSecond();
@@ -1360,7 +1394,7 @@ public class BinderatorFrame extends JFrame
     });
     addBackgroundSetter(contentGeneratorImagePathField);
     Pair<JPanel, JButton> contentGeneratorsImagePathFieldAndButton = createScaledLabeledPathSelectionWidgetPanel(
-      contentGeneratorImagePathField, null, 22, 22, false,
+      contentGeneratorImagePathField, null, 22, 22, false, false,
       translate("imageFiles"), "bmp", "BMP", "png", "PNG", "gif", "GIF", "jpg", "JPG",
       "jpeg", "JPEG"
     );
