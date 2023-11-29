@@ -719,11 +719,13 @@ public class BinderatorFrame extends JFrame
     );
     signatureTrimLinesComboBox.setSelectedItem(getBook().getTrimLinesType());
     signatureControlsBottomPanel.add(Box.createHorizontalStrut(scale(5)));
+    signatureControlsTopPanel.setVisible(true);
+    signatureControlsBottomPanel.setVisible(true);
     JPanel signatureControlsPanel = new JPanel();
     signatureControlsPanel.setLayout(new BoxLayout(signatureControlsPanel, BoxLayout.Y_AXIS));
     signatureControlsPanel.add(signatureControlsTopPanel);
     signatureControlsPanel.add(signatureControlsBottomPanel);
-    signatureControlsPanel.setPreferredSize(new Dimension(scale(Integer.MAX_VALUE), 0));
+    signatureControlsPanel.setVisible(true);
     projectControlsPanel.add(signatureControlsPanel);
     // projectControlsPanel.add(Box.createVerticalGlue());
     updateProjectControlsPanel();
