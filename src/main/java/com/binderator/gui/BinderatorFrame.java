@@ -727,7 +727,6 @@ public class BinderatorFrame extends JFrame
     signatureControlsPanel.add(signatureControlsBottomPanel);
     signatureControlsPanel.setVisible(true);
     projectControlsPanel.add(signatureControlsPanel);
-    // projectControlsPanel.add(Box.createVerticalGlue());
     updateProjectControlsPanel();
     projectPanel.add(Box.createVerticalGlue());
     projectPanel.add(Box.createVerticalStrut(scale(5)));
