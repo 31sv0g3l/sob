@@ -1162,7 +1162,8 @@ public class Book implements Serializable {
   (OutputStream out, boolean usingMargins, boolean usingPageNumbering, Collection<PageRef> targetPages)
   {
     try {
-      if ((targetPages == null) || (targetPages.isEmpty())) {
+      List<PageRef> pages = getPages();
+      if (pages.isEmpty() || ((pages.size() == 1) && pages.get(0).getSourceDocument() == null)) {
         return;
       }
       computeEffectiveTransformSetsByPage();
