@@ -196,6 +196,10 @@ contentGeneratorImagePathTooltip { Set the path of the background image }
 contentGeneratorsHorizontalOffset { Hor. Offset }
 contentGeneratorsLineHeight { Line: Height }
 contentGeneratorsLineOffset { Offset }
+contentGeneratorsNewForCurrentPageTooltip {
+  Add (or revisit, if existing) a content generator for the current page in the viewer,
+  based on the current content generator
+}
 contentGeneratorsVerticalOffset { Ver. Offset }
 contentGeneratorsNewTooltip { Add a new text generator }
 contentGeneratorsUpTooltip { Move this text generator up to the previous position of application }

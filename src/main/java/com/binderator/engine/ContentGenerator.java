@@ -230,6 +230,13 @@ public class ContentGenerator implements Serializable {
   }
 
   public void setPageRanges
+  (PageRange ... pageRanges)
+  {
+    this.pageRanges = new ArrayList<>();
+    Collections.addAll(this.pageRanges, pageRanges);
+  }
+
+  public void setPageRanges
   (List<PageRange> pageRanges)
   {
     this.pageRanges = pageRanges;
@@ -496,6 +503,35 @@ public class ContentGenerator implements Serializable {
     } else {
       return "TextGenerator(\"" + name + "\")";
     }
+  }
+
+  public void copy
+  (ContentGenerator other)
+  {
+    this.name = other.name;
+    this.pageRanges = new ArrayList<>();
+    this.pageRanges.addAll(other.pageRanges);
+    this.comment = other.comment;
+    this.initialContent = other.initialContent;
+    this.content = other.content;
+    this.horizontalOffset = other.horizontalOffset;
+    this.verticalOffset = other.verticalOffset;
+    this.font = other.font;
+    this.alignment = other.alignment;
+    this.lineHeightFactor = other.lineHeightFactor;
+    this.lineOffsetFactor = other.lineOffsetFactor;
+    this.columns = other.columns;
+    this.textComponents = other.textComponents;
+    this.useFrame = other.useFrame;
+    this.width = other.width;
+    this.xyRatio = other.xyRatio;
+    this.useBorder = other.useBorder;
+    this.borderWidth = other.borderWidth;
+    this.borderColor = other.borderColor;
+    this.backgroundType = other.backgroundType;
+    this.backgroundColor = other.backgroundColor;
+    this.backgroundImagePath = other.backgroundImagePath;
+    this.textColor = other.textColor;
   }
 
 }

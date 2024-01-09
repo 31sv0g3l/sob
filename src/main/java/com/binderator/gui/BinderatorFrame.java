@@ -1090,6 +1090,10 @@ public class BinderatorFrame extends JFrame
     newContentGeneratorButton.setToolTipText(translate("contentGeneratorsNewTooltip"));
     contentGeneratorsNavPanel.add(newContentGeneratorButton);
     contentGeneratorsNavPanel.add(Box.createHorizontalStrut(scale(5)));
+    JButton newContentGeneratorForCurrentPageButton = newNavAndControlButton("new_for_current_page.png", e -> newContentGeneratorForCurrentPage());
+    newContentGeneratorForCurrentPageButton.setToolTipText(translate("contentGeneratorsNewForCurrentPageTooltip"));
+    contentGeneratorsNavPanel.add(newContentGeneratorForCurrentPageButton);
+    contentGeneratorsNavPanel.add(Box.createHorizontalStrut(scale(5)));
     JButton downContentGeneratorButton = newNavAndControlButton(
       "down.png",
       e -> {
@@ -2138,6 +2142,38 @@ public class BinderatorFrame extends JFrame
         contentGeneratorsComboBox.setSelectedItem(contentGenerator);
         selectedContentGenerator = contentGenerator;
         populateContentGeneratorWidgets();
+      } finally {
+        bookLock.unlock();
+      }
+    });
+  }
+
+  private void newContentGeneratorForCurrentPage
+  ()
+  {
+    execute(() -> {
+      bookLock.lock();
+      try {
+        Book book = getBook();
+        if (viewerActive) {
+          PageRef pageRef = book.getPageRef(viewer.getCurrentPageNumber());
+          PageRange pageRange = pageRef.getSinglePageRange();
+          String name = translate("auto") + " " + pageRef.getSourceDocument().getId() + ":" + pageRef.getPageNumber();
+          ContentGenerator contentGenerator = new ContentGenerator();
+          if (selectedContentGenerator != null) {
+            contentGenerator.copy(selectedContentGenerator);
+          }
+          contentGenerator.setName(name);
+          contentGenerator.setPageRanges(pageRange);
+          book.getContentGenerators().add(contentGenerator);
+          registerUnsavedChange();
+          populateContentGeneratorsComboBox();
+          contentGeneratorsComboBox.setSelectedItem(contentGenerator);
+          selectedContentGenerator = contentGenerator;
+          populateContentGeneratorWidgets();
+        }
+      } catch (Exception e) {
+        errorDialog(e);
       } finally {
         bookLock.unlock();
       }
