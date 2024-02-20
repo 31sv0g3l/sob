@@ -1646,8 +1646,8 @@ public class Book implements Serializable {
   throws Exception
   {
     List<PageRef> pages = getPages();
-    if ((absolutePageNumber < 1) || (absolutePageNumber > pages.size())) {
-      throw new Exception("Invalid page number " + absolutePageNumber + " for book of " + pages.size() + " pages");
+    if ((absolutePageNumber < 0) || (absolutePageNumber >= pages.size())) {
+      throw new Exception("Invalid page number " + (absolutePageNumber + 1) + " for book of " + pages.size() + " pages");
     }
     return pages.get(absolutePageNumber);
   }

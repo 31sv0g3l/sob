@@ -95,7 +95,7 @@ public class ICEViewer extends JFrame {
     viewer.setVisible(true);
   }
 
-  public int getCurrentPageNumber
+  public int getCurrentPageIndex
   ()
   {
     return controller.getCurrentPageNumber();

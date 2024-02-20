@@ -2055,7 +2055,7 @@ public class BinderatorFrame extends JFrame
       try {
         Book book = getBook();
         if (viewerActive) {
-          PageRef pageRef = book.getPageRef(viewer.getCurrentPageNumber());
+          PageRef pageRef = book.getPageRef(viewer.getCurrentPageIndex());
           PageRange pageRange = pageRef.getSinglePageRange();
           String name = translate("auto") + " " + pageRef.getSourceDocument().getId() + ":" + pageRef.getPageNumber();
           TransformSet transformSet = book.findTransformSet(name);
@@ -2156,7 +2156,8 @@ public class BinderatorFrame extends JFrame
       try {
         Book book = getBook();
         if (viewerActive) {
-          PageRef pageRef = book.getPageRef(viewer.getCurrentPageNumber());
+          int currentDisplayedPageNumber = viewer.getCurrentPageIndex();
+          PageRef pageRef = book.getPageRef(currentDisplayedPageNumber);
           PageRange pageRange = pageRef.getSinglePageRange();
           String name = translate("auto") + " " + pageRef.getSourceDocument().getId() + ":" + pageRef.getPageNumber();
           ContentGenerator contentGenerator = new ContentGenerator();
