@@ -95,6 +95,7 @@ public class Book implements Serializable {
 
   }
 
+
   private static final Map<PaperSize, Float[]> paperSizes;
 
   static {
@@ -192,6 +193,7 @@ public class Book implements Serializable {
   boolean scaleToFit = true;
   private String pageRangesSource = null;
   private List<PageRef> pages = null;
+  private Map<PageRef, List<Integer>> pageRefsToPageNumberLists = null;
   private int signatureSheets = 8; // 32 pages
 
   // Spine and edge offsets are for signature generation only:
@@ -202,8 +204,8 @@ public class Book implements Serializable {
   private final RangedFloat trimLinesVerticalRatio = new RangedFloat("trim lines vertical ratio", 0f, 0f, 0.5f);
   List<TransformSet> transformSets = new ArrayList<>();
   List<ContentGenerator> contentGenerators = new ArrayList<>();
-  Map<PageRef, List<Transform>> effectiveTransformsByPage = new HashMap<>();
-  Map<PageRef, List<ContentGenerator>> contentGeneratorsByPage = new HashMap<>();
+  Map<Integer, List<Transform>> effectiveTransformsByPage = new HashMap<>();
+  Map<Integer, List<ContentGenerator>> contentGeneratorsByPage = new HashMap<>();
   private String outputPath = null;
   private String signaturesOutputPath = null;
   private String name = null;
@@ -221,6 +223,7 @@ public class Book implements Serializable {
   private boolean usingPageNumbering = false;
   private final Map<String, SourceDocument> sourceDocumentsById = new HashMap<>();
   private transient StatusListener statusListener = null;
+  ProjectMetaData metaData = new ProjectMetaData();
 
   private static final float RADIANS_PER_DEGREE = 3.14159265359f / 180.f;
   private static final float DEGREES_PER_RADIAN = 180.f / 3.14159265359f;
@@ -279,6 +282,15 @@ public class Book implements Serializable {
       sourceDocument.setBook(this);
       sourceDocumentsById.put(sourceDocumentByIdEntry.getKey(), sourceDocument);
     }
+  }
+
+  public ProjectMetaData getMetaData
+  ()
+  {
+    if (metaData == null) {
+      metaData = new ProjectMetaData();
+    }
+    return metaData;
   }
 
   private static FontMapper generateFontMapper
@@ -643,9 +655,14 @@ public class Book implements Serializable {
           }
         }
         for (PageRef transformPage : transformPages) {
-          List<Transform> pageTransforms =
-              effectiveTransformsByPage.computeIfAbsent(transformPage, k -> new ArrayList<>());
-          pageTransforms.addAll(transformSet.getTransforms());
+          List<Integer> transformPagePageNumbers = getPageNumberList(transformPage);
+          if (transformPagePageNumbers != null) {
+            for (Integer transformPagePageNumber : transformPagePageNumbers) {
+              List<Transform> pageTransforms =
+                effectiveTransformsByPage.computeIfAbsent(transformPagePageNumber, k -> new ArrayList<>());
+              pageTransforms.addAll(transformSet.getTransforms());
+            }
+          }
         }
       }
     } catch (Exception e) {
@@ -661,15 +678,21 @@ public class Book implements Serializable {
       contentGeneratorsByPage = new HashMap<>();
       for (ContentGenerator contentGenerator : contentGenerators) {
         Set<PageRef> contentGeneratorPages = new TreeSet<>();
-        if (contentGenerator.getPageRanges() != null) {
-          for (PageRange pageRange : contentGenerator.getPageRanges()) {
+        Collection<PageRange> pageRanges = contentGenerator.getPageRanges();
+        if (pageRanges != null) {
+          for (PageRange pageRange : pageRanges) {
             contentGeneratorPages.addAll(pageRange.getPageRefs(getPages(), sourceDocumentsById));
           }
         }
         for (PageRef contentGeneratorPage : contentGeneratorPages) {
-          List<ContentGenerator> pageContentGenerators =
-            contentGeneratorsByPage.computeIfAbsent(contentGeneratorPage, k -> new ArrayList<>());
-          pageContentGenerators.add(contentGenerator);
+          List<Integer> contentGeneratorPagePageNumbers = getPageNumberList(contentGeneratorPage);
+          if (contentGeneratorPagePageNumbers != null) {
+            for (Integer contentGeneratorPagePageNumber : contentGeneratorPagePageNumbers) {
+              List<ContentGenerator> pageContentGenerators =
+                contentGeneratorsByPage.computeIfAbsent(contentGeneratorPagePageNumber, k -> new ArrayList<>());
+              pageContentGenerators.add(contentGenerator);
+            }
+          }
         }
       }
     } catch (Exception e) {
@@ -870,6 +893,45 @@ public class Book implements Serializable {
     return getPages(pageRangesSource);
   }
 
+  public Map<PageRef, List<Integer>> getPageRefsToPageNumberLists
+  ()
+  throws Exception
+  {
+    if (pageRefsToPageNumberLists == null) {
+      pageRefsToPageNumberLists = new HashMap<>();
+    }
+    List<PageRef> pages = getPages();
+    for (PageRef pageRef : pages) {
+      List<Integer> pageNumbers = pageRefsToPageNumberLists.get(pageRef);
+      if (pageNumbers == null) {
+        pageNumbers = new ArrayList<>();
+        pageRefsToPageNumberLists.put(pageRef, pageNumbers);
+        if (pageRef.getSourceDocument() != null) {
+          // This is a ref to a source document - add the page numbers of all occurrences:
+          int searchPageNumber = 0;
+          for (PageRef searchPageRef : pages) {
+            searchPageNumber++;
+            if (searchPageRef.equals(pageRef)) {
+              pageNumbers.add(searchPageNumber);
+            }
+          }
+        }
+      }
+    }
+    return pageRefsToPageNumberLists;
+  }
+
+  public List<Integer> getPageNumberList
+  (PageRef pageRef)
+  throws Exception
+  {
+    if (pageRef.getSourceDocument() != null) {
+      return getPageRefsToPageNumberLists().get(pageRef);
+    } else {
+      return List.of(pageRef.getPageNumber());
+    }
+  }
+
   public void setSourceDocumentsByPath
   (String ... sourceDocumentPaths)
   throws Exception
@@ -989,9 +1051,10 @@ public class Book implements Serializable {
   }
 
   private TransformedImage generateTransformedPageImage
-  (PdfWriter writer, PageRef pageRef, Rectangle unitSize, boolean even)
+  (PdfWriter writer, Integer totalPageNumber, Rectangle unitSize, boolean even)
   throws Exception
   {
+    PageRef pageRef = getPageRef(totalPageNumber);
     int pageNumber = pageRef.getPageNumber();
     if (pageNumber == 0) {
       writer.setPageEmpty(false);
@@ -999,7 +1062,7 @@ public class Book implements Serializable {
       return null;
     }
     PdfImportedPage page = writer.getImportedPage(pageRef.getPdfReader(), pageRef.getPageNumber());
-    List<Transform> transforms = effectiveTransformsByPage.get(pageRef);
+    List<Transform> transforms = effectiveTransformsByPage.get(totalPageNumber);
     Image pageImage = Image.getInstance(page);
     List<CropOp> cropOps = new ArrayList<>();
     TransformedImage returnValue = new TransformedImage(pageImage, null, cropOps);
@@ -1189,7 +1252,7 @@ public class Book implements Serializable {
         if ((!pageRef.isBlankPage()) && (pageRef.getPdfReader() != null)) {
           AffineTransform affineTransform = null;
           TransformedImage transformedImage =
-            generateTransformedPageImage(writer, pageRef, pageSize.getRectangle(), totalPageNumber % 2 == 0);
+            generateTransformedPageImage(writer, totalPageNumber, pageSize.getRectangle(), totalPageNumber % 2 == 0);
           if (transformedImage != null) {
             // First we add the image with the total transform:
             Image pageImage = transformedImage.image;
@@ -1271,7 +1334,7 @@ public class Book implements Serializable {
               cb.transform(transform.createInverse());
             }
           }
-          List<ContentGenerator> pageContentGenerators = contentGeneratorsByPage.get(pageRef);
+          List<ContentGenerator> pageContentGenerators = contentGeneratorsByPage.get(totalPageNumber);
           cb.setColorFill(Color.BLACK);
           cb.setColorStroke(Color.BLACK);
           if (pageContentGenerators != null) {
@@ -1646,10 +1709,10 @@ public class Book implements Serializable {
   throws Exception
   {
     List<PageRef> pages = getPages();
-    if ((absolutePageNumber < 0) || (absolutePageNumber >= pages.size())) {
-      throw new Exception("Invalid page number " + (absolutePageNumber + 1) + " for book of " + pages.size() + " pages");
+    if ((absolutePageNumber < 1) || (absolutePageNumber > pages.size())) {
+      throw new Exception("Invalid page number " + absolutePageNumber + " for book of " + pages.size() + " pages");
     }
-    return pages.get(absolutePageNumber);
+    return pages.get(absolutePageNumber - 1);
   }
 
   private void addTrimLines

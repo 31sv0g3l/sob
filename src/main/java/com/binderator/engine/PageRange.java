@@ -216,16 +216,11 @@ public class PageRange implements Comparable<PageRange>, Serializable {
     }
   }
 
-  public Collection<PageRef> getPageRefs
-  (List<PageRef> pages)
-  throws Exception
-  {
-    return getPageRefs(pages, null);
-  }
-
   /**
    * Get a list of page references
-   * @param orderedPages the total list of source pages (assumed to be an ordered sequence starting at page 1)
+   * @param orderedPages the total list of source pages (assumed to be an ordered sequence starting at page 1).
+   *                     NOTE: will be ignored if this page range has a non-null document id, in which case the
+   *                     source pages will be taken from the specific document.
    * @param sourceDocumentsById a nullable map of source document ids to source documents.  If this PageRange has a
    *                            non-null docId, allPages will be ignored and the pages from the associated source
    *                            document will be used.
@@ -268,11 +263,17 @@ public class PageRange implements Comparable<PageRange>, Serializable {
       for (int i = startPageIndex; i <= endPageIndex; i++) {
         PageRef pageRef = orderedPages.get(i);
         if (even != null) {
-          if ((even && (pageRef.getPageNumber() % 2 == 0)) || ((!even) && (pageRef.getPageNumber() % 2 != 0))) {
-            result.add(pageRef);
+          if (even) {
+            if (docId == null ? (i + 1) % 2 == 0 : pageRef.getPageNumber() % 2 == 0) {
+              result.add(docId == null ? new PageRef(null, i + 1) : pageRef);
+            }
+          } else {
+            if (docId == null ? i % 2 == 0 : (pageRef.getPageNumber() + 1) % 2 == 0) {
+              result.add(docId == null ? new PageRef(null, i + 1) : pageRef);
+            }
           }
         } else {
-          result.add(pageRef);
+          result.add(docId == null ? new PageRef(null, i + 1) : pageRef);
         }
       }
     }
