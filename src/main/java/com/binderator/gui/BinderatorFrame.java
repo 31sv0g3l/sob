@@ -87,7 +87,7 @@ public class BinderatorFrame extends JFrame
 
   @Serial
   private static final long serialVersionUID = -1429747105438739695L;
-  public static final String VERSION = "0.3.0";
+  public static final String VERSION = "0.3.1";
   private static BinderatorFrame singletonInstance = null;
   private boolean haveUnsavedChanges = false;
   private static final javax.swing.filechooser.FileFilter binderatorFileFilter =
