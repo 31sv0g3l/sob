@@ -382,8 +382,8 @@ public class JFontChooser extends JComponent {
         JList list = (JList) e.getSource();
         String selectedValue = (String) list.getSelectedValue();
         String oldValue = textComponent.getText();
-        textComponent.setText(selectedValue);
-        if (!oldValue.equalsIgnoreCase(selectedValue)) {
+          textComponent.setText(selectedValue);
+        if (!oldValue.equalsIgnoreCase(selectedValue) && (textComponent.getCaret() != null)) {
           textComponent.selectAll();
           textComponent.requestFocus();
         }

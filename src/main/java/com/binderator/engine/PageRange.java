@@ -55,27 +55,53 @@ public class PageRange implements Comparable<PageRange>, Serializable {
     return repetitions != null ? repetitions : 0;
   }
 
-  public PageRange
+  /**
+   * Constructor for creating a PageRange object.
+   * @param docId The ID of the document.
+   * @throws Exception If the start page number is greater than the end page number.
+   */  public PageRange
   (String docId, Integer pageNumber)
   throws Exception
   {
     this(docId, pageNumber, pageNumber);
   }
 
-  public PageRange
+  /**
+   * Constructor for creating a PageRange object.
+   * @param docId The ID of the document.
+   * @param startPageNumber The starting page number of the range.
+   * @param endPageNumber The ending page number of the range.
+   * @throws Exception If the start page number is greater than the end page number.
+   */  public PageRange
   (String docId, Integer startPageNumber, Integer endPageNumber)
   throws Exception
   {
     this(docId, startPageNumber, endPageNumber, null);
   }
 
-  public PageRange
+  /**
+   * Constructor for creating a PageRange object.
+   * @param docId The ID of the document.
+   * @param startPageNumber The starting page number of the range.
+   * @param endPageNumber The ending page number of the range.
+   * @param repetitions The number of times the range is repeated.
+   * @throws Exception If the start page number is greater than the end page number.
+   */  public PageRange
   (String docId, Integer startPageNumber, Integer endPageNumber, Integer repetitions)
   throws Exception
   {
     this(docId, startPageNumber, endPageNumber, repetitions, null);
   }
 
+  /**
+   * Constructor for creating a PageRange object.
+   * @param docId The ID of the document.
+   * @param startPageNumber The starting page number of the range.
+   * @param endPageNumber The ending page number of the range.
+   * @param repetitions The number of times the range is repeated.
+   * @param even A Boolean value indicating whether the range is even.
+   * @throws Exception If the start page number is greater than the end page number.
+   */
   public PageRange
   (String docId, Integer startPageNumber, Integer endPageNumber, Integer repetitions, Boolean even)
   throws Exception
@@ -102,6 +128,13 @@ public class PageRange implements Comparable<PageRange>, Serializable {
     "\\s*(([_a-zA-Z][_a-zA-Z0-9]*):)([0-9]+)(\\s*-\\s*([0-9]+))?(\\s*\\*\\s*([1-9][0-9]*))?(\\s*([eE][vV][eE][nN]|[oO][dD][dD]))?\\s*"
   );
 
+  /**
+   * This method parses a string representing page ranges into a list of PageRange objects.
+   * @param source The string representing the page ranges.
+   * @param requireDocIds A boolean indicating whether document IDs are required.
+   * @return A list of PageRange objects.
+   * @throws Exception If the string is not a valid page range.
+   */
   public static List<PageRange> parsePageRanges
   (String source, boolean requireDocIds)
   throws Exception
@@ -111,58 +144,16 @@ public class PageRange implements Comparable<PageRange>, Serializable {
       return pageRanges;
     }
     String[] rangeSources = source.split("\\s*,\\s*", -1);
-    Integer repetitions = null;
-    // A cumulative blank range:
     PageRange blankRange = null;
     for (String rangeSource : rangeSources) {
       rangeSource = rangeSource.trim();
       if (rangeSource.isEmpty()) {
-        // A blank page:
-        if (blankRange != null) {
-          blankRange.repetitions = blankRange.getRepetitions() + 1;
-        } else {
-          blankRange = new PageRange(null, 0, 0, 1, true);
-        }
+        blankRange = handleBlankRange(blankRange);
         continue;
       }
-      Matcher rangeMatcher =
-        requireDocIds ? requireDocIdsRangePattern.matcher(rangeSource) : allowDocIdsRangePattern.matcher(rangeSource);
+      Matcher rangeMatcher = getRangeMatcher(rangeSource, requireDocIds);
       if (rangeMatcher.matches()) {
-        String docId = null;
-        docId = rangeMatcher.group(2);
-        docId = docId != null && !docId.isEmpty() ? docId : null;
-        String fromSource = rangeMatcher.group(3);
-        Integer from = Integer.parseInt(fromSource);
-        Integer to = from;
-        if ((rangeMatcher.group(4) != null) && !rangeMatcher.group(4).isEmpty()) {
-          String toSource = rangeMatcher.group(5);
-          to = (toSource != null) && !toSource.isEmpty() ? Integer.parseInt(toSource) : null;
-        }
-        if (requireDocIds) {
-          String repetitionsSource = rangeMatcher.group(7);
-          if ((repetitionsSource != null) && !repetitionsSource.isEmpty()) {
-            repetitions = Integer.parseInt(repetitionsSource);
-          }
-        }
-        String evenSource = requireDocIds ? rangeMatcher.group(9) : rangeMatcher.group(7);
-        Boolean even = null;
-        if ((evenSource != null) && !evenSource.isEmpty()) {
-          if (Objects.equals(from, to)) {
-            throw new Exception("Invalid even/odd specifier for single page in range: " + rangeSource);
-          }
-          if (evenSource.equalsIgnoreCase("even")) {
-            even = true;
-          } else if (evenSource.equalsIgnoreCase("odd")) {
-            even = false;
-          } else {
-            throw new Exception ("Invalid even/odd specifier \"" + evenSource + "\" in page range: " + rangeSource);
-          }
-        }
-        if (blankRange != null) {
-          pageRanges.add(blankRange);
-          blankRange = null;
-        }
-        pageRanges.add(new PageRange(docId, from, to, repetitions, even));
+        blankRange = handleMatchedRange(rangeMatcher, blankRange, pageRanges, requireDocIds, rangeSource);
       } else {
         throw new ParseException("String \"" + rangeSource + "\" is not a valid page range", 0);
       }
@@ -173,6 +164,107 @@ public class PageRange implements Comparable<PageRange>, Serializable {
     return pageRanges;
   }
 
+  private static PageRange handleBlankRange
+  (PageRange blankRange)
+  throws Exception
+  {
+    if (blankRange != null) {
+      blankRange.repetitions = blankRange.getRepetitions() + 1;
+    } else {
+      blankRange = new PageRange(null, 0, 0, 1, true);
+    }
+    return blankRange;
+  }
+
+  private static Matcher getRangeMatcher
+  (String rangeSource, boolean requireDocIds)
+  {
+    return requireDocIds ? requireDocIdsRangePattern.matcher(rangeSource) : allowDocIdsRangePattern.matcher(rangeSource);
+  }
+
+  private static PageRange handleMatchedRange
+  (Matcher rangeMatcher, PageRange blankRange, List<PageRange> pageRanges, boolean requireDocIds, String rangeSource)
+  throws Exception
+  {
+    String docId = getDocId(rangeMatcher);
+    Integer from = Integer.parseInt(rangeMatcher.group(3));
+    Integer to = getTo(rangeMatcher, from);
+    Integer repetitions = getRepetitions(rangeMatcher, requireDocIds);
+    Boolean even = getEven(rangeMatcher, from, to, rangeSource, requireDocIds);
+    if (blankRange != null) {
+      pageRanges.add(blankRange);
+      blankRange = null;
+    }
+    pageRanges.add(new PageRange(docId, from, to, repetitions, even));
+    return blankRange;
+  }
+
+  private static String getDocId
+  (Matcher rangeMatcher)
+  {
+    String docId = rangeMatcher.group(2);
+    return docId != null && !docId.isEmpty() ? docId : null;
+  }
+
+  private static Integer getTo
+  (Matcher rangeMatcher, Integer from)
+  {
+    Integer to = from;
+    if ((rangeMatcher.group(4) != null) && !rangeMatcher.group(4).isEmpty()) {
+      String toSource = rangeMatcher.group(5);
+      to = (toSource != null) && !toSource.isEmpty() ? Integer.parseInt(toSource) : null;
+    }
+    return to;
+  }
+
+  private static Integer getRepetitions
+  (Matcher rangeMatcher, boolean requireDocIds)
+  {
+    Integer repetitions = null;
+    if (requireDocIds) {
+      String repetitionsSource = rangeMatcher.group(7);
+      if ((repetitionsSource != null) && !repetitionsSource.isEmpty()) {
+        repetitions = Integer.parseInt(repetitionsSource);
+      }
+    }
+    return repetitions;
+  }
+
+  private static Boolean getEven
+  (Matcher rangeMatcher, Integer from, Integer to, String rangeSource, boolean requireDocIds)
+  throws Exception
+  {
+    String evenSource = requireDocIds ? rangeMatcher.group(9) : rangeMatcher.group(7);
+    Boolean even = null;
+    if ((evenSource != null) && !evenSource.isEmpty()) {
+      if (Objects.equals(from, to)) {
+        throw new Exception("Invalid even/odd specifier for single page in range: " + rangeSource);
+      }
+      even = getEvenValue(evenSource, rangeSource);
+    }
+    return even;
+  }
+
+  private static Boolean getEvenValue
+  (String evenSource, String rangeSource)
+  throws Exception
+  {
+    if (evenSource.equalsIgnoreCase("even")) {
+      return true;
+    } else if (evenSource.equalsIgnoreCase("odd")) {
+      return false;
+    } else {
+      throw new Exception ("Invalid even/odd specifier \"" + evenSource + "\" in page range: " + rangeSource);
+    }
+  }
+
+  /**
+   * This method converts a collection of PageRange objects into a list of PageRef objects.
+   * @param pageRanges The collection of PageRange objects.
+   * @param sourceDocumentsById A map of document IDs to SourceDocument objects.
+   * @return A list of PageRef objects.
+   * @throws Exception If a non-null document ID is supplied with a null source document map.
+   */
   public static List<PageRef> toPageRefs
   (Collection<PageRange> pageRanges, Map<String, SourceDocument> sourceDocumentsById)
   throws Exception
@@ -234,50 +326,40 @@ public class PageRange implements Comparable<PageRange>, Serializable {
       if (sourceDocumentsById == null) {
         throw new Exception("INTERNAL ERROR: null source document map supplied with non-null docId");
       }
-      SourceDocument sourceDocument = sourceDocumentsById.get(docId);
-      if (sourceDocument == null) {
+      if (!sourceDocumentsById.containsKey(docId)) {
         throw new Exception("ERROR: source document \"" + docId + "\" not found");
       }
-      orderedPages = sourceDocument.getSourcePages();
+      orderedPages = sourceDocumentsById.get(docId).getSourcePages();
     }
     List<PageRef> result = new LinkedList<>();
-    if (orderedPages.size() == 0) {
+    if (orderedPages.isEmpty()) {
       return result;
     }
     int startPageIndex = (startPageNumber != null) ? startPageNumber - 1 : 0;
-    if ((startPageIndex < 0) || (startPageIndex >= orderedPages.size())) {
-      throw new Exception(
-        "Invalid start page " + (startPageIndex + 1) + " in page range over " + orderedPages.size() +
-        " source pages from document " + docId
-      );
-    }
     int endPageIndex = (endPageNumber != null) ? endPageNumber - 1 : orderedPages.size() - 1;
-    if ((endPageIndex < 0) || (endPageIndex >= orderedPages.size())) {
-      throw new Exception(
-        "Invalid end page " + (endPageIndex + 1) + " in page range over " + orderedPages.size() +
-        " source pages from document " + docId
-      );
+    if (startPageIndex < 0 || startPageIndex >= orderedPages.size() || endPageIndex < 0 || endPageIndex >= orderedPages.size()) {
+      throw new Exception("Invalid page range over " + orderedPages.size() + " source pages from document " + docId);
     }
     int repetitions = this.repetitions != null ? this.repetitions : 1;
-    for (int repetition = 0; repetition < repetitions; repetition++ ) {
+    addPageRefsToResult(orderedPages, result, repetitions, startPageIndex, endPageIndex);
+    return result;
+  }
+
+  private void addPageRefsToResult
+  (List<PageRef> orderedPages, List<PageRef> result, int repetitions, int startPageIndex, int endPageIndex)
+  {
+    for (int repetition = 0; repetition < repetitions; repetition++) {
       for (int i = startPageIndex; i <= endPageIndex; i++) {
         PageRef pageRef = orderedPages.get(i);
         if (even != null) {
-          if (even) {
-            if (docId == null ? (i + 1) % 2 == 0 : pageRef.getPageNumber() % 2 == 0) {
-              result.add(docId == null ? new PageRef(null, i + 1) : pageRef);
-            }
-          } else {
-            if (docId == null ? i % 2 == 0 : (pageRef.getPageNumber() + 1) % 2 == 0) {
-              result.add(docId == null ? new PageRef(null, i + 1) : pageRef);
-            }
+          if ((docId == null ? (i + 1) % 2 == 0 : pageRef.getPageNumber() % 2 == 0) == even) {
+            result.add(docId == null ? new PageRef(null, i + 1) : pageRef);
           }
         } else {
           result.add(docId == null ? new PageRef(null, i + 1) : pageRef);
         }
       }
     }
-    return result;
   }
 
   @Override
