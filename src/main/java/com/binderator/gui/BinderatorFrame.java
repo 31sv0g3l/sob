@@ -18,7 +18,6 @@ import javax.swing.border.*;
 import javax.swing.event.*;
 import javax.swing.filechooser.*;
 import javax.swing.plaf.*;
-import javax.swing.plaf.metal.MetalLookAndFeel;
 import javax.swing.text.*;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Rectangle;
@@ -2362,6 +2361,11 @@ public class BinderatorFrame extends JFrame
     }
     return false;
   }
+
+
+  // Generate a function to calculate the number of words, characters and lines in a passage of
+  // text given in a single String argument (return the results in an array of 3 ints):
+
 
   private BinderatorStore getStore
   ()
