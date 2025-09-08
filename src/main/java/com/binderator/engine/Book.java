@@ -193,7 +193,6 @@ public class Book implements Serializable {
   boolean scaleToFit = true;
   private String pageRangesSource = null;
   private List<PageRef> pages = null;
-  private Map<PageRef, List<Integer>> pageRefsToPageNumberLists = null;
   private int signatureSheets = 8; // 32 pages
 
   // Spine and edge offsets are for signature generation only:
@@ -234,6 +233,7 @@ public class Book implements Serializable {
 
   public Book
   (Book book)
+  throws Exception
   {
     sourceDocuments = new ArrayList<>();
     sourceDocuments.addAll(book.sourceDocuments);
@@ -258,14 +258,20 @@ public class Book implements Serializable {
         transformSets.add(new TransformSet(transformSet));
       }
     }
-    computeEffectiveTransformSetsByPage();
+    for (Map.Entry<String, SourceDocument> sourceDocumentByIdEntry : book.sourceDocumentsById.entrySet()) {
+      SourceDocument sourceDocument = new SourceDocument(sourceDocumentByIdEntry.getValue());
+      sourceDocument.setBook(this);
+      sourceDocumentsById.put(sourceDocumentByIdEntry.getKey(), sourceDocument);
+    }
+    Map<PageRef, List<Integer>> pageRefsToPageNumberLists = getPageRefsToPageNumberLists();
+    computeEffectiveTransformSetsByPage(pageRefsToPageNumberLists);
     contentGenerators = new ArrayList<>();
     for (ContentGenerator contentGenerator : book.contentGenerators) {
       if (contentGenerator != null) {
         contentGenerators.add(new ContentGenerator(contentGenerator));
       }
     }
-    computeContentGeneratorsByPage();
+    computeContentGeneratorsByPage(pageRefsToPageNumberLists);
     outputPath = book.outputPath;
     signaturesOutputPath = book.signaturesOutputPath;
     name = book.name;
@@ -277,11 +283,6 @@ public class Book implements Serializable {
     topMarginRatio = new RangedFloat(book.topMarginRatio);
     usingMargins = book.usingMargins;
     usingPageNumbering = book.usingPageNumbering;
-    for (Map.Entry<String, SourceDocument> sourceDocumentByIdEntry : book.sourceDocumentsById.entrySet()) {
-      SourceDocument sourceDocument = new SourceDocument(sourceDocumentByIdEntry.getValue());
-      sourceDocument.setBook(this);
-      sourceDocumentsById.put(sourceDocumentByIdEntry.getKey(), sourceDocument);
-    }
   }
 
   public ProjectMetaData getMetaData
@@ -642,7 +643,7 @@ public class Book implements Serializable {
   }
 
   public void computeEffectiveTransformSetsByPage
-  ()
+  (Map<PageRef, List<Integer>> pageRefsToPageNumberLists)
   {
     try {
       generateSourceDocumentsById();
@@ -655,7 +656,7 @@ public class Book implements Serializable {
           }
         }
         for (PageRef transformPage : transformPages) {
-          List<Integer> transformPagePageNumbers = getPageNumberList(transformPage);
+          List<Integer> transformPagePageNumbers = getPageNumberList(transformPage, pageRefsToPageNumberLists);
           if (transformPagePageNumbers != null) {
             for (Integer transformPagePageNumber : transformPagePageNumbers) {
               List<Transform> pageTransforms =
@@ -671,7 +672,7 @@ public class Book implements Serializable {
   }
 
   public void computeContentGeneratorsByPage
-  ()
+  (Map<PageRef, List<Integer>> pageRefsToPageNumberLists)
   {
     try {
       generateSourceDocumentsById();
@@ -685,7 +686,7 @@ public class Book implements Serializable {
           }
         }
         for (PageRef contentGeneratorPage : contentGeneratorPages) {
-          List<Integer> contentGeneratorPagePageNumbers = getPageNumberList(contentGeneratorPage);
+          List<Integer> contentGeneratorPagePageNumbers = getPageNumberList(contentGeneratorPage, pageRefsToPageNumberLists);
           if (contentGeneratorPagePageNumbers != null) {
             for (Integer contentGeneratorPagePageNumber : contentGeneratorPagePageNumbers) {
               List<ContentGenerator> pageContentGenerators =
@@ -893,26 +894,26 @@ public class Book implements Serializable {
     return getPages(pageRangesSource);
   }
 
-  public Map<PageRef, List<Integer>> getPageRefsToPageNumberLists
+  private Map<PageRef, List<Integer>> getPageRefsToPageNumberLists
   ()
   throws Exception
   {
-    if (pageRefsToPageNumberLists == null) {
-      pageRefsToPageNumberLists = new HashMap<>();
-    }
+    Map<PageRef, List<Integer>> pageRefsToPageNumberLists = new HashMap<>();
     List<PageRef> pages = getPages();
     for (PageRef pageRef : pages) {
-      List<Integer> pageNumbers = pageRefsToPageNumberLists.get(pageRef);
-      if (pageNumbers == null) {
-        pageNumbers = new ArrayList<>();
-        pageRefsToPageNumberLists.put(pageRef, pageNumbers);
-        if (pageRef.getSourceDocument() != null) {
-          // This is a ref to a source document - add the page numbers of all occurrences:
-          int searchPageNumber = 0;
-          for (PageRef searchPageRef : pages) {
-            searchPageNumber++;
-            if (searchPageRef.equals(pageRef)) {
-              pageNumbers.add(searchPageNumber);
+      if (pageRef.getPageNumber() > 0) {
+        List<Integer> pageNumbers = pageRefsToPageNumberLists.get(pageRef);
+        if (pageNumbers == null) {
+          pageNumbers = new ArrayList<>();
+          pageRefsToPageNumberLists.put(pageRef, pageNumbers);
+          if (pageRef.getSourceDocument() != null) {
+            // This is a ref to a source document - add the page numbers of all occurrences:
+            int searchPageNumber = 0;
+            for (PageRef searchPageRef : pages) {
+              searchPageNumber++;
+              if (searchPageRef.equals(pageRef)) {
+                pageNumbers.add(searchPageNumber);
+              }
             }
           }
         }
@@ -921,12 +922,12 @@ public class Book implements Serializable {
     return pageRefsToPageNumberLists;
   }
 
-  public List<Integer> getPageNumberList
-  (PageRef pageRef)
+  private List<Integer> getPageNumberList
+  (PageRef pageRef, Map<PageRef, List<Integer>> pageRefsToPageNumberLists)
   throws Exception
   {
     if (pageRef.getSourceDocument() != null) {
-      return getPageRefsToPageNumberLists().get(pageRef);
+      return pageRefsToPageNumberLists.get(pageRef);
     } else {
       return List.of(pageRef.getPageNumber());
     }
@@ -1229,8 +1230,9 @@ public class Book implements Serializable {
       if (pages.isEmpty() || ((pages.size() == 1) && pages.get(0).getSourceDocument() == null)) {
         return;
       }
-      computeEffectiveTransformSetsByPage();
-      computeContentGeneratorsByPage();
+      Map<PageRef, List<Integer>> pageRefsToPageNumberLists = getPageRefsToPageNumberLists();
+      computeEffectiveTransformSetsByPage(pageRefsToPageNumberLists);
+      computeContentGeneratorsByPage(pageRefsToPageNumberLists);
       Document document = new Document(pageSize.getRectangle(), 0, 0, 0, 0);
       PdfWriter writer = PdfWriter.getInstance(document, out);
       document.open();
