@@ -2,8 +2,7 @@ package com.binderator.util;
 
 public class DebugTools {
 
-  public static void printStackTrace
-  (String message)
+  public static void printStackTrace(String message)
   {
     if (message != null) {
       System.err.println(message);

@@ -1,8 +1,6 @@
 package com.binderator.util;
 
-
 import java.util.concurrent.locks.*;
-
 
 public abstract class Worker extends Thread {
 
@@ -11,8 +9,7 @@ public abstract class Worker extends Thread {
   private boolean running;
   private boolean haveATask;
 
-  public Worker
-  ()
+  public Worker()
   {
     lock = new ReentrantLock();
     condition = lock.newCondition();
@@ -20,8 +17,7 @@ public abstract class Worker extends Thread {
     running = false;
   }
 
-  public void signalTask
-  ()
+  public void signalTask()
   {
     lock.lock();
     haveATask = true;
@@ -29,8 +25,7 @@ public abstract class Worker extends Thread {
     lock.unlock();
   }
 
-  public void terminate
-  ()
+  public void terminate()
   {
     lock.lock();
     running = false;
@@ -39,8 +34,7 @@ public abstract class Worker extends Thread {
   }
 
   @Override
-  public void run
-  ()
+  public void run()
   {
     lock.lock();
     running = true;
@@ -66,7 +60,6 @@ public abstract class Worker extends Thread {
     }
   }
 
-  abstract public void task
-  ();
+  abstract public void task();
 
 }

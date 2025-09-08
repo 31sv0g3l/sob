@@ -1,6 +1,5 @@
 package com.binderator.gui;
 
-
 import com.binderator.ext.gui.*;
 import com.binderator.persistence.*;
 import com.binderator.engine.*;
@@ -22,11 +21,9 @@ import javax.swing.text.*;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Rectangle;
 
-
 import static com.binderator.gui.GUIUtils.addBackgroundSetter;
 import static com.binderator.util.Translations.translate;
 import static com.binderator.gui.GUIUtils.scale;
-
 
 public class BinderatorFrame extends JFrame
   implements ActionListener, UnsavedChangeListener, Book.StatusListener, ICEViewer.CloseListener {
@@ -34,8 +31,7 @@ public class BinderatorFrame extends JFrame
   private class ViewerRenderingThread extends Worker {
 
     @Override
-    public void task
-    ()
+    public void task()
     {
       if (viewerActive || signaturesViewerActive) {
         bookLock.lock();
@@ -83,7 +79,6 @@ public class BinderatorFrame extends JFrame
     }
 
   }
-
 
   @Serial
   private static final long serialVersionUID = -1429747105438739695L;
@@ -220,34 +215,34 @@ public class BinderatorFrame extends JFrame
   JTextField signatureTrimLinesVerticalRatioField;
   JTextField signatureTrimLinesHorizontalRatioField;
 
-
-  private void execute
-  (CommandQueue.Command command)
+  private void execute(CommandQueue.Command command)
   {
     execute(command, false);
   }
 
-  private void execute
-  (CommandQueue.Command command, boolean synchronous)
+  private void execute(CommandQueue.Command command, boolean synchronous)
   {
     CommandQueue.getInstance().execute(command, synchronous);
   }
 
   @SuppressWarnings("unused")
-  private Pair<JPanel, JButton> createScaledLabeledPathSelectionWidgetPanel
-  (JTextField entryWidget, String name, boolean isDirectory)
+  private Pair<JPanel, JButton> createScaledLabeledPathSelectionWidgetPanel(
+    JTextField entryWidget, String name, boolean isDirectory
+  )
   {
     return createScaledLabeledPathSelectionWidgetPanel(entryWidget, name, 0, 0, isDirectory, false);
   }
 
-  private Pair<JPanel, JButton> createScaledLabeledPathSelectionWidgetPanel
-  (JTextField entryWidget, String name, boolean isDirectory, boolean withViewButton)
+  private Pair<JPanel, JButton> createScaledLabeledPathSelectionWidgetPanel(
+    JTextField entryWidget, String name, boolean isDirectory, boolean withViewButton
+  )
   {
     return createScaledLabeledPathSelectionWidgetPanel(entryWidget, name, 0, 0, isDirectory, withViewButton);
   }
 
-  private Pair<JPanel, JButton> createScaledLabeledPathSelectionWidgetPanel
-  (JTextField entryWidget, String name, int labelHeight, int widgetHeight, boolean isDirectory)
+  private Pair<JPanel, JButton> createScaledLabeledPathSelectionWidgetPanel(
+    JTextField entryWidget, String name, int labelHeight, int widgetHeight, boolean isDirectory
+  )
   {
     return createScaledLabeledPathSelectionWidgetPanel(
       entryWidget, name, labelHeight, widgetHeight, isDirectory, false,
@@ -255,8 +250,9 @@ public class BinderatorFrame extends JFrame
     );
   }
 
-  private Pair<JPanel, JButton> createScaledLabeledPathSelectionWidgetPanel
-  (JTextField entryWidget, String name, int labelHeight, int widgetHeight, boolean isDirectory, boolean withViewButton)
+  private Pair<JPanel, JButton> createScaledLabeledPathSelectionWidgetPanel(
+    JTextField entryWidget, String name, int labelHeight, int widgetHeight, boolean isDirectory, boolean withViewButton
+  )
   {
     return createScaledLabeledPathSelectionWidgetPanel(
       entryWidget, name, labelHeight, widgetHeight, isDirectory, withViewButton,
@@ -264,8 +260,7 @@ public class BinderatorFrame extends JFrame
     );
   }
 
-  private Pair<JPanel, JButton> createScaledLabeledPathSelectionWidgetPanel
-  (
+  private Pair<JPanel, JButton> createScaledLabeledPathSelectionWidgetPanel(
     JTextField entryWidget, String name, int labelHeight, int widgetHeight, boolean isDirectory, boolean withViewButton,
     String description, String ... extensions
   )
@@ -324,8 +319,9 @@ public class BinderatorFrame extends JFrame
     return new Pair<>(createScaledLabeledWidgetPanel(panel, name, labelHeight, widgetHeight), pathButton);
   }
 
-  private JPanel createScaledLabeledWidgetPanel
-  (JComponent entryWidget, String name, int labelHeight, int widgetHeight)
+  private JPanel createScaledLabeledWidgetPanel(
+    JComponent entryWidget, String name, int labelHeight, int widgetHeight
+  )
   {
     // Top horizontal panel for the label, left justified:
     JPanel labelPanel = new JPanel();
@@ -364,8 +360,7 @@ public class BinderatorFrame extends JFrame
     return combinedPanel;
   }
 
-  protected ImageIcon createImageIcon
-  (String fileName)
+  protected ImageIcon createImageIcon(String fileName)
   {
     String path = "/icons/" + fileName;
     ByteArrayOutputStream byteOut = new ByteArrayOutputStream();
@@ -387,8 +382,7 @@ public class BinderatorFrame extends JFrame
     }
   }
 
-  private JButton newNavAndControlButton
-  (String iconFile, ActionListener listener)
+  private JButton newNavAndControlButton(String iconFile, ActionListener listener)
   {
     JButton button = new JButton();
     ImageIcon icon = createImageIcon(iconFile);
@@ -402,8 +396,7 @@ public class BinderatorFrame extends JFrame
     return button;
   }
 
-  public static BinderatorFrame getInstance
-  ()
+  public static BinderatorFrame getInstance()
   {
     if (singletonInstance == null) {
       singletonInstance = new BinderatorFrame();
@@ -411,8 +404,7 @@ public class BinderatorFrame extends JFrame
     return singletonInstance;
   }
 
-  private BinderatorFrame
-  ()
+  private BinderatorFrame()
   {
     setTitle(translate("windowTitle") + " " + VERSION);
     downIcon = createImageIcon("down.png");
@@ -1418,7 +1410,6 @@ public class BinderatorFrame extends JFrame
     contentGeneratorsFrameRowPanel.add(Box.createHorizontalStrut(scale(5)));
     contentGeneratorsPanel.add(contentGeneratorsFrameRowPanel);
 
-
     JPanel contentGeneratorsXYAlignmentPanel = new JPanel();
     contentGeneratorsXYAlignmentPanel.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
     contentGeneratorsXYAlignmentPanel.setLayout(new BoxLayout(contentGeneratorsXYAlignmentPanel, BoxLayout.X_AXIS));
@@ -1712,8 +1703,7 @@ public class BinderatorFrame extends JFrame
     setStatusMessage(translate("welcomeToSonOfBinderator"));
   }
 
-  private JButton createColourChooserButton
-  (Color defaultColor, Consumer<Color> colorHandler)
+  private JButton createColourChooserButton(Color defaultColor, Consumer<Color> colorHandler)
   {
     JColorChooser chooser = new JColorChooser();
     JButton button = new JButton();
@@ -1738,8 +1728,7 @@ public class BinderatorFrame extends JFrame
     return button;
   }
 
-  private void setEnabledSourceDocumentsWidgets
-  (boolean enabled)
+  private void setEnabledSourceDocumentsWidgets(boolean enabled)
   {
     documentNameTextField.setEnabled(enabled);
     documentIdentifierTextField.setEnabled(enabled);
@@ -1754,8 +1743,7 @@ public class BinderatorFrame extends JFrame
     }
   }
 
-  private void setEnabledTransformsWidgets
-  (boolean enabled)
+  private void setEnabledTransformsWidgets(boolean enabled)
   {
     transformSetNameTextField.setEnabled(enabled);
     transformSetPageRangesTextField.setEnabled(enabled);
@@ -1767,8 +1755,7 @@ public class BinderatorFrame extends JFrame
     }
   }
 
-  private void setEnabledContentGeneratorWidgets
-  (boolean enabled)
+  private void setEnabledContentGeneratorWidgets(boolean enabled)
   {
     contentGeneratorNameTextField.setEnabled(enabled);
     contentGeneratorPageRangesTextField.setEnabled(enabled);
@@ -1796,8 +1783,7 @@ public class BinderatorFrame extends JFrame
     setEnabledContentGeneratorFrameWidgets(enabled && contentGeneratorFrameCheckbox.isSelected(), !enabled);
   }
 
-  private void setEnabledContentGeneratorFrameWidgets
-  (boolean enabled)
+  private void setEnabledContentGeneratorFrameWidgets(boolean enabled)
   {
     setEnabledContentGeneratorFrameWidgets(enabled, false);
   }
@@ -1823,8 +1809,7 @@ public class BinderatorFrame extends JFrame
     }
   }
 
-  private void setStatusMessage
-  (String message)
+  private void setStatusMessage(String message)
   {
     statusPanel.setVisible(false);
     statusPanel.removeAll();
@@ -1834,14 +1819,12 @@ public class BinderatorFrame extends JFrame
     statusPanel.setVisible(true);
   }
 
-  private void resetStatusMessage
-  ()
+  private void resetStatusMessage()
   {
     setStatusMessage("");
   }
 
-  private void setStatusProgressLabel
-  (String label)
+  private void setStatusProgressLabel(String label)
   {
     if (showProgressBars) {
       statusProgressBar.setVisible(false);
@@ -1860,8 +1843,7 @@ public class BinderatorFrame extends JFrame
     }
   }
 
-  private void setStatusProgress
-  (float progress, float maxProgress)
+  private void setStatusProgress(float progress, float maxProgress)
   {
     if (showProgressBars) {
       float progressRatio = progress / maxProgress;
@@ -1872,8 +1854,7 @@ public class BinderatorFrame extends JFrame
     }
   }
 
-  private void installContextMenu
-  (Container comp)
+  private void installContextMenu(Container comp)
   {
     for (Component component : comp.getComponents()) {
       if (component instanceof JTextComponent) {
@@ -1905,8 +1886,7 @@ public class BinderatorFrame extends JFrame
   }
 
   @Override
-  public void handlePageRangesChange
-  (String pageRangesText)
+  public void handlePageRangesChange(String pageRangesText)
   {
     execute(() -> {
       String errorMessage = null;
@@ -1934,21 +1914,18 @@ public class BinderatorFrame extends JFrame
     });
   }
 
-  void errorDialog
-  (Throwable t)
+  void errorDialog(Throwable t)
   {
     JOptionPane.showMessageDialog(this, (t.getMessage()));
     t.printStackTrace(System.err);
   }
 
-  void messageDialog
-  (String message)
+  void messageDialog(String message)
   {
     JOptionPane.showMessageDialog(this, message);
   }
 
-  private void newSourceDocument
-  ()
+  private void newSourceDocument()
   {
     Book book = getBook();
     SourceDocument sourceDocument = new SourceDocument("");
@@ -1970,8 +1947,7 @@ public class BinderatorFrame extends JFrame
     });
   }
 
-  private void upSourceDocument
-  (SourceDocument document)
+  private void upSourceDocument(SourceDocument document)
   {
     execute(() -> {
       getBook().upSourceDocument(document);
@@ -1980,8 +1956,7 @@ public class BinderatorFrame extends JFrame
     });
   }
 
-  private void downSourceDocument
-  (SourceDocument document)
+  private void downSourceDocument(SourceDocument document)
   {
     execute(() -> {
       Book book = getBook();
@@ -1991,8 +1966,7 @@ public class BinderatorFrame extends JFrame
     });
   }
 
-  private void updateSourceDocumentWidgets
-  (SourceDocument document)
+  private void updateSourceDocumentWidgets(SourceDocument document)
   {
     populateSourceDocumentsComboBox();
     sourceDocumentsComboBox.setSelectedItem(document);
@@ -2000,8 +1974,7 @@ public class BinderatorFrame extends JFrame
     populateSourceDocumentWidgets();
   }
 
-  private void deleteSourceDocument
-  (SourceDocument document)
+  private void deleteSourceDocument(SourceDocument document)
   {
     execute(() -> {
       getBook().removeSourceDocument(document);
@@ -2019,8 +1992,7 @@ public class BinderatorFrame extends JFrame
     });
   }
 
-  private Book getBook
-  ()
+  private Book getBook()
   {
     if (book == null) {
       book = new Book();
@@ -2029,8 +2001,7 @@ public class BinderatorFrame extends JFrame
     return book;
   }
 
-  private void newTransformSet
-  ()
+  private void newTransformSet()
   {
     execute(() -> {
       bookLock.lock();
@@ -2051,8 +2022,7 @@ public class BinderatorFrame extends JFrame
     });
   }
 
-  private void newTransformSetForCurrentPage
-  ()
+  private void newTransformSetForCurrentPage()
   {
     execute(() -> {
       bookLock.lock();
@@ -2085,8 +2055,7 @@ public class BinderatorFrame extends JFrame
     });
   }
 
-  private void upTransformSet
-  (TransformSet transformSet)
+  private void upTransformSet(TransformSet transformSet)
   {
     execute(() -> {
       getBook().upTransformSet(transformSet);
@@ -2098,8 +2067,7 @@ public class BinderatorFrame extends JFrame
     });
   }
 
-  private void downTransformSet
-  (TransformSet transformSet)
+  private void downTransformSet(TransformSet transformSet)
   {
     execute(() -> {
       getBook().downTransformSet(transformSet);
@@ -2111,8 +2079,7 @@ public class BinderatorFrame extends JFrame
     });
   }
 
-  private void deleteTransformSet
-  (TransformSet transformSet)
+  private void deleteTransformSet(TransformSet transformSet)
   {
     execute(() -> {
       getBook().removeTransformSet(transformSet);
@@ -2131,8 +2098,7 @@ public class BinderatorFrame extends JFrame
     });
   }
 
-  private void newContentGenerator
-  ()
+  private void newContentGenerator()
   {
     execute(() -> {
       bookLock.lock();
@@ -2152,8 +2118,7 @@ public class BinderatorFrame extends JFrame
     });
   }
 
-  private void newContentGeneratorForCurrentPage
-  ()
+  private void newContentGeneratorForCurrentPage()
   {
     execute(() -> {
       bookLock.lock();
@@ -2184,8 +2149,7 @@ public class BinderatorFrame extends JFrame
     });
   }
 
-  private void upContentGenerator
-  (ContentGenerator contentGenerator)
+  private void upContentGenerator(ContentGenerator contentGenerator)
   {
     execute(() -> {
       getBook().upContentGenerator(contentGenerator);
@@ -2196,8 +2160,7 @@ public class BinderatorFrame extends JFrame
     });
   }
 
-  private void downContentGenerator
-  (ContentGenerator contentGenerator)
+  private void downContentGenerator(ContentGenerator contentGenerator)
   {
     execute(() -> {
       getBook().downContentGenerator(contentGenerator);
@@ -2208,8 +2171,7 @@ public class BinderatorFrame extends JFrame
     });
   }
 
-  private void deleteContentGenerator
-  (ContentGenerator contentGenerator)
+  private void deleteContentGenerator(ContentGenerator contentGenerator)
   {
     execute(() -> {
       getBook().removeContentGenerator(contentGenerator);
@@ -2227,8 +2189,7 @@ public class BinderatorFrame extends JFrame
     });
   }
 
-  private JMenuBar buildMenuBar
-  ()
+  private JMenuBar buildMenuBar()
   {
     JMenuBar menuBar = new JMenuBar();
     // File menu:
@@ -2294,8 +2255,7 @@ public class BinderatorFrame extends JFrame
     return menuBar;
   }
   
-  private void fileOpen
-  ()
+  private void fileOpen()
   {
     if (checkForUnsavedChanges()) return;
     try {
@@ -2330,8 +2290,7 @@ public class BinderatorFrame extends JFrame
     }
   }
 
-  private void postLoadCleanup
-  ()
+  private void postLoadCleanup()
   {
     execute(this::deregisterUnsavedChanges);
     // Add any code to finalise / clean up initialisation of the new Book here...
@@ -2344,8 +2303,7 @@ public class BinderatorFrame extends JFrame
   }
 
   // Returns true if operation can continue, false if the user chose cancel on unsaved changes.
-  private boolean checkForUnsavedChanges
-  ()
+  private boolean checkForUnsavedChanges()
   {
     if (haveUnsavedChanges) {
       int result = JOptionPane.showConfirmDialog(
@@ -2367,27 +2325,23 @@ public class BinderatorFrame extends JFrame
   // text given in a single String argument (return the results in an array of 3 ints):
 
 
-  private BinderatorStore getStore
-  ()
+  private BinderatorStore getStore()
   {
     return new SerialBinderatorStore();
   }
 
-  private void fileNew
-  ()
+  private void fileNew()
   {
     setBook(new Book());
     projectPath = null;
   }
 
-  private void fileSave
-  ()
+  private void fileSave()
   {
     fileSave(false);
   }
 
-  private void fileSave
-  (boolean emptySchema)
+  private void fileSave(boolean emptySchema)
   {
     Book book = getBook();
     if (projectPath != null) {
@@ -2404,8 +2358,7 @@ public class BinderatorFrame extends JFrame
     }
   }
 
-  private void fileSaveAs
-  ()
+  private void fileSaveAs()
   {
     try {
       File chosenFile = new File(projectPath != null ? projectPath : "");
@@ -2442,8 +2395,7 @@ public class BinderatorFrame extends JFrame
     }
   }
 
-  private void about
-  ()
+  private void about()
   {
     String message = translate("aboutContent");
     message = message.replace("#VERSION#", VERSION);
@@ -2478,8 +2430,7 @@ public class BinderatorFrame extends JFrame
     aboutDialog.setVisible(true);
   }
 
-  private void options
-  ()
+  private void options()
   {
     if (optionsDialog == null) {
       optionsDialog = new OptionsDialog(this) {
@@ -2497,8 +2448,7 @@ public class BinderatorFrame extends JFrame
     optionsDialog.setVisible(true);
   }
 
-  private void inlineHelp
-  ()
+  private void inlineHelp()
   {
     if (inlineHelpDialog == null) {
       try {
@@ -2510,8 +2460,7 @@ public class BinderatorFrame extends JFrame
     inlineHelpDialog.setVisible(true);
   }
 
-  private void gracefulExit
-  ()
+  private void gracefulExit()
   {
     if (checkForUnsavedChanges()) return;
     try {
@@ -2522,8 +2471,7 @@ public class BinderatorFrame extends JFrame
 
   private interface RangedFloatAccessor {
 
-    RangedFloat get
-    ();
+    RangedFloat get();
 
   }
 
@@ -2561,8 +2509,7 @@ public class BinderatorFrame extends JFrame
     return field;
   }
 
-  public void setBook
-  (Book book)
+  public void setBook(Book book)
   {
     execute(
       () -> {
@@ -2588,8 +2535,7 @@ public class BinderatorFrame extends JFrame
   Pattern floatPattern = Pattern.compile("-?\\d+(\\.\\d+)?([eE][+\\-]?\\d+)?");
   Pattern intPattern = Pattern.compile("-?\\d+");
 
-  private float validatedFloatFromString
-  (String source, String name, float min, float max)
+  private float validatedFloatFromString(String source, String name, float min, float max)
   throws Exception
   {
     if (floatPattern.matcher(source).matches()) {
@@ -2601,8 +2547,7 @@ public class BinderatorFrame extends JFrame
     throw new Exception(name + " value \"" + source + "\" is invalid.\nMust be a number between " + min + " and " + max);
   }
 
-  private int validatedIntFromString
-  (String source, String name, int min, int max)
+  private int validatedIntFromString(String source, String name, int min, int max)
   throws Exception
   {
     if (intPattern.matcher(source).matches()) {
@@ -2614,8 +2559,7 @@ public class BinderatorFrame extends JFrame
     throw new Exception(name + " value \"" + source + "\" is invalid.\nMust be a number between " + min + " and " + max);
   }
 
-  private void updateProjectControlsPanel
-  ()
+  private void updateProjectControlsPanel()
   {
     Book book = getBook();
     projectNameTextField.setText(book.getName());
@@ -2641,8 +2585,7 @@ public class BinderatorFrame extends JFrame
     signatureTrimLinesComboBox.setSelectedItem(book.getTrimLinesType());
   }
 
-  private void updateSourceDocumentsTab
-  ()
+  private void updateSourceDocumentsTab()
   {
     populateSourceDocumentsComboBox();
     if (book.getSourceDocuments().size() > 0) {
@@ -2672,8 +2615,7 @@ public class BinderatorFrame extends JFrame
     }
   }
 
-  void populateSourceDocumentsComboBox
-  ()
+  void populateSourceDocumentsComboBox()
   {
     DefaultComboBoxModel<SourceDocument> model = new DefaultComboBoxModel<>();
     Book book = getBook();
@@ -2694,8 +2636,7 @@ public class BinderatorFrame extends JFrame
     });
   }
 
-  private void populateSourceDocumentWidgets
-  ()
+  private void populateSourceDocumentWidgets()
   {
     selectedDocument = (SourceDocument)sourceDocumentsComboBox.getSelectedItem();
     if (selectedDocument != null) {
@@ -2711,9 +2652,7 @@ public class BinderatorFrame extends JFrame
     }
   }
 
-
-  private void updateTransformSetsTab
-  ()
+  private void updateTransformSetsTab()
   {
     populateTransformSetComboBox();
     if (book.getTransformSets().size() > 0) {
@@ -2729,8 +2668,7 @@ public class BinderatorFrame extends JFrame
     }
   }
 
-  private void populateTransformSetComboBox
-  ()
+  private void populateTransformSetComboBox()
   {
     DefaultComboBoxModel<TransformSet> model = new DefaultComboBoxModel<>();
     Book book = getBook();
@@ -2748,8 +2686,7 @@ public class BinderatorFrame extends JFrame
     });
   }
 
-  private void populateTransformSetWidgets
-  ()
+  private void populateTransformSetWidgets()
   {
     selectedTransformSet = (TransformSet)transformSetsComboBox.getSelectedItem();
     if (selectedTransformSet != null) {
@@ -2763,8 +2700,7 @@ public class BinderatorFrame extends JFrame
     }
   }
 
-  private void updateContentGeneratorsTab
-  ()
+  private void updateContentGeneratorsTab()
   {
     populateContentGeneratorsComboBox();
     if (book.getContentGenerators().size() > 0) {
@@ -2784,8 +2720,7 @@ public class BinderatorFrame extends JFrame
     }
   }
 
-  private void populateContentGeneratorWidgets
-  ()
+  private void populateContentGeneratorWidgets()
   {
     selectedContentGenerator = (ContentGenerator)contentGeneratorsComboBox.getSelectedItem();
     if (selectedContentGenerator != null) {
@@ -2835,8 +2770,7 @@ public class BinderatorFrame extends JFrame
     }
   }
 
-  private void populateContentGeneratorsComboBox
-  ()
+  private void populateContentGeneratorsComboBox()
   {
     DefaultComboBoxModel<ContentGenerator> model = new DefaultComboBoxModel<>();
     Book book = getBook();
@@ -2854,8 +2788,7 @@ public class BinderatorFrame extends JFrame
     });
   }
 
-  private void populatePageSizesComboBox
-  ()
+  private void populatePageSizesComboBox()
   {
     DefaultComboBoxModel<Pair<Rectangle, Rectangle>> model = new DefaultComboBoxModel<>();
     Book book = getBook();
@@ -2891,8 +2824,7 @@ public class BinderatorFrame extends JFrame
     });
   }
 
-  private boolean equals
-  (Rectangle first, Rectangle second)
+  private boolean equals(Rectangle first, Rectangle second)
   {
     return first.getLeft() == second.getLeft() &&
       first.getRight() == second.getRight() &&
@@ -2900,8 +2832,7 @@ public class BinderatorFrame extends JFrame
       first.getTop() == second.getTop();
   }
 
-  private void setPageSizePairsComboBoxSelection
-  ()
+  private void setPageSizePairsComboBoxSelection()
   {
     Book book = getBook();
     Pair<Rectangle, Rectangle> bookSizes = new Pair<>(book.getPageSize(), book.getSignaturePageSize());
@@ -2916,8 +2847,7 @@ public class BinderatorFrame extends JFrame
     pageSizePairsComboBox.setSelectedIndex(-1);
   }
 
-  private void updateTransformControls
-  (TransformSet transformSet)
+  private void updateTransformControls(TransformSet transformSet)
   {
     // Replace the transform sets:
     transformsPanel.removeAll();
@@ -3048,31 +2978,26 @@ public class BinderatorFrame extends JFrame
   }
 
   @Override
-  public void registerUnsavedChange
-  ()
+  public void registerUnsavedChange()
   {
     haveUnsavedChanges = true;
     notifyViewerBookChange();
   }
 
-  private void deregisterUnsavedChanges
-  ()
+  private void deregisterUnsavedChanges()
   {
     haveUnsavedChanges = false;
   }
 
-  private void notifyViewerBookChange
-  ()
+  private void notifyViewerBookChange()
   {
     if (viewerRenderingThread != null) {
       viewerRenderingThread.signalTask();
     }
   }
 
-
   @Override
-  public void actionPerformed
-  (ActionEvent event)
+  public void actionPerformed(ActionEvent event)
   {
     try {
       switch (event.getActionCommand()) {
@@ -3152,8 +3077,7 @@ public class BinderatorFrame extends JFrame
   }
 
   @Override
-  public void onICEViewerClose
-  (ICEViewer instance)
+  public void onICEViewerClose(ICEViewer instance)
   {
     if (instance == viewer) {
       if (viewerButton.isSelected()) {
@@ -3167,36 +3091,31 @@ public class BinderatorFrame extends JFrame
   }
 
   @Override
-  public void printBookStatus
-  (String statusString)
+  public void printBookStatus(String statusString)
   {
     setStatusMessage(statusString);
   }
 
   @Override
-  public void handleBookException
-  (Exception e)
+  public void handleBookException(Exception e)
   {
     errorDialog(e);
   }
 
   @Override
-  public void handleBookProgressLabel
-  (String progressLabel)
+  public void handleBookProgressLabel(String progressLabel)
   {
     setStatusProgressLabel(progressLabel);
   }
 
   @Override
-  public void handleBookProgress
-  (float progress, float maxProgress)
+  public void handleBookProgress(float progress, float maxProgress)
   {
     setStatusProgress(progress, maxProgress);
   }
 
   @SuppressWarnings({"all"})
-  public static void doMain
-  (String[] args)
+  public static void doMain(String[] args)
   throws Exception
   {
     System.err.println("Son of Binderator : Starting...");
@@ -3259,8 +3178,7 @@ public class BinderatorFrame extends JFrame
     frame.setVisible(true);
   }
 
-  public static void main
-  (String[] args)
+  public static void main(String[] args)
   {
     PrintStream errorOut = System.err;
     try {

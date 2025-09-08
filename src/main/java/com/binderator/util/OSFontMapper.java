@@ -1,13 +1,10 @@
 package com.binderator.util;
 
-
 import com.lowagie.text.pdf.*;
-
 
 public class OSFontMapper extends DefaultFontMapper {
 
-  public OSFontMapper
-  ()
+  public OSFontMapper()
   {
     super();
     switch (OSDetection.detectOS()) {
@@ -23,8 +20,7 @@ public class OSFontMapper extends DefaultFontMapper {
     }
   }
 
-  private void insertMacDirectories
-  ()
+  private void insertMacDirectories()
   {
     try {
       insertDirectory("/Library/Fonts");
@@ -33,16 +29,14 @@ public class OSFontMapper extends DefaultFontMapper {
     } catch (Throwable ignored) {}
   }
 
-  private void insertLinuxDirectories
-  ()
+  private void insertLinuxDirectories()
   {
     try {
       // TODO
     } catch (Throwable ignored) {}
   }
 
-  private void insertWindowsDirectories
-  ()
+  private void insertWindowsDirectories()
   {
     try {
       // TODO

@@ -1,6 +1,5 @@
 package com.binderator.gui;
 
-
 import org.icepdf.ri.common.*;
 import org.icepdf.ri.common.views.DocumentViewControllerImpl;
 
@@ -8,20 +7,16 @@ import javax.swing.*;
 import java.awt.event.*;
 import java.io.*;
 
-
 /**
  * Use ICEPDF to create an inline viewer of the current PDF.
  */
 public class ICEViewer extends JFrame {
 
-
   public interface CloseListener {
 
-    void onICEViewerClose
-    (ICEViewer instance);
+    void onICEViewerClose(ICEViewer instance);
 
   }
-
 
   SwingController controller = new SwingController();
 
@@ -30,14 +25,12 @@ public class ICEViewer extends JFrame {
   public static final int DEFAULT_WIDTH = 800;
   public static final int DEFAULT_HEIGHT = 1024;
 
-  public ICEViewer
-  ()
+  public ICEViewer()
   {
     this("PDF Viewer", DEFAULT_WIDTH, DEFAULT_HEIGHT, null);
   }
 
-  public ICEViewer
-  (String title, int width, int height, CloseListener closeListener)
+  public ICEViewer(String title, int width, int height, CloseListener closeListener)
   {
     super(title);
     ICEViewer thisViewer = this;
@@ -66,14 +59,12 @@ public class ICEViewer extends JFrame {
     });
   }
 
-  public void setContent
-  (byte[] content)
+  public void setContent(byte[] content)
   {
     setContent(content, false);
   }
 
-  public void setContent
-  (byte[] pdfContent, boolean rotateLeft)
+  public void setContent(byte[] pdfContent, boolean rotateLeft)
   {
     if ((pdfContent != null) && (pdfContent.length > 0)) {
       ByteArrayInputStream inputStream = new ByteArrayInputStream(pdfContent);
@@ -87,22 +78,19 @@ public class ICEViewer extends JFrame {
     }
   }
 
-  private static void doMain
-  (String[] args)
+  private static void doMain(String[] args)
   throws Exception
   {
     ICEViewer viewer = new ICEViewer();
     viewer.setVisible(true);
   }
 
-  public int getCurrentPageIndex
-  ()
+  public int getCurrentPageIndex()
   {
     return controller.getCurrentPageNumber();
   }
 
-  public static void main
-    (String[] args) {
+  public static void main(String[] args) {
     try {
       doMain(args);
     } catch (Throwable t) {

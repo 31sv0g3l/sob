@@ -25,32 +25,27 @@ public class GUIUtils {
   private static float scaleFactor = 1.0f;
 
   @SuppressWarnings("unused")
-  public static void setChangeBackgroundColour
-  (Color color)
+  public static void setChangeBackgroundColour(Color color)
   {
     changeBackgroundColour = color;
   }
 
-  public static void setScaleFactor
-  (float scaleFactor)
+  public static void setScaleFactor(float scaleFactor)
   {
     GUIUtils.scaleFactor = scaleFactor;
   }
 
-  public float getScale
-  ()
+  public float getScale()
   {
     return scaleFactor;
   }
 
-  public static int scale
-  (int value)
+  public static int scale(int value)
   {
     return (int) scaleFactor * value;
   }
 
-  public static ImageIcon scaleImageIcon
-  (ImageIcon icon)
+  public static ImageIcon scaleImageIcon(ImageIcon icon)
   {
     if (scaleFactor == 1.0f) {
       return icon;
@@ -62,8 +57,7 @@ public class GUIUtils {
     return new ImageIcon(newImage);
   }
 
-  public static void addBackgroundSetter
-  (JTextField field)
+  public static void addBackgroundSetter(JTextField field)
   {
     field.addKeyListener(new KeyListener() {
 
@@ -85,16 +79,14 @@ public class GUIUtils {
     });
   }
 
-  public static void setTooltip
-  (String tooltip, JComponent ... components)
+  public static void setTooltip(String tooltip, JComponent ... components)
   {
     for (JComponent component : components) {
       component.setToolTipText(tooltip);
     }
   }
 
-  public static void setTooltipByKey
-  (String tooltipKey, JComponent ... components)
+  public static void setTooltipByKey(String tooltipKey, JComponent ... components)
   {
     for (JComponent component : components) {
       String translatedTooltip = Translations.translate(tooltipKey);
@@ -102,8 +94,7 @@ public class GUIUtils {
 
   }
 
-  public static void setStandardScale
-  ()
+  public static void setStandardScale()
   {
     String os = System.getProperty("os.name");
     if (os.matches("Windows.*")) {

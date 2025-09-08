@@ -1,6 +1,5 @@
 package com.binderator.gui;
 
-
 import com.binderator.util.*;
 import javax.swing.*;
 import javax.swing.border.*;
@@ -12,7 +11,6 @@ import java.io.*;
 import static com.binderator.util.Translations.translate;
 import static com.binderator.gui.GUIUtils.scale;
 
-
 @SuppressWarnings({"unused", "SameParameterValue"})
 public class OptionsDialog extends JDialog {
 
@@ -20,8 +18,7 @@ public class OptionsDialog extends JDialog {
   private static final long serialVersionUID = -6419775665367426353L;
   public static final String OPTION_SHOW_PROGRESS = "showProgress";
 
-  public OptionsDialog
-  (JFrame parent)
+  public OptionsDialog(JFrame parent)
   {
     super(parent, translate("options"), true);
     JPanel optionsPanel = (JPanel) getContentPane();
@@ -147,14 +144,12 @@ public class OptionsDialog extends JDialog {
     setLocationRelativeTo(this);
   }
 
-  protected void handleException
-  (Throwable t)
+  protected void handleException(Throwable t)
   {
     System.err.println("Exception in OptionsDialog: " + t.getMessage());
   }
 
-  private JCheckBox createOptionCheckBox
-  (String optionKey, boolean defaultValue)
+  private JCheckBox createOptionCheckBox(String optionKey, boolean defaultValue)
   {
     // JCheckBox checkBox = new JCheckBox(translate(optionKey));
     JCheckBox checkBox = new JCheckBox();
@@ -192,14 +187,11 @@ public class OptionsDialog extends JDialog {
 
   private interface TextConverter {
 
-    Object convertText
-    (String text)
-    throws Exception;
+    Object convertText(String text) throws Exception;
 
   }
 
-  private JTextField createOptionTextField
-  (String optionKey, int height)
+  private JTextField createOptionTextField(String optionKey, int height)
   {
     return createOptionTextField(optionKey, height, null, "");
   }
@@ -231,8 +223,9 @@ public class OptionsDialog extends JDialog {
     return textField;
   }
 
-  private JTextField createOptionIntField
-  (String optionKey, int columns, Integer minValue, Integer maxValue, Integer defaultValue)
+  private JTextField createOptionIntField(
+    String optionKey, int columns, Integer minValue, Integer maxValue, Integer defaultValue
+  )
   {
     TextConverter converter = text -> {
       int value = Integer.parseInt(text);
@@ -249,8 +242,9 @@ public class OptionsDialog extends JDialog {
     );
   }
 
-  private JTextField createOptionFloatField
-  (String optionKey, int columns, Float minValue, Float maxValue, Float defaultValue)
+  private JTextField createOptionFloatField(
+    String optionKey, int columns, Float minValue, Float maxValue, Float defaultValue
+  )
   {
     TextConverter converter = text -> {
       float value = Float.parseFloat(text);
@@ -265,8 +259,7 @@ public class OptionsDialog extends JDialog {
     return createOptionTextField(optionKey, columns, converter, (defaultValue != null ? "" + defaultValue : ""));
   }
 
-  private JButton createOptionColourChooser
-  (String optionKey, Color defaultColor, String title)
+  private JButton createOptionColourChooser(String optionKey, Color defaultColor, String title)
   {
     JColorChooser chooser = new JColorChooser();
     JButton button = new JButton();

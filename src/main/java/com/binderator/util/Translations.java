@@ -1,20 +1,17 @@
 package com.binderator.util;
 
-
 import java.io.*;
 import java.net.*;
 import java.nio.charset.*;
 import java.util.*;
 import java.util.regex.*;
 
-
 @SuppressWarnings("unused")
 public class Translations {
 
   public interface ErrorHandler {
 
-    void handleError
-    (String message);
+    void handleError(String message);
 
   }
 
@@ -22,7 +19,8 @@ public class Translations {
     EN, FR, DE, CN, JP
   };
 
-  public record LanguageInfo(Language language, String englishName, String name) {}
+  public record LanguageInfo(Language language, String englishName, String name)
+  {}
 
   static Map<Language, LanguageInfo> languageInfo = new HashMap<>() {{
     put(Language.EN, new LanguageInfo(Language.EN, "English", "English"));
@@ -33,23 +31,21 @@ public class Translations {
   }};
 
  private static final Map<Language, Map<String, String>> translationsMap = new HashMap<>();
+
   private static Language currentLanguage = Language.EN;
   private static ErrorHandler errorHandler = null;
 
-  public static void setCurrentLanguageKey
-  (Language language)
+  public static void setCurrentLanguageKey(Language language)
   {
     currentLanguage = language;
   }
 
-  public static void setErrorHandler
-  (ErrorHandler errorHandler)
+  public static void setErrorHandler(ErrorHandler errorHandler)
   {
     Translations.errorHandler = errorHandler;
   }
 
-  public static void initialise
-  (String translationsPath)
+  public static void initialise(String translationsPath)
   throws Exception
   {
     translationsMap.clear();
@@ -65,8 +61,7 @@ public class Translations {
     }
   }
 
-  public static void initialiseFromJar
-  (String translationsPath)
+  public static void initialiseFromJar(String translationsPath)
   throws Exception
   {
     translationsMap.clear();
@@ -87,15 +82,13 @@ public class Translations {
     }
   }
 
-  public static InputStream openTranslatableURLAsStream
-  (java.net.URL url)
+  public static InputStream openTranslatableURLAsStream(java.net.URL url)
   throws Exception
   {
     return openTranslatableURLAsStream(url, currentLanguage);
   }
 
-  public static InputStream openTranslatableURLAsStream
-  (java.net.URL url, Language language)
+  public static InputStream openTranslatableURLAsStream(java.net.URL url, Language language)
   throws IOException
   {
     java.net.URL translationURL;
@@ -135,16 +128,14 @@ public class Translations {
     "(\\s*([_a-zA-Z0-9]+)\\s*:\\s*\\{%(([^%]|%[^}])*)%}\\s*)*"
   );
 
-  private static void throwParseException
-  (String path, int lineCount, int columnCount, char character)
+  private static void throwParseException(String path, int lineCount, int columnCount, char character)
   throws Exception {
     throw new Exception(
       "Invalid char at line " + lineCount + ", column " + columnCount + " in translations file at path " + path
     );
   }
 
-  private static void throwEOFException
-  (String path)
+  private static void throwEOFException(String path)
   throws Exception
   {
     throw new Exception("Unexpected end of translations file at path " + path);
@@ -159,8 +150,7 @@ public class Translations {
   // some.OtherKey { blah value blah }
   //
 
-  public static Map<String, String> readTranslationsFileFromJar
-  (String path)
+  public static Map<String, String> readTranslationsFileFromJar(String path)
   throws Exception
   {
     try (InputStream inputStream = Translations.class.getResourceAsStream(path)) {
@@ -177,8 +167,7 @@ public class Translations {
 
   }
 
-  private static Map<String, String> readTranslationsFile
-  (File path)
+  private static Map<String, String> readTranslationsFile(File path)
   throws Exception
   {
     if (!path.canRead()) {
@@ -187,8 +176,7 @@ public class Translations {
     return readTranslationsFromStream(path.getPath(), new FileInputStream(path));
   }
 
-  private static Map<String, String> readTranslationsFromStream
-  (String path, InputStream inputStream)
+  private static Map<String, String> readTranslationsFromStream(String path, InputStream inputStream)
   throws Exception
   {
     String fileString = new String(inputStream.readAllBytes(), StandardCharsets.UTF_8);
@@ -300,8 +288,7 @@ public class Translations {
     return translations;
   }
 
-  public static String translate
-  (Language language, String key)
+  public static String translate(Language language, String key)
   {
     Map<String, String> translations = translationsMap.get(language);
     if (translations != null) {
@@ -310,8 +297,7 @@ public class Translations {
     return null;
   }
 
-  public static String translate
-  (String key)
+  public static String translate(String key)
   {
     String translation = translate(currentLanguage, key);
     if (translation == null) {

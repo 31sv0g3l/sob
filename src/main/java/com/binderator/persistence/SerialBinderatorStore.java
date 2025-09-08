@@ -8,8 +8,7 @@ import java.io.*;
 public class SerialBinderatorStore implements BinderatorStore {
 
   @Override
-  public void saveBook
-  (Book book, String path, boolean emptySchema)
+  public void saveBook(Book book, String path, boolean emptySchema)
   throws Exception
   {
     File file = new File(path);
@@ -26,8 +25,7 @@ public class SerialBinderatorStore implements BinderatorStore {
   }
 
   @Override
-  public Book loadBook
-  (String path)
+  public Book loadBook(String path)
   throws Exception
   {
     FileInputStream fileInputStream = new FileInputStream(path);

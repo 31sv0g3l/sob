@@ -21,22 +21,19 @@ public class Transform implements Serializable {
     private final String displayString;
     private final String longDescription;
 
-    Type
-    ()
+    Type()
     {
       displayString = translate(name());
       longDescription = translate("transformDescription_" + name());
     }
 
     @Override
-    public String toString
-    ()
+    public String toString()
     {
       return displayString;
     }
 
-    public String getLongDescription
-    ()
+    public String getLongDescription()
     {
       return longDescription;
     }
@@ -50,15 +47,13 @@ public class Transform implements Serializable {
   RangedFloat value;
   private boolean enabled = true;
 
-  public Transform
-  (Type type, float value, float lowValue, float highValue)
+  public Transform(Type type, float value, float lowValue, float highValue)
   {
     this.type = type;
     this.value = new RangedFloat(type.name(), value, lowValue, highValue);
   }
 
-  public Transform
-  (int id, int type, float value, float lowValue, float highValue)
+  public Transform(int id, int type, float value, float lowValue, float highValue)
   throws Exception
   {
     this.id = id;
@@ -69,8 +64,7 @@ public class Transform implements Serializable {
     this.value = new RangedFloat(this.type.name(), value, lowValue, highValue);
   }
 
-  public Transform
-  (Transform transform)
+  public Transform(Transform transform)
   {
     id = transform.id;
     type = transform.type;
@@ -78,8 +72,7 @@ public class Transform implements Serializable {
     enabled = transform.enabled;
   }
 
-  public static GeneralType getGeneralType
-  (Type type)
+  public static GeneralType getGeneralType(Type type)
   {
     return switch (type) {
       case ROTATION_IN_DEGREES -> GeneralType.ROTATION;
@@ -89,39 +82,33 @@ public class Transform implements Serializable {
     };
   }
 
-  public Integer getId
-  ()
+  public Integer getId()
   {
     return id;
   }
 
-  public void setId
-  (int id)
+  public void setId(int id)
   {
     this.id = id;
   }
 
-  public void setEnabled
-  (boolean enabled)
+  public void setEnabled(boolean enabled)
   {
     this.enabled = enabled;
     System.err.println("Transform " + this + " is now " + (enabled ? "enabled" : "disabled"));
   }
 
-  public boolean isEnabled
-  ()
+  public boolean isEnabled()
   {
     return enabled;
   }
 
-  public Type getType
-  ()
+  public Type getType()
   {
     return type;
   }
 
-  public boolean hasRangedValue
-  ()
+  public boolean hasRangedValue()
   {
     switch (type) {
       case MARGINS_CROP -> { return false; }
@@ -129,26 +116,22 @@ public class Transform implements Serializable {
     }
   }
 
-  public RangedFloat getRangedFloat
-  ()
+  public RangedFloat getRangedFloat()
   {
     return value;
   }
 
-  public String getLongDescription
-  ()
+  public String getLongDescription()
   {
     return getType().getLongDescription();
   }
 
-  public String toString
-  ()
+  public String toString()
   {
     return getLongDescription();
   }
 
-  public static float getDefaultValue
-  (Type type)
+  public static float getDefaultValue(Type type)
   {
     return switch (type) {
       case SCALE, SCALE_X, SCALE_Y -> 1.0f;
@@ -157,8 +140,7 @@ public class Transform implements Serializable {
     };
   }
 
-  public static float getDefaultLowValue
-  (Type type)
+  public static float getDefaultLowValue(Type type)
   {
     return switch (type) {
       case ROTATION_IN_DEGREES -> -10.0f;
@@ -168,8 +150,7 @@ public class Transform implements Serializable {
     };
   }
 
-  public static float getDefaultHighValue
-  (Type type)
+  public static float getDefaultHighValue(Type type)
   {
     return switch (type) {
       case ROTATION_IN_DEGREES -> 10.0f;

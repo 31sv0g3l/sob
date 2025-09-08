@@ -1,12 +1,10 @@
 package com.binderator.engine;
 
-
 import com.binderator.util.*;
 import java.io.*;
 import java.text.*;
 import java.util.*;
 import java.util.regex.*;
-
 
 @SuppressWarnings("unused")
 public class PageRange implements Comparable<PageRange>, Serializable {
@@ -19,38 +17,32 @@ public class PageRange implements Comparable<PageRange>, Serializable {
   private Integer repetitions;
   private final Boolean even;
 
-  public String getDocId
-  ()
+  public String getDocId()
   {
     return docId;
   }
 
-  public Integer getStartPageNumber
-  ()
+  public Integer getStartPageNumber()
   {
     return startPageNumber;
   }
 
-  public Integer getEndPageNumber
-  ()
+  public Integer getEndPageNumber()
   {
     return endPageNumber;
   }
 
-  public Boolean getEven
-  ()
+  public Boolean getEven()
   {
     return even;
   }
 
-  public boolean isBlank
-  ()
+  public boolean isBlank()
   {
     return docId == null;
   }
 
-  public int getRepetitions
-  ()
+  public int getRepetitions()
   {
     return repetitions != null ? repetitions : 0;
   }
@@ -59,8 +51,8 @@ public class PageRange implements Comparable<PageRange>, Serializable {
    * Constructor for creating a PageRange object.
    * @param docId The ID of the document.
    * @throws Exception If the start page number is greater than the end page number.
-   */  public PageRange
-  (String docId, Integer pageNumber)
+   */
+  public PageRange(String docId, Integer pageNumber)
   throws Exception
   {
     this(docId, pageNumber, pageNumber);
@@ -72,8 +64,8 @@ public class PageRange implements Comparable<PageRange>, Serializable {
    * @param startPageNumber The starting page number of the range.
    * @param endPageNumber The ending page number of the range.
    * @throws Exception If the start page number is greater than the end page number.
-   */  public PageRange
-  (String docId, Integer startPageNumber, Integer endPageNumber)
+   */
+  public PageRange(String docId, Integer startPageNumber, Integer endPageNumber)
   throws Exception
   {
     this(docId, startPageNumber, endPageNumber, null);
@@ -86,8 +78,8 @@ public class PageRange implements Comparable<PageRange>, Serializable {
    * @param endPageNumber The ending page number of the range.
    * @param repetitions The number of times the range is repeated.
    * @throws Exception If the start page number is greater than the end page number.
-   */  public PageRange
-  (String docId, Integer startPageNumber, Integer endPageNumber, Integer repetitions)
+   */
+  public PageRange(String docId, Integer startPageNumber, Integer endPageNumber, Integer repetitions)
   throws Exception
   {
     this(docId, startPageNumber, endPageNumber, repetitions, null);
@@ -102,8 +94,7 @@ public class PageRange implements Comparable<PageRange>, Serializable {
    * @param even A Boolean value indicating whether the range is even.
    * @throws Exception If the start page number is greater than the end page number.
    */
-  public PageRange
-  (String docId, Integer startPageNumber, Integer endPageNumber, Integer repetitions, Boolean even)
+  public PageRange(String docId, Integer startPageNumber, Integer endPageNumber, Integer repetitions, Boolean even)
   throws Exception
   {
     if ((startPageNumber != null) && (endPageNumber != null) && (startPageNumber > endPageNumber)) {
@@ -135,8 +126,7 @@ public class PageRange implements Comparable<PageRange>, Serializable {
    * @return A list of PageRange objects.
    * @throws Exception If the string is not a valid page range.
    */
-  public static List<PageRange> parsePageRanges
-  (String source, boolean requireDocIds)
+  public static List<PageRange> parsePageRanges(String source, boolean requireDocIds)
   throws Exception
   {
     List<PageRange> pageRanges = new ArrayList<>();
@@ -164,8 +154,7 @@ public class PageRange implements Comparable<PageRange>, Serializable {
     return pageRanges;
   }
 
-  private static PageRange handleBlankRange
-  (PageRange blankRange)
+  private static PageRange handleBlankRange(PageRange blankRange)
   throws Exception
   {
     if (blankRange != null) {
@@ -176,14 +165,14 @@ public class PageRange implements Comparable<PageRange>, Serializable {
     return blankRange;
   }
 
-  private static Matcher getRangeMatcher
-  (String rangeSource, boolean requireDocIds)
+  private static Matcher getRangeMatcher(String rangeSource, boolean requireDocIds)
   {
     return requireDocIds ? requireDocIdsRangePattern.matcher(rangeSource) : allowDocIdsRangePattern.matcher(rangeSource);
   }
 
-  private static PageRange handleMatchedRange
-  (Matcher rangeMatcher, PageRange blankRange, List<PageRange> pageRanges, boolean requireDocIds, String rangeSource)
+  private static PageRange handleMatchedRange(
+    Matcher rangeMatcher, PageRange blankRange, List<PageRange> pageRanges, boolean requireDocIds, String rangeSource
+  )
   throws Exception
   {
     String docId = getDocId(rangeMatcher);
@@ -199,15 +188,13 @@ public class PageRange implements Comparable<PageRange>, Serializable {
     return blankRange;
   }
 
-  private static String getDocId
-  (Matcher rangeMatcher)
+  private static String getDocId(Matcher rangeMatcher)
   {
     String docId = rangeMatcher.group(2);
     return docId != null && !docId.isEmpty() ? docId : null;
   }
 
-  private static Integer getTo
-  (Matcher rangeMatcher, Integer from)
+  private static Integer getTo(Matcher rangeMatcher, Integer from)
   {
     Integer to = from;
     if ((rangeMatcher.group(4) != null) && !rangeMatcher.group(4).isEmpty()) {
@@ -217,8 +204,7 @@ public class PageRange implements Comparable<PageRange>, Serializable {
     return to;
   }
 
-  private static Integer getRepetitions
-  (Matcher rangeMatcher, boolean requireDocIds)
+  private static Integer getRepetitions(Matcher rangeMatcher, boolean requireDocIds)
   {
     Integer repetitions = null;
     if (requireDocIds) {
@@ -230,8 +216,9 @@ public class PageRange implements Comparable<PageRange>, Serializable {
     return repetitions;
   }
 
-  private static Boolean getEven
-  (Matcher rangeMatcher, Integer from, Integer to, String rangeSource, boolean requireDocIds)
+  private static Boolean getEven(
+    Matcher rangeMatcher, Integer from, Integer to, String rangeSource, boolean requireDocIds
+  )
   throws Exception
   {
     String evenSource = requireDocIds ? rangeMatcher.group(9) : rangeMatcher.group(7);
@@ -245,8 +232,7 @@ public class PageRange implements Comparable<PageRange>, Serializable {
     return even;
   }
 
-  private static Boolean getEvenValue
-  (String evenSource, String rangeSource)
+  private static Boolean getEvenValue(String evenSource, String rangeSource)
   throws Exception
   {
     if (evenSource.equalsIgnoreCase("even")) {
@@ -265,8 +251,9 @@ public class PageRange implements Comparable<PageRange>, Serializable {
    * @return A list of PageRef objects.
    * @throws Exception If a non-null document ID is supplied with a null source document map.
    */
-  public static List<PageRef> toPageRefs
-  (Collection<PageRange> pageRanges, Map<String, SourceDocument> sourceDocumentsById)
+  public static List<PageRef> toPageRefs(
+    Collection<PageRange> pageRanges, Map<String, SourceDocument> sourceDocumentsById
+  )
   throws Exception
   {
     List<PageRef> pageRefs = new ArrayList<>();
@@ -282,8 +269,7 @@ public class PageRange implements Comparable<PageRange>, Serializable {
     return pageRefs;
   }
 
-  public static String toString
-  (Collection<PageRange> pageRanges)
+  public static String toString(Collection<PageRange> pageRanges)
   {
     if (pageRanges != null) {
       return StringUtils.join(pageRanges, ", ");
@@ -292,8 +278,7 @@ public class PageRange implements Comparable<PageRange>, Serializable {
     }
   }
 
-  public String toString
-  ()
+  public String toString()
   {
     String range = (docId != null) ? docId + ":" : "";
     range += (endPageNumber == null) || (startPageNumber.equals(endPageNumber))
@@ -318,8 +303,7 @@ public class PageRange implements Comparable<PageRange>, Serializable {
    *                            document will be used.
    * @return a collection of page refs derived from this page range and the given source page refs
    */
-  public Collection<PageRef> getPageRefs
-  (List<PageRef> orderedPages, Map<String, SourceDocument> sourceDocumentsById)
+  public Collection<PageRef> getPageRefs(List<PageRef> orderedPages, Map<String, SourceDocument> sourceDocumentsById)
   throws Exception
   {
     if (docId != null) {
@@ -345,8 +329,9 @@ public class PageRange implements Comparable<PageRange>, Serializable {
     return result;
   }
 
-  private void addPageRefsToResult
-  (List<PageRef> orderedPages, List<PageRef> result, int repetitions, int startPageIndex, int endPageIndex)
+  private void addPageRefsToResult(
+    List<PageRef> orderedPages, List<PageRef> result, int repetitions, int startPageIndex, int endPageIndex
+  )
   {
     for (int repetition = 0; repetition < repetitions; repetition++) {
       for (int i = startPageIndex; i <= endPageIndex; i++) {
@@ -363,8 +348,7 @@ public class PageRange implements Comparable<PageRange>, Serializable {
   }
 
   @Override
-  public int compareTo
-  (PageRange other)
+  public int compareTo(PageRange other)
   {
     int comparison;
     if ((comparison = Objects.compare(docId, other.docId, CharSequence::compare)) != 0) {

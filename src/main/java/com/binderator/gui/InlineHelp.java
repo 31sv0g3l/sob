@@ -1,6 +1,5 @@
 package com.binderator.gui;
 
-
 import com.binderator.util.*;
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -12,10 +11,8 @@ import java.awt.image.BufferedImage;
 import java.io.*;
 import java.net.*;
 
-
 import static com.binderator.gui.GUIUtils.scale;
 import static com.binderator.util.Translations.translate;
-
 
 public class InlineHelp extends JDialog implements HyperlinkListener {
 
@@ -27,15 +24,13 @@ public class InlineHelp extends JDialog implements HyperlinkListener {
   private final JEditorPane editorPane;
   private static InlineHelp instancePtr = null;
 
-  private InlineHelp
-  (JFrame parent, URL helpBaseURL)
+  private InlineHelp(JFrame parent, URL helpBaseURL)
   throws Exception
   {
     this(parent, helpBaseURL, "/main");
   }
 
-  private InlineHelp
-  (JFrame parent, URL helpBaseURL, String initialPath)
+  private InlineHelp(JFrame parent, URL helpBaseURL, String initialPath)
   throws Exception
   {
     super(parent, translate("inlineHelp"), false);
@@ -85,15 +80,13 @@ public class InlineHelp extends JDialog implements HyperlinkListener {
     });
   }
 
-  private void errorDialog
-  (Throwable t)
+  private void errorDialog(Throwable t)
   {
     JOptionPane.showMessageDialog(this, (t.getMessage()));
     t.printStackTrace(System.err);
   }
 
-  private URL pathToURL
-  (String path)
+  private URL pathToURL(String path)
   throws Exception
   {
     String fullPath = helpBaseURL.getPath();
@@ -109,16 +102,14 @@ public class InlineHelp extends JDialog implements HyperlinkListener {
     return new URL(helpBaseURL, fullPath);
   }
 
-  private void loadPath
-  (String path)
+  private void loadPath(String path)
   throws Exception
   {
     currentURL = pathToURL(path);
     loadURL(currentURL);
   }
 
-  private void loadURL
-  (URL url)
+  private void loadURL(URL url)
   throws Exception
   {
     InputStream inputStream = Translations.openTranslatableURLAsStream(url);
@@ -133,8 +124,7 @@ public class InlineHelp extends JDialog implements HyperlinkListener {
     }
   }
 
-  public void correctImageLinks
-  (HTMLDocument document)
+  public void correctImageLinks(HTMLDocument document)
   throws Exception
   {
     Element rootElement = document.getDefaultRootElement();
@@ -171,8 +161,7 @@ public class InlineHelp extends JDialog implements HyperlinkListener {
     }
   }
 
-  public synchronized static void initialise
-  (JFrame parent, URL helpBaseURL)
+  public synchronized static void initialise(JFrame parent, URL helpBaseURL)
   throws Exception
   {
     if (instancePtr != null) {
@@ -181,8 +170,7 @@ public class InlineHelp extends JDialog implements HyperlinkListener {
     instancePtr = new InlineHelp(parent, helpBaseURL);
   }
 
-  public synchronized static InlineHelp instance
-  ()
+  public synchronized static InlineHelp instance()
   throws Exception
   {
     if (instancePtr == null) {
@@ -192,8 +180,7 @@ public class InlineHelp extends JDialog implements HyperlinkListener {
   }
 
   @Override
-  public void hyperlinkUpdate
-  (HyperlinkEvent event)
+  public void hyperlinkUpdate(HyperlinkEvent event)
   {
     String path;
     URL url = event.getURL();
@@ -218,8 +205,7 @@ public class InlineHelp extends JDialog implements HyperlinkListener {
     }
   }
 
-  private static Rectangle getImageSize
-  (URL imageURL)
+  private static Rectangle getImageSize(URL imageURL)
   throws Exception
   {
     int bangIndex = imageURL.getPath().lastIndexOf('!');

@@ -1,11 +1,8 @@
 package com.binderator.engine;
 
-
 import java.io.*;
 
-
 public class ProjectMetaData implements Serializable {
-
 
   public static class BasePathHolder implements Serializable {
 
@@ -13,32 +10,27 @@ public class ProjectMetaData implements Serializable {
 
   }
 
-
   BasePathHolder projectOutputBasePathHolder = new BasePathHolder();
   BasePathHolder signaturesBasePathHolder = new BasePathHolder();
   BasePathHolder documentsBasePathHolder = new BasePathHolder();
   BasePathHolder contentGeneratorsImageBasePathHolder = new BasePathHolder();
 
-  public BasePathHolder getProjectOutputBasePathHolder
-  ()
+  public BasePathHolder getProjectOutputBasePathHolder()
   {
     return projectOutputBasePathHolder;
   }
 
-  public BasePathHolder getSignaturesBasePathHolder
-  ()
+  public BasePathHolder getSignaturesBasePathHolder()
   {
     return signaturesBasePathHolder;
   }
 
-  public BasePathHolder getDocumentsBasePathHolder
-  ()
+  public BasePathHolder getDocumentsBasePathHolder()
   {
     return documentsBasePathHolder;
   }
 
-  public BasePathHolder getContentGeneratorsImageBasePathHolder
-  ()
+  public BasePathHolder getContentGeneratorsImageBasePathHolder()
   {
     return contentGeneratorsImageBasePathHolder;
   }

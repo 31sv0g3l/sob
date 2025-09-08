@@ -1,6 +1,5 @@
 package com.binderator.gui;
 
-
 import com.binderator.util.*;
 import javax.annotation.*;
 import javax.swing.*;
@@ -8,10 +7,8 @@ import javax.swing.event.*;
 import java.awt.*;
 import java.io.*;
 
-
 import static com.binderator.gui.GUIUtils.scale;
 import static com.binderator.util.Translations.translate;
-
 
 @SuppressWarnings("unused")
 public class RangedFloatSlider extends JPanel {
@@ -26,32 +23,29 @@ public class RangedFloatSlider extends JPanel {
   private boolean settingValue = false;
 
 
-  public RangedFloatSlider
-  ()
+  public RangedFloatSlider()
   {
     this(null, scale(22), scale(70));
   }
 
-  public RangedFloatSlider
-  (RangedFloat rangedFloat)
+  public RangedFloatSlider(RangedFloat rangedFloat)
   {
     this(rangedFloat, scale(22), scale(70));
   }
 
-  public RangedFloatSlider
-  (RangedFloat rangedFloat, UnsavedChangeListener unsavedChangeListener)
+  public RangedFloatSlider(RangedFloat rangedFloat, UnsavedChangeListener unsavedChangeListener)
   {
     this(rangedFloat, scale(22), scale(70), unsavedChangeListener);
   }
 
-  public RangedFloatSlider
-  (@Nullable RangedFloat rangedFloat, int widgetHeight, int fieldWidth)
+  public RangedFloatSlider(@Nullable RangedFloat rangedFloat, int widgetHeight, int fieldWidth)
   {
     this(rangedFloat, widgetHeight, fieldWidth, null);
   }
 
-  public RangedFloatSlider
-  (@Nullable RangedFloat rangedFloat, int widgetHeight, int fieldWidth, UnsavedChangeListener unsavedChangeListener)
+  public RangedFloatSlider(
+    @Nullable RangedFloat rangedFloat, int widgetHeight, int fieldWidth, UnsavedChangeListener unsavedChangeListener
+  )
   {
     super();
     this.rangedFloat = rangedFloat;
@@ -77,8 +71,7 @@ public class RangedFloatSlider extends JPanel {
     slider.addChangeListener(new ChangeListener() {
 
       @Override
-      public void stateChanged
-      (ChangeEvent e)
+      public void stateChanged(ChangeEvent e)
       {
         if (RangedFloatSlider.this.rangedFloat != null) {
           int sliderWidth = slider.getMaximum() - slider.getMinimum();
@@ -136,14 +129,12 @@ public class RangedFloatSlider extends JPanel {
     slider.setToolTipText(translate("rangedValueSliderTooltipSlider"));
   }
 
-  private void setText
-  ()
+  private void setText()
   {
     field.setText(String.format("%3.3f", rangedFloat.getValue()));
   }
 
-  private void resetSlider
-  ()
+  private void resetSlider()
   {
     if (rangedFloat != null) {
       float sliderWidth = slider.getMaximum() - slider.getMinimum();
@@ -156,8 +147,7 @@ public class RangedFloatSlider extends JPanel {
     }
   }
 
-  private void resetFields
-  ()
+  private void resetFields()
   {
     if (rangedFloat != null) {
       lowField.setText("" + rangedFloat.getLowValue());
@@ -167,8 +157,7 @@ public class RangedFloatSlider extends JPanel {
     }
   }
 
-  public void setRangedFloat
-  (RangedFloat rangedFloat)
+  public void setRangedFloat(RangedFloat rangedFloat)
   {
     this.rangedFloat = rangedFloat;
     if (rangedFloat != null) {

@@ -7,8 +7,7 @@ public class CommandQueue extends Thread {
 
   public interface Command {
 
-    public abstract void invoke
-    ();
+    public abstract void invoke();
 
   }
 
@@ -18,15 +17,13 @@ public class CommandQueue extends Thread {
 
     private Condition condition = null;
 
-    public SynchronousCommandWrapper
-    (Command command, Condition condition)
+    public SynchronousCommandWrapper(Command command, Condition condition)
     {
       this.command = command;
       this.condition = condition;
     }
 
-    public void invoke
-    ()
+    public void invoke()
     {
       command.invoke();
       if (condition != null) {
@@ -36,8 +33,7 @@ public class CommandQueue extends Thread {
       }
     }
 
-    public void await
-    ()
+    public void await()
     {
       if (condition != null) {
         try {
@@ -54,8 +50,7 @@ public class CommandQueue extends Thread {
   private static CommandQueue singletonInstance = null;
   private static boolean running;
 
-  public CommandQueue
-  ()
+  public CommandQueue()
   {
     super();
     commands = new LinkedList<>();
@@ -64,8 +59,7 @@ public class CommandQueue extends Thread {
     running = true;
   }
 
-  public static CommandQueue getInstance
-  ()
+  public static CommandQueue getInstance()
   {
     if (singletonInstance == null) {
       singletonInstance = new CommandQueue();
@@ -74,13 +68,10 @@ public class CommandQueue extends Thread {
     return singletonInstance;
   }
 
-  public void execute
-    (Command command)
-  {
-  }
+  public void execute(Command command)
+  {}
 
-  public void execute
-  (Command command, boolean synchronous)
+  public void execute(Command command, boolean synchronous)
   {
     lock.lock();
     if (synchronous) {
@@ -95,8 +86,7 @@ public class CommandQueue extends Thread {
     lock.unlock();
   }
 
-  public void terminate
-  ()
+  public void terminate()
   {
     lock.lock();
     running = false;
@@ -104,16 +94,14 @@ public class CommandQueue extends Thread {
     lock.unlock();
   }
 
-  void logException
-  (Throwable t)
+  void logException(Throwable t)
   {
     System.err.println("Command queue caught exception: " + t.getMessage());
     t.printStackTrace(System.err);
   }
 
   @Override
-  public void run
-  ()
+  public void run()
   {
     List<Command> newCommands = new ArrayList<>();
     lock.lock();

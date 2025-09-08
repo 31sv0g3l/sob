@@ -13,12 +13,10 @@ public class TransformSet implements Serializable {
   private List<PageRange> pageRanges = new ArrayList<>();
   ArrayList<Transform> transforms = new ArrayList<>();
 
-  public TransformSet
-  ()
+  public TransformSet()
   {}
 
-  public TransformSet
-  (TransformSet transformSet)
+  public TransformSet(TransformSet transformSet)
   {
     name = transformSet.name;
     comment = transformSet.comment;
@@ -30,38 +28,32 @@ public class TransformSet implements Serializable {
     }
   }
 
-  public String getName
-  ()
+  public String getName()
   {
     return name;
   }
 
-  public void setName
-  (String name)
+  public void setName(String name)
   {
     this.name = name;
   }
 
-  public String getComment
-  ()
+  public String getComment()
   {
     return comment;
   }
 
-  public void setComment
-  (String comment)
+  public void setComment(String comment)
   {
     this.comment = comment;
   }
 
-  public void setPageRanges
-  (List<PageRange> pageRanges)
+  public void setPageRanges(List<PageRange> pageRanges)
   {
     this.pageRanges = pageRanges;
   }
 
-  public void addPageRange
-  (PageRange pageRange)
+  public void addPageRange(PageRange pageRange)
   {
     if (pageRanges == null) {
       pageRanges = new ArrayList<>();
@@ -69,14 +61,12 @@ public class TransformSet implements Serializable {
     pageRanges.add(pageRange);
   }
 
-  public Collection<PageRange> getPageRanges
-  ()
+  public Collection<PageRange> getPageRanges()
   {
     return pageRanges;
   }
 
-  public String getPageRangesString
-  ()
+  public String getPageRangesString()
   {
     return PageRange.toString(pageRanges);
   }
@@ -84,8 +74,7 @@ public class TransformSet implements Serializable {
   /**
    * Moves the given transform up (earlier, to a lower index) in the list of transforms.
    */
-  public void moveUp
-  (Transform transform)
+  public void moveUp(Transform transform)
   {
     if (transform == null) {
       return;
@@ -104,8 +93,7 @@ public class TransformSet implements Serializable {
   /**
    * Moves the given transform down (later, to a lower index) in the list of transforms.
    */
-  public void moveDown
-  (Transform transform)
+  public void moveDown(Transform transform)
   {
     if (transform == null) {
       return;
@@ -121,27 +109,23 @@ public class TransformSet implements Serializable {
     transforms.add(index + 1, transform);
   }
 
-  public void remove
-  (Transform transform)
+  public void remove(Transform transform)
   {
     transforms.remove(transform);
   }
 
-  public Collection<Transform> getTransforms
-  ()
+  public Collection<Transform> getTransforms()
   {
     return transforms;
   }
 
-  public void add
-  (Transform transform)
+  public void add(Transform transform)
   {
     transforms.add(transform);
   }
 
   @Override
-  public String toString
-  ()
+  public String toString()
   {
     if (name != null) {
       return name;

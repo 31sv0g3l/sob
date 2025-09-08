@@ -1,11 +1,9 @@
 package com.binderator.engine;
 
-
 import com.lowagie.text.pdf.*;
 import java.io.*;
 import java.util.*;
 import java.util.regex.*;
-
 
 @SuppressWarnings("unused")
 public class SourceDocument implements Serializable, Comparable<SourceDocument> {
@@ -23,14 +21,12 @@ public class SourceDocument implements Serializable, Comparable<SourceDocument> 
   List<PageRef> pages = null;
   private Book book = null;
 
-  public SourceDocument
-  (String path)
+  public SourceDocument(String path)
   {
     this(null, null, path);
   }
 
-  public SourceDocument
-  (SourceDocument sourceDocument)
+  public SourceDocument(SourceDocument sourceDocument)
   {
     id = sourceDocument.id;
     name = sourceDocument.name;
@@ -38,14 +34,12 @@ public class SourceDocument implements Serializable, Comparable<SourceDocument> 
     path = sourceDocument.path;
   }
 
-  public SourceDocument
-  (InputStream inputStream)
+  public SourceDocument(InputStream inputStream)
   {
     this(null, null, inputStream);
   }
 
-  public SourceDocument
-  (String stringId, String name, InputStream inputStream)
+  public SourceDocument(String stringId, String name, InputStream inputStream)
   {
     this.id = stringId;
     this.name = name;
@@ -53,14 +47,12 @@ public class SourceDocument implements Serializable, Comparable<SourceDocument> 
     this.inputStream = inputStream;
   }
 
-  public SourceDocument
-  (String identifier, String name, String path)
+  public SourceDocument(String identifier, String name, String path)
   {
     this(identifier, name, path, null);
   }
 
-  public SourceDocument
-  (String stringId, String name, String path, String comment)
+  public SourceDocument(String stringId, String name, String path, String comment)
   {
     this.id = stringId;
     this.name = name;
@@ -68,65 +60,55 @@ public class SourceDocument implements Serializable, Comparable<SourceDocument> 
     this.path = path;
   }
 
-  public String getId
-  ()
+  public String getId()
   {
     return id;
   }
 
-  public void setId
-  (String id)
+  public void setId(String id)
   {
     String oldId = this.id;
     this.id = id;
     book.changeSourceDocumentId(oldId, id, this);
   }
 
-  public String getName
-  ()
+  public String getName()
   {
     return name;
   }
 
-  public void setName
-  (String name)
+  public void setName(String name)
   {
     this.name = name;
   }
 
-  public String getComment
-  ()
+  public String getComment()
   {
     return comment;
   }
 
-  public void setComment
-  (String comment)
+  public void setComment(String comment)
   {
     this.comment = comment;
   }
 
-  public String getPath
-  ()
+  public String getPath()
   {
     return path;
   }
 
-  public void setPath
-  (String path)
+  public void setPath(String path)
   {
     this.path = path;
     close();
   }
 
-  void setBook
-  (Book book)
+  void setBook(Book book)
   {
     this.book = book;
   }
 
-  public PdfReader getReader
-  ()
+  public PdfReader getReader()
   throws IOException
   {
     if (reader == null) {
@@ -140,8 +122,7 @@ public class SourceDocument implements Serializable, Comparable<SourceDocument> 
   }
 
   @Override
-  public int compareTo
-  (SourceDocument other)
+  public int compareTo(SourceDocument other)
   {
     int comparison;
    if ((comparison = Objects.compare(this.path, other.path, String::compareTo)) != 0) {
@@ -156,8 +137,7 @@ public class SourceDocument implements Serializable, Comparable<SourceDocument> 
     return 0;
   }
 
-  public void close
-  ()
+  public void close()
   {
     if (reader != null) {
       try {
@@ -173,8 +153,7 @@ public class SourceDocument implements Serializable, Comparable<SourceDocument> 
     "\\s*([0-9][0-9]*)\\s*:\\s*([1-9][0-9]*)\\s*"
   );
 
-  public int getPageCount
-  ()
+  public int getPageCount()
   {
     try {
       PdfReader reader = getReader();
@@ -188,8 +167,7 @@ public class SourceDocument implements Serializable, Comparable<SourceDocument> 
     }
   }
 
-  public List<PageRef> getSourcePages
-  ()
+  public List<PageRef> getSourcePages()
   throws Exception
   {
     if ((sourcePages == null) || (sourcePages.isEmpty())) {
@@ -201,15 +179,13 @@ public class SourceDocument implements Serializable, Comparable<SourceDocument> 
     return sourcePages;
   }
 
-  public List<PageRef> getPages
-  ()
+  public List<PageRef> getPages()
   {
     return sourcePages;
   }
 
   @Override
-  public String toString
-  ()
+  public String toString()
   {
     if (name != null) {
       return name;

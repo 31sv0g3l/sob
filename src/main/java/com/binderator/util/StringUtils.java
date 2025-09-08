@@ -4,14 +4,12 @@ package com.binderator.util;
 @SuppressWarnings("unused")
 public class StringUtils {
 
-  public static String[] toLines
-  (String source)
+  public static String[] toLines(String source)
   {
     return toLines(source, true);
   }
 
-  public static String[] toLines
-  (String source, boolean retainNewlines)
+  public static String[] toLines(String source, boolean retainNewlines)
   {
     String[] lines = source.split("\\n");
     if (retainNewlines) {
@@ -22,8 +20,7 @@ public class StringUtils {
     return lines;
   }
 
-  public static String escape
-  (String source)
+  public static String escape(String source)
   {
     char[] chars = source.toCharArray();
     StringBuilder result = new StringBuilder();
@@ -39,8 +36,7 @@ public class StringUtils {
     return result.toString();
   }
 
-  public static String[] toJavaLiteralLines
-  (String source)
+  public static String[] toJavaLiteralLines(String source)
   {
     String[] lines = StringUtils.toLines(source);
     for (int i = 0; i < lines.length; i++) {
@@ -48,18 +44,15 @@ public class StringUtils {
     }
     return lines;
   }
-  
-  
+
   public interface JoinedPrinter {
     
-    String toString
-    (Object joined);
+    String toString(Object joined);
     
   }
   
 
-  public static String join
-  (Iterable<?> elements, String filler, JoinedPrinter printer)
+  public static String join(Iterable<?> elements, String filler, JoinedPrinter printer)
   {
     StringBuilder result = new StringBuilder();
     boolean first = true;
@@ -77,15 +70,13 @@ public class StringUtils {
     return result.toString();
   }
   
-  public static String join
-  (Iterable<?> elements, String filler)
+  public static String join(Iterable<?> elements, String filler)
   {
     JoinedPrinter printer = Object::toString;
     return join(elements, filler, printer);
   }
 
-  public static <T> String join
-  (T[] elements, String filler)
+  public static <T> String join(T[] elements, String filler)
   {
     StringBuilder buffer = new StringBuilder();
     boolean first = true;
@@ -99,8 +90,7 @@ public class StringUtils {
     return buffer.toString();
   }
   
-  public static boolean isIn
-  (char needle, char[] haystack)
+  public static boolean isIn(char needle, char[] haystack)
   {
     for (char c : haystack) {
       if (needle == c) {
@@ -110,14 +100,12 @@ public class StringUtils {
     return false;
   }
   
-  public static boolean isWhitespace
-  (char character)
+  public static boolean isWhitespace(char character)
   {
     return character == ' ' || character == '\t' || character == '\r' || character == 'n';
   }
   
-  public static String capitalise
-  (String string)
+  public static String capitalise(String string)
   {
     char[] chars = string.toCharArray();
     for (int i = 0; i < chars.length; i++) {
@@ -128,8 +116,7 @@ public class StringUtils {
     return new String(chars);
   }
   
-  public static String uppercase
-  (String string)
+  public static String uppercase(String string)
   {
     char[] chars = string.toCharArray();
     for (int i = 0; i < chars.length; i++) {
@@ -140,8 +127,7 @@ public class StringUtils {
     return new String(chars);
   }
   
-  public static String lowercase
-  (String string)
+  public static String lowercase(String string)
   {
     char[] chars = string.toCharArray();
     for (int i = 0; i < chars.length; i++) {

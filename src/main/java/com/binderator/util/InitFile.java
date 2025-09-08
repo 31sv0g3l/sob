@@ -1,9 +1,7 @@
 package com.binderator.util;
 
-
 import java.util.*;
 import java.io.*;
-
 
 public class InitFile {
 
@@ -13,8 +11,7 @@ public class InitFile {
 
   private static InitFile instancePtr = null;
 
-  public static void initialise
-  (String path, boolean autoSave)
+  public static void initialise(String path, boolean autoSave)
   throws Exception
   {
     if (instancePtr != null) {
@@ -24,8 +21,7 @@ public class InitFile {
   }
 
   @SuppressWarnings("unchecked")
-  private InitFile
-  (String path, boolean autoSave)
+  private InitFile(String path, boolean autoSave)
   throws Exception
   {
     file = new File(path);
@@ -48,8 +44,7 @@ public class InitFile {
     this.autoSave = autoSave;
   }
 
-  public static InitFile instance
-  ()
+  public static InitFile instance()
   throws Exception
   {
     if (instancePtr == null ) {
@@ -58,9 +53,7 @@ public class InitFile {
     return instancePtr;
   }
 
-
-  public void save
-  ()
+  public void save()
   {
     try {
       ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file));
@@ -73,21 +66,18 @@ public class InitFile {
     }
   }
 
-  public Object get
-  (String key)
+  public Object get(String key)
   {
     return get(key, null);
   }
 
-  public Object get
-  (String key, Object defaultValue)
+  public Object get(String key, Object defaultValue)
   {
     Object value = map.get(key);
     return value != null ? value : defaultValue;
   }
 
-  public void set
-  (String key, Object value)
+  public void set(String key, Object value)
   {
     map.put(key, value);
     if (autoSave) {

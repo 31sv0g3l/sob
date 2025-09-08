@@ -1,6 +1,5 @@
 package com.binderator.engine;
 
-
 import com.binderator.util.*;
 import com.lowagie.text.*;
 import com.lowagie.text.Image;
@@ -15,7 +14,6 @@ import java.util.List;
 
 import static com.binderator.util.Translations.translate;
 
-
 @SuppressWarnings("unused")
 public class Book implements Serializable {
 
@@ -24,20 +22,15 @@ public class Book implements Serializable {
 
   public interface StatusListener {
 
-    void printBookStatus
-    (String statusString);
+    void printBookStatus(String statusString);
 
-    void handleBookException
-    (Exception e);
+    void handleBookException(Exception e);
 
-    void handleBookProgressLabel
-    (String progressLabel);
+    void handleBookProgressLabel(String progressLabel);
 
-    void handleBookProgress
-    (float progress, float maxProgress);
+    void handleBookProgress(float progress, float maxProgress);
 
-    void handlePageRangesChange
-    (String pageRangesText);
+    void handlePageRangesChange(String pageRangesText);
 
   }
 
@@ -54,8 +47,7 @@ public class Book implements Serializable {
     private static final long serialVersionUID = -612651010568345409L;
     float llx, lly, urx, ury;
 
-    public SerializableRectangle
-    (float llx, float lly, float urx, float ury)
+    public SerializableRectangle(float llx, float lly, float urx, float ury)
     {
       this.llx = llx;
       this.lly = lly;
@@ -63,8 +55,7 @@ public class Book implements Serializable {
       this.ury = ury;
     }
 
-    public SerializableRectangle
-    (SerializableRectangle rectangle)
+    public SerializableRectangle(SerializableRectangle rectangle)
     {
       this.llx = rectangle.llx;
       this.lly = rectangle.lly;
@@ -72,8 +63,7 @@ public class Book implements Serializable {
       this.ury = rectangle.ury;
     }
 
-    public SerializableRectangle
-    (Rectangle rectangle)
+    public SerializableRectangle(Rectangle rectangle)
     {
       this.llx = rectangle.getLeft();
       this.lly = rectangle.getBottom();
@@ -81,14 +71,12 @@ public class Book implements Serializable {
       this.ury = rectangle.getTop();
     }
 
-    public com.lowagie.text.Rectangle getRectangle
-    ()
+    public com.lowagie.text.Rectangle getRectangle()
     {
       return new Rectangle(llx, lly, urx, ury);
     }
 
-    public String toString
-    ()
+    public String toString()
     {
       return "Rectangle(" + llx + ", " + lly + ", " + urx + ", " + ury + ")";
     }
@@ -171,14 +159,12 @@ public class Book implements Serializable {
 
     private final String label;
 
-    TrimLinesType
-    (String label)
+    TrimLinesType(String label)
     {
       this.label = label;
     }
 
-    public String toString
-    ()
+    public String toString()
     {
       return label;
     }
@@ -227,12 +213,10 @@ public class Book implements Serializable {
   private static final float RADIANS_PER_DEGREE = 3.14159265359f / 180.f;
   private static final float DEGREES_PER_RADIAN = 180.f / 3.14159265359f;
 
-  public Book
-  ()
+  public Book()
   {}
 
-  public Book
-  (Book book)
+  public Book(Book book)
   throws Exception
   {
     sourceDocuments = new ArrayList<>();
@@ -285,8 +269,7 @@ public class Book implements Serializable {
     usingPageNumbering = book.usingPageNumbering;
   }
 
-  public ProjectMetaData getMetaData
-  ()
+  public ProjectMetaData getMetaData()
   {
     if (metaData == null) {
       metaData = new ProjectMetaData();
@@ -294,8 +277,7 @@ public class Book implements Serializable {
     return metaData;
   }
 
-  private static FontMapper generateFontMapper
-  ()
+  private static FontMapper generateFontMapper()
   {
     try {
       return new OSFontMapper();
@@ -306,142 +288,119 @@ public class Book implements Serializable {
     return null;
   }
 
-  public boolean getScaleToFit
-  ()
+  public boolean getScaleToFit()
   {
     return scaleToFit;
   }
 
-  public void setScaleToFit
-  (boolean scaleToFit)
+  public void setScaleToFit(boolean scaleToFit)
   {
     this.scaleToFit = scaleToFit;
   }
 
-  public RangedFloat getLeftMarginRatio
-  ()
+  public RangedFloat getLeftMarginRatio()
   {
     return leftMarginRatio;
   }
 
-  public void setLeftMarginRatio
-  (float leftMarginRatio)
+  public void setLeftMarginRatio(float leftMarginRatio)
   {
     this.leftMarginRatio.setValue(leftMarginRatio);
   }
 
-  public RangedFloat getRightMarginRatio
-  ()
+  public RangedFloat getRightMarginRatio()
   {
     return rightMarginRatio;
   }
 
-  public void setRightMarginRatio
-  (float rightMarginRatio)
+  public void setRightMarginRatio(float rightMarginRatio)
   {
     this.rightMarginRatio.setValue(rightMarginRatio);
   }
 
-  public RangedFloat getBottomMarginRatio
-  ()
+  public RangedFloat getBottomMarginRatio()
   {
     return bottomMarginRatio;
   }
 
-  public void setBottomMarginRatio
-  (float bottomMarginRatio)
+  public void setBottomMarginRatio(float bottomMarginRatio)
   {
     this.bottomMarginRatio.setValue(bottomMarginRatio);
   }
 
-  public RangedFloat getTopMarginRatio
-  ()
+  public RangedFloat getTopMarginRatio()
   {
     return topMarginRatio;
   }
 
-  public void setTopMarginRatio
-  (float topMarginRatio)
+  public void setTopMarginRatio(float topMarginRatio)
   {
     this.topMarginRatio.setValue(topMarginRatio);
   }
 
-  public Rectangle getPageSize
-  ()
+  public Rectangle getPageSize()
   {
     return pageSize.getRectangle();
   }
 
-  public void setPageSize
-  (Rectangle pageSize)
+  public void setPageSize(Rectangle pageSize)
   {
     this.pageSize = new SerializableRectangle(pageSize);
   }
 
-  public Rectangle getSignaturePageSize
-  ()
+  public Rectangle getSignaturePageSize()
   {
     return signaturePageSize.getRectangle();
   }
 
-  public void setSignaturePageSize
-  (Rectangle signaturePageSize)
+  public void setSignaturePageSize(Rectangle signaturePageSize)
   {
     this.signaturePageSize = new SerializableRectangle(signaturePageSize);
   }
 
-  public String getPath
-  ()
+  public String getPath()
   {
     return path;
   }
 
-  public void setPath
-  (String path)
+  public void setPath(String path)
   {
     this.path = path;
   }
 
-  public boolean isUsingMargins
-  ()
+  public boolean isUsingMargins()
   {
     return usingMargins;
   }
 
-  public void setUsingMargins
-  (boolean usingMargins)
+  public void setUsingMargins(boolean usingMargins)
   {
     this.usingMargins = usingMargins;
   }
 
-  public boolean isUsingPageNumbering
-  ()
+  public boolean isUsingPageNumbering()
   {
     return usingPageNumbering;
   }
 
-  public void setUsingPageNumbering
-  (boolean usingPageNumbering)
+  public void setUsingPageNumbering(boolean usingPageNumbering)
   {
     this.usingPageNumbering = usingPageNumbering;
   }
 
   private boolean minimiseLastSignature = false;
 
-  public boolean isMinimisingLastSignature
-  ()
+  public boolean isMinimisingLastSignature()
   {
     return minimiseLastSignature;
   }
 
-  public void setMinimiseLastSignature
-  (boolean minimiseLastSignature)
+  public void setMinimiseLastSignature(boolean minimiseLastSignature)
   {
     this.minimiseLastSignature = minimiseLastSignature;
   }
 
-  public void setSourceDocuments
-  (Collection<SourceDocument> sourceDocuments)
+  public void setSourceDocuments(Collection<SourceDocument> sourceDocuments)
   throws Exception
   {
     this.sourceDocuments = new ArrayList<>();
@@ -450,8 +409,7 @@ public class Book implements Serializable {
     }
   }
 
-  public void upSourceDocument
-  (SourceDocument sourceDocument)
+  public void upSourceDocument(SourceDocument sourceDocument)
   {
     int index = sourceDocuments.indexOf(sourceDocument);
     if (index <= 0) {
@@ -461,8 +419,7 @@ public class Book implements Serializable {
     sourceDocuments.add(index - 1, sourceDocument);
   }
 
-  public void downSourceDocument
-  (SourceDocument sourceDocument)
+  public void downSourceDocument(SourceDocument sourceDocument)
   {
     int index = sourceDocuments.indexOf(sourceDocument);
     if (index >= sourceDocuments.size() - 1) {
@@ -472,14 +429,12 @@ public class Book implements Serializable {
     sourceDocuments.add(index + 1, sourceDocument);
   }
 
-  public void removeSourceDocument
-  (SourceDocument sourceDocument)
+  public void removeSourceDocument(SourceDocument sourceDocument)
   {
     sourceDocuments.remove(sourceDocument);
   }
 
-  public List<TransformSet> getTransformSets
-  ()
+  public List<TransformSet> getTransformSets()
   {
     if (transformSets == null) {
       transformSets = new ArrayList<>();
@@ -487,8 +442,7 @@ public class Book implements Serializable {
     return transformSets;
   }
 
-  public TransformSet findTransformSet
-  (String name)
+  public TransformSet findTransformSet(String name)
   {
     if (transformSets != null) {
       for (TransformSet transformSet : transformSets) {
@@ -500,15 +454,13 @@ public class Book implements Serializable {
     return null;
   }
 
-  public void setTransformSets
-  (Collection<TransformSet> transformSets)
+  public void setTransformSets(Collection<TransformSet> transformSets)
   {
     this.transformSets = new ArrayList<>();
     this.transformSets.addAll(transformSets);
   }
 
-  public void upTransformSet
-  (TransformSet transformSet)
+  public void upTransformSet(TransformSet transformSet)
   {
     List<TransformSet> transformSets = getTransformSets();
     int index = transformSets.indexOf(transformSet);
@@ -519,8 +471,7 @@ public class Book implements Serializable {
     transformSets.add(index - 1, transformSet);
   }
 
-  public void downTransformSet
-  (TransformSet transformSet)
+  public void downTransformSet(TransformSet transformSet)
   {
     List<TransformSet> transformSets = getTransformSets();
     int index = transformSets.indexOf(transformSet);
@@ -531,8 +482,7 @@ public class Book implements Serializable {
     transformSets.add(index + 1, transformSet);
   }
 
-  public void removeTransformSet
-  (TransformSet transformSet)
+  public void removeTransformSet(TransformSet transformSet)
   {
     transformSets.remove(transformSet);
   }
@@ -546,8 +496,7 @@ public class Book implements Serializable {
     return contentGenerators;
   }
 
-  public void setContentGenerators
-  (Collection<ContentGenerator> contentGenerators)
+  public void setContentGenerators(Collection<ContentGenerator> contentGenerators)
   {
     this.contentGenerators = new ArrayList<>();
     this.contentGenerators.addAll(contentGenerators);
@@ -565,8 +514,7 @@ public class Book implements Serializable {
     contentGenerators.add(index - 1, contentGenerator);
   }
 
-  public void downContentGenerator
-  (ContentGenerator contentGenerator)
+  public void downContentGenerator(ContentGenerator contentGenerator)
   {
     List<ContentGenerator> contentGenerators = getContentGenerators();
     int index = contentGenerators.indexOf(contentGenerator);
@@ -577,62 +525,52 @@ public class Book implements Serializable {
     contentGenerators.add(index + 1, contentGenerator);
   }
 
-  public void removeContentGenerator
-  (ContentGenerator contentGenerator)
+  public void removeContentGenerator(ContentGenerator contentGenerator)
   {
     contentGenerators.remove(contentGenerator);
   }
 
-  public String getOutputPath
-  ()
+  public String getOutputPath()
   {
     return outputPath;
   }
 
-  public void setOutputPath
-  (String outputPath)
+  public void setOutputPath(String outputPath)
   {
     this.outputPath = outputPath;
   }
 
-  public String getSignaturesOutputPath
-  ()
+  public String getSignaturesOutputPath()
   {
     return signaturesOutputPath;
   }
 
-  public void setSignaturesOutputPath
-  (String signaturesOutputPath)
+  public void setSignaturesOutputPath(String signaturesOutputPath)
   {
     this.signaturesOutputPath = signaturesOutputPath;
   }
 
-  public String getComments
-  ()
+  public String getComments()
   {
     return comments;
   }
 
-  public String getName
-  ()
+  public String getName()
   {
     return name;
   }
 
-  public void setName
-  (String name)
+  public void setName(String name)
   {
     this.name = name;
   }
 
-  public void setComments
-  (String comments)
+  public void setComments(String comments)
   {
     this.comments = comments;
   }
 
-  private void generateSourceDocumentsById
-  ()
+  private void generateSourceDocumentsById()
   {
     sourceDocumentsById.clear();
     for (SourceDocument document : sourceDocuments) {
@@ -642,8 +580,7 @@ public class Book implements Serializable {
     }
   }
 
-  public void computeEffectiveTransformSetsByPage
-  (Map<PageRef, List<Integer>> pageRefsToPageNumberLists)
+  public void computeEffectiveTransformSetsByPage(Map<PageRef, List<Integer>> pageRefsToPageNumberLists)
   {
     try {
       generateSourceDocumentsById();
@@ -671,8 +608,7 @@ public class Book implements Serializable {
     }
   }
 
-  public void computeContentGeneratorsByPage
-  (Map<PageRef, List<Integer>> pageRefsToPageNumberLists)
+  public void computeContentGeneratorsByPage(Map<PageRef, List<Integer>> pageRefsToPageNumberLists)
   {
     try {
       generateSourceDocumentsById();
@@ -701,100 +637,85 @@ public class Book implements Serializable {
     }
   }
 
-  public RangedFloat getSpineOffsetRatio
-  ()
+  public RangedFloat getSpineOffsetRatio()
   {
     return spineOffsetRatio;
   }
 
-  public RangedFloat getEdgeOffsetRatio
-  ()
+  public RangedFloat getEdgeOffsetRatio()
   {
     return edgeOffsetRatio;
   }
 
-  public TrimLinesType getTrimLinesType
-  ()
+  public TrimLinesType getTrimLinesType()
   {
     return trimLinesType;
   }
 
-  public void setTrimLinesType
-  (TrimLinesType trimLinesType)
+  public void setTrimLinesType(TrimLinesType trimLinesType)
   {
     this.trimLinesType = trimLinesType;
   }
 
-  public RangedFloat getTrimLinesHorizontalRatio
-  ()
+  public RangedFloat getTrimLinesHorizontalRatio()
   {
     return trimLinesHorizontalRatio;
   }
 
-  public RangedFloat getTrimLinesVerticalRatio
-  ()
+  public RangedFloat getTrimLinesVerticalRatio()
   {
     return trimLinesVerticalRatio;
   }
 
-  private static Rectangle getPaperSizeRectangle
-  (PaperSize paperSize)
+  private static Rectangle getPaperSizeRectangle(PaperSize paperSize)
   {
     Float[] dimensions = paperSizes.get(paperSize);
     return new Rectangle(0f, 0f, dimensions[0], dimensions[1]);
   }
 
-  public void setSpineOffsetRatio
-  (float spineOffsetRatio)
+  public void setSpineOffsetRatio(float spineOffsetRatio)
   {
     this.spineOffsetRatio.setValue(spineOffsetRatio);
   }
 
-  public void setEdgeOffsetRatio
-  (Float edgeOffsetRatio)
+  public void setEdgeOffsetRatio(Float edgeOffsetRatio)
   {
     this.edgeOffsetRatio.setValue(edgeOffsetRatio);
   }
 
-  private void logException
-  (String where, Throwable t)
+  private void logException(String where, Throwable t)
   {
     getErrorOut().print("Caught exception " + where + ".\n\nBacktrace:\n\n");
     t.printStackTrace(getErrorOut());
   }
 
-  public void setStatusListener
-  (StatusListener statusListener)
+  public void setStatusListener(StatusListener statusListener)
   {
     this.statusListener = statusListener;
   }
 
-  public void printStatus
-  (String statusMessage)
+  public void printStatus(String statusMessage)
   {
     if (statusListener != null) {
       statusListener.printBookStatus(statusMessage);
     }
   }
 
-  public void setProgressLabel
-  (String progressLabel)
+  public void setProgressLabel(String progressLabel)
   {
     if (statusListener != null) {
       statusListener.handleBookProgressLabel(progressLabel);
     }
   }
 
-  public void setProgress
-  (float progress, float maxProgress)
+  public void setProgress(float progress, float maxProgress)
   {
     if (statusListener != null) {
       statusListener.handleBookProgress(progress, maxProgress);
     }
   }
 
-  public void handleException
-  (Exception e)
+  public void handleException(Exception e)
   {
     if (statusListener != null) {
       statusListener.handleBookException(e);
@@ -802,14 +723,12 @@ public class Book implements Serializable {
     e.printStackTrace(System.err);
   }
 
-  public PrintStream getErrorOut
-  ()
+  public PrintStream getErrorOut()
   {
     return System.err;
   }
 
-  public List<SourceDocument> getSourceDocuments
-  ()
+  public List<SourceDocument> getSourceDocuments()
   {
     if (sourceDocuments == null) {
       sourceDocuments = new ArrayList<>();
@@ -821,8 +740,7 @@ public class Book implements Serializable {
     return List.copyOf(sourceDocuments);
   }
 
-  public void addSourceDocument
-  (SourceDocument sourceDocument)
+  public void addSourceDocument(SourceDocument sourceDocument)
   throws Exception
   {
     sourceDocuments.add(sourceDocument);
@@ -836,8 +754,7 @@ public class Book implements Serializable {
     }
   }
 
-  void  changeSourceDocumentId
-  (String oldId, String newId, SourceDocument sourceDocument)
+  void  changeSourceDocumentId(String oldId, String newId, SourceDocument sourceDocument)
   {
     sourceDocument.setBook(this);
     if (oldId != null) {
@@ -849,34 +766,29 @@ public class Book implements Serializable {
     statusListener.handlePageRangesChange(pageRangesSource);
   }
 
-  private void clearPages
-  ()
+  private void clearPages()
   {
     pages = null;
   }
 
-  public String getPageRangesSource
-  ()
+  public String getPageRangesSource()
   {
     return pageRangesSource;
   }
 
-  public void setPageRangesSource
-  (String pageRangesSource)
+  public void setPageRangesSource(String pageRangesSource)
   {
     this.pageRangesSource = pageRangesSource;
     pages = null;
   }
 
-  public void setPages
-  (Collection<PageRef> pages)
+  public void setPages(Collection<PageRef> pages)
   {
     this.pages = new ArrayList<>();
     this.pages.addAll(pages);
   }
 
-  public List<PageRef> getPages
-  (String pageRangesSource)
+  public List<PageRef> getPages(String pageRangesSource)
   throws Exception
   {
     if (pageRangesSource == null) {
@@ -887,15 +799,13 @@ public class Book implements Serializable {
     return pages;
   }
 
-  public List<PageRef> getPages
-  ()
+  public List<PageRef> getPages()
   throws Exception
   {
     return getPages(pageRangesSource);
   }
 
-  private Map<PageRef, List<Integer>> getPageRefsToPageNumberLists
-  ()
+  private Map<PageRef, List<Integer>> getPageRefsToPageNumberLists()
   throws Exception
   {
     Map<PageRef, List<Integer>> pageRefsToPageNumberLists = new HashMap<>();
@@ -922,8 +832,7 @@ public class Book implements Serializable {
     return pageRefsToPageNumberLists;
   }
 
-  private List<Integer> getPageNumberList
-  (PageRef pageRef, Map<PageRef, List<Integer>> pageRefsToPageNumberLists)
+  private List<Integer> getPageNumberList(PageRef pageRef, Map<PageRef, List<Integer>> pageRefsToPageNumberLists)
   throws Exception
   {
     if (pageRef.getSourceDocument() != null) {
@@ -933,8 +842,7 @@ public class Book implements Serializable {
     }
   }
 
-  public void setSourceDocumentsByPath
-  (String ... sourceDocumentPaths)
+  public void setSourceDocumentsByPath(String ... sourceDocumentPaths)
   throws Exception
   {
     sourceDocuments = new ArrayList<>();
@@ -943,8 +851,7 @@ public class Book implements Serializable {
     }
   }
 
-  public boolean closePDFs
-  ()
+  public boolean closePDFs()
   {
     try {
       clearPages();
@@ -962,35 +869,30 @@ public class Book implements Serializable {
     }
   }
 
-  public int getSignatureSheets
-  ()
+  public int getSignatureSheets()
   {
     return signatureSheets;
   }
 
-  public void setSignatureSheets
-  (int sheets)
+  public void setSignatureSheets(int sheets)
   {
     this.signatureSheets = sheets;
   }
 
-  public int getPageCount
-  ()
+  public int getPageCount()
   throws Exception
   {
     return getPages() != null ? pages.size() : 0;
   }
 
-  public static float mm2Points
-  (float mm)
+  public static float mm2Points(float mm)
   {
     // millimetres to points = 2.83464567
     // points to millimetres = 0.352777778
     return mm*2.83464567f;
   }
 
-  public static float points2MM
-  (float points)
+  public static float points2MM(float points)
   {
     return points * 0.352777778f;
   }
@@ -998,8 +900,7 @@ public class Book implements Serializable {
   private record ScaleToFitRecord(AffineTransform affineTransform, float width, float height) {}
 
   // Initially scale a source page image to a minimal fit in the target page size.
-  private ScaleToFitRecord scaleToFit
-  (Image pageImage, Rectangle pageSize)
+  private ScaleToFitRecord scaleToFit(Image pageImage, Rectangle pageSize)
   {
     float scaleFactor;
     float xOffset = 0.0f;
@@ -1026,8 +927,7 @@ public class Book implements Serializable {
     AffineTransform transform;
     Float cropRatio;
 
-    public CropOp
-    (CropType cropType, AffineTransform transform, Float cropRatio)
+    public CropOp(CropType cropType, AffineTransform transform, Float cropRatio)
     {
       this.cropType = cropType;
       this.transform = transform;
@@ -1042,8 +942,7 @@ public class Book implements Serializable {
     public AffineTransform transform;
     public List<CropOp> cropOps;
 
-    public TransformedImage
-      (Image image, AffineTransform transform, List<CropOp> cropOps) {
+    public TransformedImage(Image image, AffineTransform transform, List<CropOp> cropOps) {
       this.image = image;
       this.transform = transform;
       this.cropOps = cropOps;
@@ -1051,8 +950,9 @@ public class Book implements Serializable {
 
   }
 
-  private TransformedImage generateTransformedPageImage
-  (PdfWriter writer, Integer totalPageNumber, Rectangle unitSize, boolean even)
+  private TransformedImage generateTransformedPageImage(
+    PdfWriter writer, Integer totalPageNumber, Rectangle unitSize, boolean even
+  )
   throws Exception
   {
     PageRef pageRef = getPageRef(totalPageNumber);
@@ -1171,8 +1071,7 @@ public class Book implements Serializable {
     return returnValue;
   }
 
-  private AffineTransform concatenate
-  (AffineTransform newTransform, AffineTransform existingTransform)
+  private AffineTransform concatenate(AffineTransform newTransform, AffineTransform existingTransform)
   {
     AffineTransform transformCopy = (AffineTransform)newTransform.clone();
     if (existingTransform == null) {
@@ -1182,8 +1081,7 @@ public class Book implements Serializable {
     return transformCopy;
   }
 
-  private void concatenate
-  (AffineTransform newTransform, List<CropOp> cropOps)
+  private void concatenate(AffineTransform newTransform, List<CropOp> cropOps)
   {
     for (CropOp cropOp : cropOps) {
       cropOp.transform = concatenate(newTransform, cropOp.transform);
@@ -1194,14 +1092,12 @@ public class Book implements Serializable {
    * Generate PDF with modifications applied
    * @param destinationPath path of the generated PDF
    */
-  public void generatePDF
-  (String destinationPath)
+  public void generatePDF(String destinationPath)
   {
     generatePDF(destinationPath, usingMargins, usingPageNumbering);
   }
 
-  public void generatePDF
-  (String destinationPath, boolean usingMargins, boolean usingPageNumbering)
+  public void generatePDF(String destinationPath, boolean usingMargins, boolean usingPageNumbering)
   {
     try {
       if (destinationPath == null) {
@@ -1222,8 +1118,9 @@ public class Book implements Serializable {
    * @param usingPageNumbering if true, draw a page numbering overlay
    * @param targetPages if non-null, generate only the given pages
    */
-  public void generatePDF
-  (OutputStream out, boolean usingMargins, boolean usingPageNumbering, Collection<PageRef> targetPages)
+  public void generatePDF(
+    OutputStream out, boolean usingMargins, boolean usingPageNumbering, Collection<PageRef> targetPages
+  )
   {
     try {
       List<PageRef> pages = getPages();
@@ -1484,8 +1381,9 @@ public class Book implements Serializable {
    * @param sheetsPerSignature the number of physical (unfolded) sheets of paper in a signature
    * @return an array of [signatureIndex][sheetIndex][pageIndex] page numbers
    */
-  static int[][][] generateSignaturePageNumbers
-  (int pageCount, int sheetsPerSignature, boolean minimiseLastSignature)
+  static int[][][] generateSignaturePageNumbers(
+    int pageCount, int sheetsPerSignature, boolean minimiseLastSignature
+  )
   {
     int signaturePages = sheetsPerSignature*4;
     int signatureCount = (int)Math.ceil(((float)pageCount)/(float)(sheetsPerSignature*4));
@@ -1531,8 +1429,9 @@ public class Book implements Serializable {
    * @param destinationSignaturePrefix filename prefix for individaul signature files
    * @param signatureNumbers if non-null, an array of 1-based signature numbers to generate
    */
-  public void generatePDFSignatures
-  (String destinationDirectoryPath, String destinationSignaturePrefix, int ... signatureNumbers)
+  public void generatePDFSignatures(
+    String destinationDirectoryPath, String destinationSignaturePrefix, int ... signatureNumbers
+  )
   {
     generatePDFSignatures(null, destinationDirectoryPath, destinationSignaturePrefix, false, signatureNumbers);
   }
@@ -1548,8 +1447,7 @@ public class Book implements Serializable {
    *        if out is non-null.
    * @param signatureNumbers if non-null, an array of 1-based signature numbers to generate
    */
-  public void generatePDFSignatures
-  (
+  public void generatePDFSignatures(
     OutputStream out, String destinationDirectoryPath, String destinationSignaturePrefix, boolean addSpineImage,
     int ... signatureNumbers
   )
@@ -1694,20 +1592,17 @@ public class Book implements Serializable {
     }
   }
 
-  public boolean hasValidPDFOutput
-  ()
+  public boolean hasValidPDFOutput()
   {
     return pdfOutputIsValid;
   }
 
-  public boolean hasValidPDFSignatureOutput
-  ()
+  public boolean hasValidPDFSignatureOutput()
   {
     return pdfSignatureOutputIsValid;
   }
 
-  public PageRef getPageRef
-  (int absolutePageNumber)
+  public PageRef getPageRef(int absolutePageNumber)
   throws Exception
   {
     List<PageRef> pages = getPages();
@@ -1717,8 +1612,7 @@ public class Book implements Serializable {
     return pages.get(absolutePageNumber - 1);
   }
 
-  private void addTrimLines
-  (PdfContentByte cb, Rectangle halfSize, float horizontalTrimRatio, float verticalTrimRatio)
+  private void addTrimLines(PdfContentByte cb, Rectangle halfSize, float horizontalTrimRatio, float verticalTrimRatio)
   {
     cb.setLineWidth(1.0f);
     cb.setColorStroke(Color.BLACK);
@@ -1737,8 +1631,7 @@ public class Book implements Serializable {
     cb.stroke();
   }
 
-  private void addSpineImage
-  (PdfContentByte cb)
+  private void addSpineImage(PdfContentByte cb)
   {
     int nLines = 34;
     // An approximation based on observation with a standard library case

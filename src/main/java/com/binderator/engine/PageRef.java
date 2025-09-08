@@ -1,10 +1,8 @@
 package com.binderator.engine;
 
-
 import com.lowagie.text.pdf.*;
 import java.io.*;
 import java.util.*;
-
 
 @SuppressWarnings("unused")
 public class PageRef implements Comparable<PageRef>, Serializable {
@@ -19,73 +17,62 @@ public class PageRef implements Comparable<PageRef>, Serializable {
   /**
    * Blank page ref constructor
    */
-  public PageRef
-  (SourceDocument sourceDocument)
+  public PageRef(SourceDocument sourceDocument)
   {
     this(sourceDocument, 0);
   }
 
-  public PageRef
-  (SourceDocument sourceDocument, int pageNumber)
+  public PageRef(SourceDocument sourceDocument, int pageNumber)
   {
     this.sourceDocument = sourceDocument;
     this.pageNumber = pageNumber;
   }
 
-  public PageRange getSinglePageRange
-  ()
+  public PageRange getSinglePageRange()
   throws Exception
   {
     return new PageRange(sourceDocument.getId(), pageNumber);
   }
 
-  public SourceDocument getSourceDocument
-  ()
+  public SourceDocument getSourceDocument()
   {
     return sourceDocument;
   }
 
-  public boolean isBlankPage
-  ()
+  public boolean isBlankPage()
   {
     return pageNumber == 0;
   }
 
-  public PdfReader getPdfReader
-  ()
+  public PdfReader getPdfReader()
   throws IOException
   {
     return sourceDocument != null ? sourceDocument.getReader() : null;
   }
 
-  public int getPageNumber
-  ()
+  public int getPageNumber()
   {
     return pageNumber;
   }
 
-  public String getPageNumberText
-  ()
+  public String getPageNumberText()
   {
     String docId = sourceDocument != null ? sourceDocument.getId() : null;
     return docId != null ? docId + ':' + pageNumber : "" + pageNumber;
   }
 
-  public void setPageNumber
-  (int pageNumber)
+  public void setPageNumber(int pageNumber)
   {
     this.pageNumber = pageNumber;
   }
 
-  public int hashCode
-  ()
+  public int hashCode()
   {
     return this.hashCode;
   }
 
   @Override
-  public int compareTo
-  (PageRef other)
+  public int compareTo(PageRef other)
   {
     if (sourceDocument == null) {
       if (other.sourceDocument != null) {

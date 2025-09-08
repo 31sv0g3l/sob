@@ -7,16 +7,14 @@ import java.util.*;
 
 public class BookTest {
 
-  private void testSignatureGeneration
-  (int pageCount, int sheetsPerSignature, int[][][] expectedSignatures)
+  private void testSignatureGeneration(int pageCount, int sheetsPerSignature, int[][][] expectedSignatures)
   {
     int[][][] signatures = Book.generateSignaturePageNumbers(pageCount, sheetsPerSignature, false);
     assert(Arrays.deepEquals(signatures, expectedSignatures));
   }
 
   @Test
-  public void testMultipleSignatureGeneration
-  ()
+  public void testMultipleSignatureGeneration()
   throws Exception
   {
     {
@@ -297,8 +295,7 @@ public class BookTest {
     }
   }
 
-  public static void generateSignatureTest
-  (int pageCount, int sheetsPerSignature)
+  public static void generateSignatureTest(int pageCount, int sheetsPerSignature)
   {
     int[][][] signatures = Book.generateSignaturePageNumbers(pageCount, sheetsPerSignature, false);
     int signatureCount = 0;
@@ -330,8 +327,7 @@ public class BookTest {
     System.err.print("\n};\ntestSignatureGeneration(pageCount, sheetsPerSignature, signatures);\n}\n");
   }
 
-  public static void main
-  (String[] args)
+  public static void main(String[] args)
   {
     if (args.length < 2) {
       System.err.println("Need two args: pageCount and sheetsPerSignature");

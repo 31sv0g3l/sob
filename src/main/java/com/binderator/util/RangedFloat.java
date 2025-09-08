@@ -1,8 +1,6 @@
 package com.binderator.util;
 
-
 import java.io.*;
-
 
 @SuppressWarnings({"unused", "Math"})
 public class RangedFloat implements Serializable {
@@ -14,8 +12,7 @@ public class RangedFloat implements Serializable {
   private float lowValue;
   private float highValue;
 
-  public RangedFloat
-  (String name, float value, float lowValue, float highValue)
+  public RangedFloat(String name, float value, float lowValue, float highValue)
   {
     this.name = name;
     this.value = value;
@@ -23,8 +20,7 @@ public class RangedFloat implements Serializable {
     this.highValue = highValue;
   }
 
-  public RangedFloat
-  (RangedFloat rangedFloat)
+  public RangedFloat(RangedFloat rangedFloat)
   {
     name = rangedFloat.name;
     value = rangedFloat.value;
@@ -32,8 +28,7 @@ public class RangedFloat implements Serializable {
     highValue = rangedFloat.highValue;
   }
 
-  public void copy
-  (RangedFloat rangedFloat)
+  public void copy(RangedFloat rangedFloat)
   {
     if (rangedFloat != null) {
       name = rangedFloat.name;
@@ -43,26 +38,22 @@ public class RangedFloat implements Serializable {
     }
   }
 
-  public String getName
-  ()
+  public String getName()
   {
     return name;
   }
 
-  public void setName
-  (String name)
+  public void setName(String name)
   {
     this.name = name;
   }
 
-  public float getValue
-  ()
+  public float getValue()
   {
     return value;
   }
 
-  public void setValue
-  (float value)
+  public void setValue(float value)
   {
     if (value < lowValue) {
       this.value = lowValue;
@@ -73,14 +64,12 @@ public class RangedFloat implements Serializable {
     }
   }
 
-  public float getLowValue
-  ()
+  public float getLowValue()
   {
     return lowValue;
   }
 
-  public void setLowValue
-  (float lowValue)
+  public void setLowValue(float lowValue)
   {
     this.lowValue = lowValue;
     if (value < lowValue) {
@@ -91,14 +80,12 @@ public class RangedFloat implements Serializable {
     }
   }
 
-  public float getHighValue
-  ()
+  public float getHighValue()
   {
     return highValue;
   }
 
-  public void setHighValue
-  (float highValue)
+  public void setHighValue(float highValue)
   {
     this.highValue = highValue;
     if (value > highValue) {
@@ -109,8 +96,7 @@ public class RangedFloat implements Serializable {
     }
   }
 
-  public String toString
-  ()
+  public String toString()
   {
     return name + "(" + value + ":[" + lowValue + '-' + highValue + "])";
   }
