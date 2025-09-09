@@ -857,6 +857,8 @@ public class BinderatorFrame extends JFrame
       }
     });
     documentNameTextField.setToolTipText(translate("sourceDocumentNameTooltip"));
+    documentNameTextField.setPreferredSize(new Dimension(Integer.MAX_VALUE, scale(22)));
+    documentNameTextField.setMaximumSize(new Dimension(Integer.MAX_VALUE, scale(22)));
     GUIUtils.addBackgroundSetter(documentNameTextField);
     documentsPanel.add(Box.createVerticalStrut(scale(5)));
     documentsPanelHeight += scale(5);
@@ -2426,6 +2428,7 @@ public class BinderatorFrame extends JFrame
     aboutDialog.setSize(new Dimension(scale(310), scale(400)));
     aboutDialog.setPreferredSize(new Dimension(scale(310), scale(400)));
     aboutDialog.setMinimumSize(new Dimension(scale(310), scale(400)));
+    aboutDialog.pack();
     aboutDialog.setLocationRelativeTo(this);
     aboutDialog.setVisible(true);
   }
@@ -2588,7 +2591,7 @@ public class BinderatorFrame extends JFrame
   private void updateSourceDocumentsTab()
   {
     populateSourceDocumentsComboBox();
-    if (book.getSourceDocuments().size() > 0) {
+    if (!book.getSourceDocuments().isEmpty()) {
       sourceDocumentsComboBox.setSelectedIndex(-1);
       sourceDocumentsComboBox.setSelectedIndex(0);
       setEnabledSourceDocumentsWidgets(true);
@@ -2655,7 +2658,7 @@ public class BinderatorFrame extends JFrame
   private void updateTransformSetsTab()
   {
     populateTransformSetComboBox();
-    if (book.getTransformSets().size() > 0) {
+    if (!book.getTransformSets().isEmpty()) {
       transformSetsComboBox.setSelectedIndex(-1);
       transformSetsComboBox.setSelectedIndex(0);
       setEnabledTransformsWidgets(true);
@@ -2703,7 +2706,7 @@ public class BinderatorFrame extends JFrame
   private void updateContentGeneratorsTab()
   {
     populateContentGeneratorsComboBox();
-    if (book.getContentGenerators().size() > 0) {
+    if (!book.getContentGenerators().isEmpty()) {
       contentGeneratorsComboBox.setSelectedIndex(-1);
       contentGeneratorsComboBox.setSelectedIndex(0);
       setEnabledContentGeneratorWidgets(true);
@@ -3132,7 +3135,13 @@ public class BinderatorFrame extends JFrame
     try {
       UIManager.setLookAndFeel(new FlatLightLaf());
     } catch (Exception e) {
-      System.err.println( "Failed to initialize LaF: " + e.getMessage());
+      System.err.println("Failed to initialize FlatLaf: " + e.getMessage());
+      try {
+        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+      } catch (Exception ex) {
+        // Use cross-platform LAF as last resort
+        UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+      }
     }
     Translations.setErrorHandler(
 
@@ -3175,6 +3184,8 @@ public class BinderatorFrame extends JFrame
     } else {
       frame.execute(() -> { frame.haveUnsavedChanges = false; });
     }
+    frame.pack();
+    frame.setLocationRelativeTo(null);
     frame.setVisible(true);
   }
 

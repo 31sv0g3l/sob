@@ -99,6 +99,23 @@ public class GUIUtils {
     String os = System.getProperty("os.name");
     if (os.matches("Windows.*")) {
       setScaleFactor(1.0f);
+    } else if (os.matches("Linux")) {
+      float scaleFactor = 1.0f;
+      // Check for Linux HiDPI settings
+      String gtkScale = System.getenv("GDK_SCALE");
+      if (gtkScale != null) {
+        try {
+          scaleFactor = Float.parseFloat(gtkScale);
+        } catch (NumberFormatException e) {
+          // fallback to default
+        }
+      }
+      // Also check Toolkit DPI
+      int screenRes = Toolkit.getDefaultToolkit().getScreenResolution();
+      if (screenRes > 96) { // 96 is standard DPI
+        scaleFactor = Math.max(scaleFactor, screenRes / 96.0f);
+      }
+      setScaleFactor(scaleFactor);
     } else {
       float scale = (float) java.awt.GraphicsEnvironment.getLocalGraphicsEnvironment()
           .getDefaultScreenDevice().getDefaultConfiguration().getDefaultTransform().getScaleX();
