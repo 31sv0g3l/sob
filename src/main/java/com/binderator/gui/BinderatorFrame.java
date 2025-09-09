@@ -399,9 +399,23 @@ public class BinderatorFrame extends JFrame
   public static BinderatorFrame getInstance()
   {
     if (singletonInstance == null) {
+      // Ensure LAF is initialized before creating the frame
+      ensureLAFInitialized();
       singletonInstance = new BinderatorFrame();
     }
     return singletonInstance;
+  }
+
+  private static void ensureLAFInitialized()
+  {
+    if (UIManager.getLookAndFeel().getClass().getName().contains("Metal")) {
+      // Default LAF is still active, try to set FlatLaf
+      try {
+        UIManager.setLookAndFeel(new FlatLightLaf());
+      } catch (Exception e) {
+        // Fallback already handled
+      }
+    }
   }
 
   private BinderatorFrame()
@@ -3122,6 +3136,16 @@ public class BinderatorFrame extends JFrame
   throws Exception
   {
     System.err.println("Son of Binderator : Starting...");
+    try {
+      UIManager.setLookAndFeel(new FlatLightLaf());
+    } catch (Exception e) {
+      System.err.println("Failed to initialize FlatLaf: " + e.getMessage());
+      try {
+        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+      } catch (Exception ex) {
+        UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+      }
+    }
     String userDir = System.getProperty("user.dir");
     File userDirFile = new File(userDir);
     File initFile;
@@ -3132,24 +3156,12 @@ public class BinderatorFrame extends JFrame
     }
     InitFile.initialise(initFile.getPath(), false);
     GUIUtils.setStandardScale();
-    try {
-      UIManager.setLookAndFeel(new FlatLightLaf());
-    } catch (Exception e) {
-      System.err.println("Failed to initialize FlatLaf: " + e.getMessage());
-      try {
-        UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-      } catch (Exception ex) {
-        // Use cross-platform LAF as last resort
-        UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
-      }
-    }
     Translations.setErrorHandler(
 
       new Translations.ErrorHandler() {
 
         @Override
-        public void handleError
-          (String message)
+        public void handleError(String message)
         {
           JOptionPane.showConfirmDialog(null, message);
         }
