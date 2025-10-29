@@ -98,6 +98,22 @@ public class ContentGenerator implements Serializable {
 
   }
 
+  public static class SourceNameTextComponent implements TextComponent {
+
+    // Generate a unique serialVersionUID that is different from PageRefTextComponent:
+    private static final long serialVersionUID = 7504405027534443052L;
+
+    public SourceNameTextComponent()
+    {}
+
+    @Override
+    public String toString(PageRef pageRef, int absolutePageNumber)
+    {
+      return (pageRef.getSourceDocument().getName());
+    }
+
+  }
+
   @Serial
   private static final long serialVersionUID = 8224030971129010709L;
   private String name = null;
@@ -154,8 +170,17 @@ public class ContentGenerator implements Serializable {
     textColor = contentGenerator.textColor;
   }
 
+  /*
   static Pattern idOffsetPattern = Pattern.compile(
     "#\\s*([_a-zA-Z][_a-zA-Z0-9]*)?\\s*((\\+|\\-)\\s*([1-9][0-9]?[0-9]?[0-9]?))?\\s*#"
+  );
+
+  static Pattern sourceNamePattern = Pattern.compile("@@");
+  */
+
+  // Combined pattern that captures either type of token
+  static Pattern combinedPattern = Pattern.compile(
+    "(#\\s*([_a-zA-Z][_a-zA-Z0-9]*)?\\s*((\\+|\\-)\\s*([1-9][0-9]?[0-9]?[0-9]?))?\\s*#)|(@@)"
   );
 
   public void compile()
@@ -164,26 +189,34 @@ public class ContentGenerator implements Serializable {
       return;
     }
     List<TextComponent> newTextComponents = new ArrayList<>();
-    String contentCopy = content;
-    Matcher idOffsetMatcher = idOffsetPattern.matcher(contentCopy);
-    while (idOffsetMatcher.find()) {
-      if (idOffsetMatcher.start() > 0) {
-        newTextComponents.add(new StringTextComponent(contentCopy.substring(0, idOffsetMatcher.start())));
+    Matcher matcher = combinedPattern.matcher(content);
+    int lastEnd = 0;
+    while (matcher.find()) {
+      // Add any text before the current match
+      if (matcher.start() > lastEnd) {
+        newTextComponents.add(new StringTextComponent(content.substring(lastEnd, matcher.start())));
       }
-      String docId = idOffsetMatcher.group(1);
-      if ((docId != null) && (docId.length() == 0)) {
-        docId = null;
+      // Check which pattern matched
+      if (matcher.group(1) != null) {
+        // This is an id/offset pattern (#...#)
+        String docId = matcher.group(2);
+        if ((docId != null) && (docId.isEmpty())) {
+          docId = null;
+        }
+        String plusMinus = matcher.group(4);
+        plusMinus = plusMinus != null ? plusMinus : "";
+        String offsetSource = matcher.group(5);
+        int offset = !plusMinus.isEmpty() ? Integer.parseInt(plusMinus + offsetSource) : 0;
+        newTextComponents.add(new PageRefTextComponent(docId, offset));
+      } else if (matcher.group(6) != null) {
+        // This is a source name pattern (@@)
+        newTextComponents.add(new SourceNameTextComponent());
       }
-      String plusMinus = idOffsetMatcher.group(3);
-      plusMinus = plusMinus != null ? plusMinus : "";
-      String offsetSource = idOffsetMatcher.group(4);
-      int offset = plusMinus.length() > 0 ? Integer.parseInt(plusMinus + offsetSource) : 0;
-      newTextComponents.add(new PageRefTextComponent(docId, offset));
-      contentCopy = contentCopy.substring(idOffsetMatcher.end());
-      idOffsetMatcher = idOffsetPattern.matcher(contentCopy);
+      lastEnd = matcher.end();
     }
-    if (contentCopy.length() > 0) {
-      newTextComponents.add(new StringTextComponent(contentCopy));
+    // Add any remaining text after the last match
+    if (lastEnd < content.length()) {
+      newTextComponents.add(new StringTextComponent(content.substring(lastEnd)));
     }
     textComponents = newTextComponents;
   }
